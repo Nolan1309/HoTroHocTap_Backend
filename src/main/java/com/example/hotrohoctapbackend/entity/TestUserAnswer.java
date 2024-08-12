@@ -1,0 +1,25 @@
+package com.example.hotrohoctapbackend.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity
+@Table(name = "user_answers")
+public class TestUserAnswer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+
+    @ManyToOne
+    @JoinColumn(name = "test_id")
+    private Test test;
+
+    @ManyToOne
+    @JoinColumn(name = "question_id")
+    private Question question;
+
+    @Column(name = "result")
+    private String result;
+}
