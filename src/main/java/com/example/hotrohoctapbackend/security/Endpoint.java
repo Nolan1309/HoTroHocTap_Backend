@@ -58,7 +58,12 @@ public class Endpoint {
             "/videos",
             "/videos/**",
             "/vipsubscriptions",
-            "/vipsubscriptions/**"
+            "/vipsubscriptions/**",
+
+            "/categories/level1",
+            "/categories/level2",
+            "/categories/level3",
+            "/categories/level"
     };
     public static final String[] PUBLIC_POST_ENDPOINS = {
             "/account/dang-ky",

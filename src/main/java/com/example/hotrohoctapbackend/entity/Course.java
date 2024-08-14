@@ -50,6 +50,9 @@ public class Course {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "status")
+    private Boolean status;
+
     @OneToMany(mappedBy = "course",
             fetch = FetchType.EAGER
             , cascade = {

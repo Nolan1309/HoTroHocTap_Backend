@@ -44,6 +44,8 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(
                 config -> config
+
+
                         .requestMatchers(HttpMethod.GET, Endpoint.PUBLIC_GET_ENDPOINS).permitAll()
                         .requestMatchers(HttpMethod.POST, Endpoint.PUBLIC_POST_ENDPOINS).permitAll()
                         .requestMatchers(HttpMethod.PUT, Endpoint.PUBLIC_PUT_ENDPOINS).permitAll()
