@@ -21,7 +21,6 @@ public class Category {
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
-    @JsonBackReference
     private Category category;
 
     @Column(name = "level")
@@ -35,12 +34,11 @@ public class Category {
 //    })
 //    private List<Course> courseList;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    @JsonManagedReference
-    private List<Category> subCategories;
+//    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER, cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Category> subCategories;
 
 //    @OneToMany(mappedBy = "category",
 //            fetch = FetchType.EAGER

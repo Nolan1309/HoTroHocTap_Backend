@@ -63,7 +63,8 @@ public class Endpoint {
             "/categories/level1",
             "/categories/level2",
             "/categories/level3",
-            "/categories/level"
+            "/categories/level",
+            "/course/top6",
     };
     public static final String[] PUBLIC_POST_ENDPOINS = {
             "/account/dang-ky",
