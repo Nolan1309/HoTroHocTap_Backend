@@ -32,4 +32,8 @@ public class GeneralDocument {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public GeneralDocument orElse(Object o) {
+        return null;
+    }
 }

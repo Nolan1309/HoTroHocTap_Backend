@@ -115,7 +115,10 @@ public class Endpoint {
             "/accounts",
             "/accounts/**",
             "/roles",
-            "/roles/**"
+            "/roles/**",
+            "api/documents-with-categories",
+            "/categories/level",
+            "categories_parent_id"
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -148,7 +151,7 @@ public class Endpoint {
             "/enrolled_courses/**",
             "/favorites",
             "/favorites/**",
-            "/generaldocuments",
+            "api/upload",
             "/generaldocuments/**",
             "/learningresult",
             "/learningresult/**",
@@ -285,7 +288,7 @@ public class Endpoint {
             "/favorites",
             "/favorites/**",
             "/generaldocuments",
-            "/generaldocuments/**",
+            "api/generaldocuments/**",
             "/learningresult",
             "/learningresult/**",
             "/lessons",

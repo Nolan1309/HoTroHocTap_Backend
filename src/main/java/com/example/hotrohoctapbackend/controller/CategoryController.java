@@ -20,7 +20,6 @@ public class CategoryController {
     public List<Category> getCategoriesByLevel(@RequestParam int level) {
         return categoryService.getCategoriesByLevel(level);
     }
-
     // Optional: Endpoints for other levels
     @GetMapping("/categories/level1")
     public List<Category> getLevel1Categories() {
@@ -36,8 +35,13 @@ public class CategoryController {
     public List<Category> getLevel3Categories() {
         return categoryService.getCategoriesByLevel(3);
     }
+
     @GetMapping("/categories/level")
     public List<Category> getCategories(@RequestParam int level, @RequestParam long parentId) {
         return categoryService.getCategoriesByLevelAndParentId(level, parentId);
+    }
+    @GetMapping("/categories_parent_id")
+    public List<Category> getCategoriesByParentId(@RequestParam int id_category) {
+        return categoryService.getCategoriesByParentId(id_category);
     }
 }

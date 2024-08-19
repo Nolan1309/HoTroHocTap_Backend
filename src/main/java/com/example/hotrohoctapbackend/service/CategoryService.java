@@ -3,6 +3,8 @@ package com.example.hotrohoctapbackend.service;
 import com.example.hotrohoctapbackend.dao.CategoryRepository;
 import com.example.hotrohoctapbackend.entity.Category;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,11 +13,18 @@ public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    public Category getCategoryById(int id) {
+        return categoryRepository.findById(id).orElse(null);
+    }
+
     public List<Category> getCategoriesByLevel(int level) {
         return categoryRepository.findByLevel(level);
     }
 
     public List<Category> getCategoriesByLevelAndParentId(int level, long parentId) {
         return categoryRepository.findCategoriesByLevelAndParentId(level, parentId);
+    }
+    public List<Category> getCategoriesByParentId(int id_category) {
+        return categoryRepository.findByParentId(id_category);
     }
 }
