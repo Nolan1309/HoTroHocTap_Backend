@@ -21,7 +21,7 @@ public class PaymentMethod {
     private String pay_description;
 
     @OneToMany(mappedBy = "paymentMethod",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH

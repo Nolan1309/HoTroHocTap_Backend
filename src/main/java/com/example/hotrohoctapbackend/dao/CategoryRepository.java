@@ -10,9 +10,22 @@ import java.util.List;
 
 @RepositoryRestResource(path = "categorys")
 public interface CategoryRepository extends JpaRepository<Category,Integer> {
-    @Query(value = "SELECT * FROM categories WHERE level = :level", nativeQuery = true)
-    List<Category> findByLevel(@Param("level") int level);
 
+    //Đóng
+    @Query(value = "SELECT * FROM categories WHERE level = :level", nativeQuery = true)
+    List<Category> findByLevel2(@Param("level") int level);
+
+    //Đóng
     @Query(value = "SELECT * FROM categories WHERE level = :level AND parent_id = :parentId", nativeQuery = true)
     List<Category> findCategoriesByLevelAndParentId(@Param("level") int level, @Param("parentId") long parentId);
+
+
+    // Lấy tất cả các danh mục theo cấp bậc (level)
+    List<Category> findByLevel(int level);
+
+    // Lấy tất cả các danh mục con của một danh mục cha
+    List<Category> findByCategory_Id(int parentId);
+
+    @Query(value = "Select * from categories", nativeQuery = true)
+    List<Object[]> getAllCategory();
 }

@@ -51,7 +51,7 @@ public class Question {
     private List<Test_Question> testQuestions;
 
     @OneToMany(mappedBy = "question",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH

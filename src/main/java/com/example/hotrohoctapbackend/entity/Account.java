@@ -50,7 +50,7 @@ public class Account implements UserDetails {
     private RoleUser role;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -58,7 +58,7 @@ public class Account implements UserDetails {
     private List<User_Notification> userNotificationList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -66,7 +66,7 @@ public class Account implements UserDetails {
     private List<ActivityLogs> activityLogsList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -74,7 +74,7 @@ public class Account implements UserDetails {
     private List<Banner> bannerList;
 
     @OneToMany(mappedBy = "author",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -82,7 +82,7 @@ public class Account implements UserDetails {
     private List<Blog> blogList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -90,7 +90,7 @@ public class Account implements UserDetails {
     private List<Comment> commentList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -98,7 +98,7 @@ public class Account implements UserDetails {
     private List<Enrolled_Courses> enrolledCoursesList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -106,7 +106,7 @@ public class Account implements UserDetails {
     private List<Favorites> favoritesList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -114,7 +114,7 @@ public class Account implements UserDetails {
     private List<LearningResult> learningResultList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -122,7 +122,7 @@ public class Account implements UserDetails {
     private List<Payment> paymentList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -130,7 +130,7 @@ public class Account implements UserDetails {
     private List<Ranking> rankingList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -138,7 +138,7 @@ public class Account implements UserDetails {
     private List<Review> reviewList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -146,7 +146,7 @@ public class Account implements UserDetails {
     private List<TestResult> testResultList;
 
     @OneToMany(mappedBy = "account",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH

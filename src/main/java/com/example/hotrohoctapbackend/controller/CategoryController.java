@@ -1,13 +1,11 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.CategoryDTO;
 import com.example.hotrohoctapbackend.entity.Category;
 import com.example.hotrohoctapbackend.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
@@ -15,6 +13,11 @@ import java.util.List;
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
+
+    @GetMapping("/categories-all")
+    public List<CategoryDTO> getAllCategory(){
+        return categoryService.getAllCategory();
+    }
 
     @GetMapping("/categories")
     public List<Category> getCategoriesByLevel(@RequestParam int level) {
@@ -40,4 +43,19 @@ public class CategoryController {
     public List<Category> getCategories(@RequestParam int level, @RequestParam long parentId) {
         return categoryService.getCategoriesByLevelAndParentId(level, parentId);
     }
+
+
+    // API để lấy tất cả các danh mục theo cấp bậc
+    @GetMapping("/categories/level/{level}")
+    public List<Category> getCategories(@PathVariable int level) {
+        return categoryService.getCategoriesByLevel(level);
+    }
+
+    // API để lấy tất cả các danh mục con của một danh mục cha
+    @GetMapping("/categories/parent/{parentId}")
+    public List<Category> getSubCategories(@PathVariable int parentId) {
+        return categoryService.getSubCategories(parentId);
+    }
+
+
 }

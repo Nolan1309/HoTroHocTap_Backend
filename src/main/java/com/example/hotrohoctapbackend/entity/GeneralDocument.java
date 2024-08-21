@@ -18,11 +18,17 @@ public class GeneralDocument {
     @JoinColumn(name = "id_category")
     private Category category;
 
+    @Column(name = "image", columnDefinition = "TEXT")
+    private String image_url;
+
     @Column(name = "url")
     private String url;
 
     @Column(name = "title")
     private String title;
+
+    @Column(name = "view")
+    private int view;
 
     @Column(name = "description")
     private String description;

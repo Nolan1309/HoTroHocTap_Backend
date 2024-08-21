@@ -27,6 +27,8 @@ public class Endpoint {
             "/documents/**",
             "/generaldocuments",
             "/generaldocuments/**",
+            "/generaldocument_account",
+            "/generaldocument_account/**",
             "/learningresult",
             "/learningresult/**",
             "/lessons",
@@ -65,6 +67,26 @@ public class Endpoint {
             "/categories/level3",
             "/categories/level",
             "/course/top6",
+
+            "/course/search",
+
+            "/courseDTO",
+            "/general-document",
+            "/api/general_documents",
+            "/api/general_documents/**",
+            "/api/general_documents/create_desc",
+            "/api/general_documents/view_desc",
+            "/api/general_documents/download_desc",
+            "/api/general_documents/all-general-document",
+            "/api/general_documents/view_desc/top6",
+            "/api/general_documents/category",
+           "/api/general_documents/search" ,
+            "/categories-all",
+            "/categories/level/**",
+            "/categories/parent/**",
+            "/cache",
+            "/cache/evict"
+
     };
     public static final String[] PUBLIC_POST_ENDPOINS = {
             "/account/dang-ky",

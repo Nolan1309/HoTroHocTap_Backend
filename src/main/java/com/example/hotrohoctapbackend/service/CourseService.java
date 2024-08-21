@@ -2,12 +2,14 @@ package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.CourseDTO;
 import com.example.hotrohoctapbackend.dao.CourseRepository;
+import com.example.hotrohoctapbackend.entity.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CourseService {

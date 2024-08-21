@@ -34,7 +34,7 @@ public class VipSubscription {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "vipSubscription",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -42,7 +42,7 @@ public class VipSubscription {
     private List<PaymentDetail> paymentDetailList;
 
     @OneToMany(mappedBy = "vipSubscription",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH

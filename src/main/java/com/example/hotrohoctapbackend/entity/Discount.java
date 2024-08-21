@@ -41,7 +41,7 @@ public class Discount {
     private LocalDateTime updated_at;
 
     @OneToMany(mappedBy = "discount",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH

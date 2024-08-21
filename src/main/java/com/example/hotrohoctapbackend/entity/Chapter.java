@@ -22,7 +22,7 @@ public class Chapter {
     private Course course;
 
     @OneToMany(mappedBy = "chapter",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -30,7 +30,7 @@ public class Chapter {
     private List<Lesson> lessonList;
 
     @OneToMany(mappedBy = "chapter",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH

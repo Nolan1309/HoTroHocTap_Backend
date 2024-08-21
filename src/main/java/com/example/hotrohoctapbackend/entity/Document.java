@@ -21,6 +21,7 @@ public class Document {
     @Column(name = "url")
     private String url;
 
+
     @Column(name = "title")
     private String title;
 

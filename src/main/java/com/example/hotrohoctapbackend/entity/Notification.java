@@ -30,7 +30,7 @@ public class Notification {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "notification",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH

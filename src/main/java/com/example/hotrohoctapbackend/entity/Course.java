@@ -1,9 +1,13 @@
 package com.example.hotrohoctapbackend.entity;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Cache;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Data
 @Entity
 @Table(name = "courses")
@@ -53,16 +57,16 @@ public class Course {
     @Column(name = "status")
     private Boolean status;
 
-    @OneToMany(mappedBy = "course",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Chapter> chapterList;
+//    @OneToMany(mappedBy = "course",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Chapter> chapterList;
 
     @OneToMany(mappedBy = "course",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -70,7 +74,7 @@ public class Course {
     private List<Course_Discount> courseDiscountList;
 
     @OneToMany(mappedBy = "course",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -78,7 +82,7 @@ public class Course {
     private List<Enrolled_Courses> enrolledCoursesList;
 
     @OneToMany(mappedBy = "course",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -86,7 +90,7 @@ public class Course {
     private List<Favorites> favoritesList;
 
     @OneToMany(mappedBy = "course",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -94,7 +98,7 @@ public class Course {
     private List<LearningResult> learningResultList;
 
     @OneToMany(mappedBy = "course",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
@@ -102,7 +106,7 @@ public class Course {
     private List<PaymentDetail> paymentDetailList;
 
     @OneToMany(mappedBy = "course",
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
             , cascade = {
             CascadeType.DETACH, CascadeType.MERGE,
             CascadeType.PERSIST, CascadeType.REFRESH
