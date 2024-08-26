@@ -21,8 +21,8 @@ public class Course {
     private String title;
 
     @ManyToOne
-    @JoinColumn(name = "id_category")
-    private Category category;
+    @JoinColumn(name = "course_category_id")
+    private CourseCategory courseCategory;
 
     @Column(name = "description")
     private String description;

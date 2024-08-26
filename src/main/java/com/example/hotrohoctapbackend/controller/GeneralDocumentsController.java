@@ -1,15 +1,22 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.DocumentDTO;
+import com.example.hotrohoctapbackend.DTO.GeneralDocumentDTO;
+import com.example.hotrohoctapbackend.DTO.GeneralDocumentDetails;
+import com.example.hotrohoctapbackend.DTO.UpdateDocumentRequest;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
 import com.example.hotrohoctapbackend.service.GeneralDocumentsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -49,20 +56,67 @@ public class GeneralDocumentsController {
     public Object[] getDocumentsByID(@PathVariable("id") int id) {
         return generalDocumentsService.getDocumentsByIDDanhMuc(id);
     }
-//
-//    @GetMapping("/category/{id}")
-//    public List<DocumentDTO> getDocumentsByCategory(@PathVariable int id) {
-//        return generalDocumentsService.getDocumentsByCategory(id);
-//    }
 
     @GetMapping("/category")
     public Page<Object[]> getDocumentsByCategory(@RequestParam Long id, Pageable pageable) {
         return generalDocumentsService.getDocumentsByCategory(id, pageable);
     }
 
+    @GetMapping("/data")
+    public List<Object[]> getDocumentsDataRange_100() {
+        return generalDocumentsService.getDocumentsData_100();
+    }
+
     @GetMapping("/search")
     public Page<Object[]> getDocumentsSearch(@RequestParam String title, Pageable pageable) {
         return generalDocumentsService.getDocumentsWithTitle(title, pageable);
+    }
+
+    @GetMapping("/all")
+    public Page<Object> getAll( Pageable pageable) {
+        return generalDocumentsService.getAll(pageable);
+    }
+
+
+
+    ///MAN
+    @GetMapping("/documents-with-categories")
+    public List<GeneralDocumentDTO> getDocumentsWithCategories() {
+        return generalDocumentsService.getDocumentsWithCategories();
+    }
+    @PostMapping("/upload")
+    public ResponseEntity<GeneralDocument> uploadDocument(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("categoryId") int categoryId) {
+        try {
+            GeneralDocument document = generalDocumentsService.saveDocument(file, title, description, categoryId);
+            return new ResponseEntity<>(document, HttpStatus.CREATED);
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PutMapping("/generaldocuments-update/{id}")
+    public ResponseEntity<GeneralDocument> updateGeneralDocument(
+            @PathVariable("id") int id,
+            @RequestBody UpdateDocumentRequest updateRequest) {
+        GeneralDocument updatedDoc = generalDocumentsService.updateGeneralDocument(id, updateRequest);
+        if (updatedDoc != null) {
+            return ResponseEntity.ok(updatedDoc);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @GetMapping("/generaldocuments-details/{id}")
+    public ResponseEntity<GeneralDocumentDetails> getDocumentDetails(@PathVariable int id) {
+        Optional<GeneralDocumentDetails> documentDetails = generalDocumentsService.getDocumentDetailsById(id);
+
+        if (documentDetails.isPresent()) {
+            return ResponseEntity.ok(documentDetails.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

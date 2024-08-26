@@ -61,6 +61,21 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             nativeQuery = true)
     Page<Object[]> findDocumentsAll(Pageable pageable);
 
+    @Query(value = "SELECT " +
+            "gd.id AS documentId, " +
+            "gd.title AS documentTitle, " +
+            "gd.image AS image_url, " +
+            "gd.url AS url, " +
+            "gd.view AS view, " +
+            "gd.created_at AS created_at, " +
+            "COUNT(gda.id) AS download_count " +
+            "FROM general_documents gd " +
+            "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id " +
+            "GROUP BY gd.id, gd.title, gd.image, gd.url, gd.view, gd.created_at " +
+            "LIMIT 100",
+            nativeQuery = true)
+    List<Object[]> findTop100Documents();
+
 
     @Query(value = "SELECT\n" +
             "            gd.id, gd.title, gd.image, gd.url, gd.view, gd.created_at, COUNT(gda.id) AS download_count \n" +
@@ -140,6 +155,49 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             nativeQuery = true)
     Page<Object[]> findDocumentsWithTitle(@Param("title") String title, Pageable pageable);
 
+    @Query(value = "SELECT * FROM general_documents", nativeQuery = true)
+    Page<Object> GetAll(Pageable pageable);
 
+
+    //Man
+    public GeneralDocument findById(int id);
+
+    @Query(value = """
+        SELECT 
+            gd.id AS document_id,
+            gd.title AS document_title, 
+            gd.description AS document_description, 
+            gd.url AS document_url, 
+            c1.name AS category_level_1, 
+            c2.name AS category_level_2, 
+            c3.name AS category_level_3
+        FROM 
+            general_documents gd 
+        LEFT JOIN categories c3 ON gd.id_category = c3.id_category
+        LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
+        LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
+        """, nativeQuery = true)
+    List<Object[]> findDocumentsWithCategories();
+
+    @Query(value = "SELECT \n" +
+            "    g.id AS id,\n" +
+            "    g.id_category AS idCategoryLevel3,\n" +
+            "    g.url AS url,\n" +
+            "    g.title AS title,\n" +
+            "    g.description AS description,\n" +
+            "    c3.id_category AS idCategoryLevel1,\n" +
+            "    c2.id_category AS idCategoryLevel2,\n" +
+            "    g.image as image \n" +
+            "FROM \n" +
+            "    general_documents g\n" +
+            "INNER JOIN \n" +
+            "    categories c1 ON g.id_category = c1.id_category AND c1.level = 3\n" +
+            "INNER JOIN \n" +
+            "    categories c2 ON c1.parent_id = c2.id_category AND c2.level = 2\n" +
+            "INNER JOIN \n" +
+            "    categories c3 ON c2.parent_id = c3.id_category AND c3.level = 1\n" +
+            "WHERE \n" +
+            "    g.id = :id;\n", nativeQuery = true)
+    List<Object[]> findDocumentDetailsById(@Param("id") int id);
 }
 

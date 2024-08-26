@@ -61,14 +61,20 @@ public class Endpoint {
             "/videos/**",
             "/vipsubscriptions",
             "/vipsubscriptions/**",
-
+            "/course_categories",
+            "/course_categories/**",
             "/categories/level1",
             "/categories/level2",
             "/categories/level3",
             "/categories/level",
-            "/course/top6",
 
-            "/course/search",
+            "/api/courses",
+            "/api/courses/top6",
+            "/api/courses/category/**",
+            "/api/courses/categories",
+            "/api/course-categories",
+
+//            "/course/search",
 
             "/courseDTO",
             "/general-document",
@@ -80,12 +86,16 @@ public class Endpoint {
             "/api/general_documents/all-general-document",
             "/api/general_documents/view_desc/top6",
             "/api/general_documents/category",
-           "/api/general_documents/search" ,
+            "/api/general_documents/data",
+            "/api/general_documents/search",
+            "/api/general_documents/all",
             "/categories-all",
             "/categories/level/**",
             "/categories/parent/**",
             "/cache",
-            "/cache/evict"
+            "/cache/evict",
+//            "/api/course_categories/"
+
 
     };
     public static final String[] PUBLIC_POST_ENDPOINS = {
@@ -109,7 +119,7 @@ public class Endpoint {
             "/testuseranswers/**",
 
             "/user_vipsubscriptions",
-            "/user_vipsubscriptions/**"
+            "/user_vipsubscriptions/**",
 
 
     };
@@ -137,7 +147,13 @@ public class Endpoint {
             "/accounts",
             "/accounts/**",
             "/roles",
-            "/roles/**"
+            "/roles/**",
+            "/categories/**",
+            "/categories/level",
+            "/categories_parent_id",
+            "/name-by-id",
+            "/api/general_documents/documents-with-categories",
+            "/api/general_documents/generaldocuments-details/**"
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -205,7 +221,11 @@ public class Endpoint {
             "/videos",
             "/videos/**",
             "/vipsubscriptions",
-            "/vipsubscriptions/**"
+            "/vipsubscriptions/**",
+            "/api/general_documents/upload",
+
+            "/api/convert-docx-to-pdf",
+            "/convert"
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",
@@ -341,7 +361,8 @@ public class Endpoint {
             "/videos",
             "/videos/**",
             "/vipsubscriptions",
-            "/vipsubscriptions/**"
+            "/vipsubscriptions/**",
+            "/api/general_documents/generaldocuments-update/**"
     };
 
 

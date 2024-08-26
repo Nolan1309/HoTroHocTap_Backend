@@ -20,23 +20,23 @@ public class CategoryController {
     }
 
     @GetMapping("/categories")
-    public List<Category> getCategoriesByLevel(@RequestParam int level) {
+    public List<CategoryDTO> getCategoriesByLevel(@RequestParam int level) {
         return categoryService.getCategoriesByLevel(level);
     }
 
     // Optional: Endpoints for other levels
     @GetMapping("/categories/level1")
-    public List<Category> getLevel1Categories() {
+    public List<CategoryDTO> getLevel1Categories() {
         return categoryService.getCategoriesByLevel(1);
     }
 
     @GetMapping("/categories/level2")
-    public List<Category> getLevel2Categories() {
+    public List<CategoryDTO> getLevel2Categories() {
         return categoryService.getCategoriesByLevel(2);
     }
 
     @GetMapping("/categories/level3")
-    public List<Category> getLevel3Categories() {
+    public List<CategoryDTO> getLevel3Categories() {
         return categoryService.getCategoriesByLevel(3);
     }
     @GetMapping("/categories/level")
@@ -47,7 +47,7 @@ public class CategoryController {
 
     // API để lấy tất cả các danh mục theo cấp bậc
     @GetMapping("/categories/level/{level}")
-    public List<Category> getCategories(@PathVariable int level) {
+    public List<CategoryDTO> getCategories(@PathVariable int level) {
         return categoryService.getCategoriesByLevel(level);
     }
 
@@ -57,5 +57,13 @@ public class CategoryController {
         return categoryService.getSubCategories(parentId);
     }
 
+    @GetMapping("/categories_parent_id")
+    public List<Category> getCategoriesByParentId(@RequestParam int id_category) {
+        return categoryService.getCategoriesByParentId(id_category);
+    }
+    @GetMapping("/name-by-id")
+    public List<Category> getCategoryById(@RequestParam int id_category) {
+        return categoryService.findCategoryNameByIdCategory(id_category);
+    }
 
 }
