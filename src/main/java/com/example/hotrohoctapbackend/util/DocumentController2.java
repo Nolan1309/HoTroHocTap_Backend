@@ -14,14 +14,14 @@ public class DocumentController2 {
         this.documentConversionService = documentConversionService;
     }
 
-    @PostMapping("/convert")
-    public String convertDocument(@RequestParam String inputFilePath, @RequestParam String outputDirPath) {
-        try {
-            documentConversionService.convertDocxToPdf(inputFilePath, outputDirPath);
-            return "Conversion successful!";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Conversion failed: " + e.getMessage();
-        }
-    }
+//    @PostMapping("/convert")
+//    public String convertDocument(@RequestParam String inputFilePath, @RequestParam String outputDirPath) {
+//        try {
+//            documentConversionService.convertDocxToPdf(inputFilePath, outputDirPath);
+//            return "Conversion successful!";
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return "Conversion failed: " + e.getMessage();
+//        }
+//    }
 }

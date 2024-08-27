@@ -1,5 +1,8 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.convertapi.client.ConversionResult;
+import com.convertapi.client.ConvertApi;
+import com.convertapi.client.Param;
 import com.example.hotrohoctapbackend.DTO.DocumentDTO;
 import com.example.hotrohoctapbackend.DTO.GeneralDocumentDTO;
 import com.example.hotrohoctapbackend.DTO.GeneralDocumentDetails;
@@ -8,20 +11,29 @@ import com.example.hotrohoctapbackend.dao.CategoryRepository;
 import com.example.hotrohoctapbackend.dao.GeneralDocumentRepository;
 import com.example.hotrohoctapbackend.entity.Category;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
+import com.example.hotrohoctapbackend.util.ByteArrayMultipartFile;
 import com.example.hotrohoctapbackend.util.FirebaseStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.docx4j.Docx4J;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+
 
 @Service
 public class GeneralDocumentsService {
@@ -128,11 +140,24 @@ public class GeneralDocumentsService {
         return documentWithCategoriesList;
     }
 
-    public GeneralDocument saveDocument(MultipartFile file, String title, String description, int idCategory) throws IOException {
-        GeneralDocument generalDocument = firebaseStorageService.uploadFile(file,title,description,idCategory);
-
+    public GeneralDocument saveDocument(MultipartFile file, String title, String description, int idCategory, MultipartFile thumbnail) throws Exception {
+        GeneralDocument generalDocument = firebaseStorageService.uploadFile(file, title, description, idCategory);
+        generalDocument.setImage_url(firebaseStorageService.uploadFileImage(thumbnail));
         return generalDocumentRepository.save(generalDocument);
     }
+
+
+//    public GeneralDocument saveDocument(MultipartFile file, String title, String description, int idCategory) {
+//        GeneralDocument generalDocument;
+//        try {
+//            generalDocument = firebaseStorageService.uploadFile(file, title, description, idCategory);
+//        } catch (IOException | ExecutionException | InterruptedException e) {
+//            e.printStackTrace();
+//            throw new RuntimeException("Error occurred while uploading the file", e);
+//        }
+//        return generalDocumentRepository.save(generalDocument);
+//    }
+
 
     public GeneralDocument updateGeneralDocument(int id, UpdateDocumentRequest updateRequest) {
         Optional<GeneralDocument> existingDocumentOpt = Optional.ofNullable(generalDocumentRepository.findById(id));

@@ -73,10 +73,9 @@ public class GeneralDocumentsController {
     }
 
     @GetMapping("/all")
-    public Page<Object> getAll( Pageable pageable) {
+    public Page<Object> getAll(Pageable pageable) {
         return generalDocumentsService.getAll(pageable);
     }
-
 
 
     ///MAN
@@ -84,19 +83,38 @@ public class GeneralDocumentsController {
     public List<GeneralDocumentDTO> getDocumentsWithCategories() {
         return generalDocumentsService.getDocumentsWithCategories();
     }
+
+    //    @PostMapping("/upload")
+//    public String uploadDocument(
+//            @RequestParam("file") MultipartFile file,
+//            @RequestParam("title") String title,
+//            @RequestParam("description") String description,
+//            @RequestParam("categoryId") int categoryId) {
+//        try {
+//            generalDocumentsService.saveDocument(file, title, description, categoryId);
+//            return "Conversion successful!";
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return "Conversion failed: " + e.getMessage();
+//        }
+//    }
     @PostMapping("/upload")
     public ResponseEntity<GeneralDocument> uploadDocument(
             @RequestParam("file") MultipartFile file,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
-            @RequestParam("categoryId") int categoryId) {
+            @RequestParam("categoryId") int categoryId,
+            @RequestParam("thumbnail") MultipartFile thumbnail) {
         try {
-            GeneralDocument document = generalDocumentsService.saveDocument(file, title, description, categoryId);
+            GeneralDocument document = generalDocumentsService.saveDocument(file, title, description, categoryId, thumbnail);
             return new ResponseEntity<>(document, HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
+
     @PutMapping("/generaldocuments-update/{id}")
     public ResponseEntity<GeneralDocument> updateGeneralDocument(
             @PathVariable("id") int id,
@@ -108,6 +126,7 @@ public class GeneralDocumentsController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @GetMapping("/generaldocuments-details/{id}")
     public ResponseEntity<GeneralDocumentDetails> getDocumentDetails(@PathVariable int id) {
         Optional<GeneralDocumentDetails> documentDetails = generalDocumentsService.getDocumentDetailsById(id);
@@ -118,7 +137,6 @@ public class GeneralDocumentsController {
             return ResponseEntity.notFound().build();
         }
     }
-
 
 
 }

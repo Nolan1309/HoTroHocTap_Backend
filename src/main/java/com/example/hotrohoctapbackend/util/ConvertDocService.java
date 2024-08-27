@@ -12,13 +12,13 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class ConvertDocService {
 
-    public void convertDocxToPdf(String inputFilePath, String outputDirPath) throws ExecutionException, InterruptedException, IOException {
+    public void convertDocxToPdf(String inputFilePath, String outputDirPath, String filename) throws ExecutionException, InterruptedException, IOException {
         Path inputPath = Paths.get(inputFilePath);
         Path outputPath = Paths.get(outputDirPath);
 
         ConvertApi.convert("docx", "pdf",
                 new Param("File", inputPath),
-                new Param("FileName", "dynamic")
+                new Param("FileName", filename)
         ).get().saveFilesSync(outputPath);
     }
 }
