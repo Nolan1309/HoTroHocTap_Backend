@@ -24,11 +24,11 @@ public class CourseCategory {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "courseCategory",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Course> courseList;
+//    @OneToMany(mappedBy = "courseCategory",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Course> courseList;
 }

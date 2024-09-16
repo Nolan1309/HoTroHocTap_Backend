@@ -69,12 +69,16 @@ public class Endpoint {
             "/categories/level",
 
             "/api/courses",
+            "/api/courses/**",
             "/api/courses/top6",
             "/api/courses/category/**",
             "/api/courses/categories",
             "/api/course-categories",
+            "/api/reviews/course/**",
+            "/api/courses/statistics/**",
+            "/api/courses/check-type/**",
+            "/api/enrolled-course/check-enrollment",
 
-//            "/course/search",
 
             "/courseDTO",
             "/general-document",
@@ -88,13 +92,14 @@ public class Endpoint {
             "/api/general_documents/category",
             "/api/general_documents/data",
             "/api/general_documents/search",
+            "/api/general_documents/search-query",
             "/api/general_documents/all",
             "/categories-all",
             "/categories/level/**",
             "/categories/parent/**",
             "/cache",
             "/cache/evict",
-//            "/api/course_categories/"
+
 
 
     };
@@ -108,10 +113,8 @@ public class Endpoint {
             "/paymentmethod/**",
             "/payments",
             "/payments/**",
-
             "/rankings",
             "/rankings/**",
-
             "/testresults",
             "/testresults/**",
 

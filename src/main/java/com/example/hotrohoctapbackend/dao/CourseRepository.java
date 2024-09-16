@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.dao;
 
+import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
 import com.example.hotrohoctapbackend.entity.Category;
 import com.example.hotrohoctapbackend.entity.Course;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.List;
+import java.util.Optional;
 
 @RepositoryRestResource(path = "courses")
 public interface CourseRepository extends JpaRepository<Course,Integer> {
@@ -134,5 +136,18 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             nativeQuery = true)
     Page<Object[]> findAllCourses(Pageable pageable);
 
+    @Query(value = "SELECT id, author, cost, course_output, created_at, description, duration, image_url, language, price, status, courses_title, updated_at, course_category_id " +
+            "FROM courses WHERE id = :id", nativeQuery = true)
+    List<Object[]> findCourseById(@Param("id") Integer id);
+
+
+    @Query(value = "SELECT " +
+            "(SELECT COUNT(*) FROM enrolled_courses WHERE course_id = :courseId) AS total_students, " +
+            "(SELECT COUNT(l.id) FROM lessons l JOIN chapters c ON l.chapter_id = c.id WHERE c.course_id = :courseId) AS total_lessons",
+            nativeQuery = true)
+    List<Object[]> getCourseStatistics(@Param("courseId") Integer courseId);
+
+    @Query("SELECT c.type FROM Course c WHERE c.id = :id")
+    String findCourseTypeById(@Param("id") int id);
 
 }

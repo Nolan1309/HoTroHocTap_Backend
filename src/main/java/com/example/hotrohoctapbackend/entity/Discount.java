@@ -40,11 +40,11 @@ public class Discount {
     @Column(name = "updated_at")
     private LocalDateTime updated_at;
 
-    @OneToMany(mappedBy = "discount",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Course_Discount> courseDiscountList;
+//    @OneToMany(mappedBy = "discount",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Course_Discount> courseDiscountList;
 }

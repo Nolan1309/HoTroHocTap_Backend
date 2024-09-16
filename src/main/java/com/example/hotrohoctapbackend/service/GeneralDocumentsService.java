@@ -3,10 +3,7 @@ package com.example.hotrohoctapbackend.service;
 import com.convertapi.client.ConversionResult;
 import com.convertapi.client.ConvertApi;
 import com.convertapi.client.Param;
-import com.example.hotrohoctapbackend.DTO.DocumentDTO;
-import com.example.hotrohoctapbackend.DTO.GeneralDocumentDTO;
-import com.example.hotrohoctapbackend.DTO.GeneralDocumentDetails;
-import com.example.hotrohoctapbackend.DTO.UpdateDocumentRequest;
+import com.example.hotrohoctapbackend.DTO.*;
 import com.example.hotrohoctapbackend.dao.CategoryRepository;
 import com.example.hotrohoctapbackend.dao.GeneralDocumentRepository;
 import com.example.hotrohoctapbackend.entity.Category;
@@ -17,12 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.net.URL;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -51,6 +50,26 @@ public class GeneralDocumentsService {
         return generalDocumentRepository.findDocumentsAll(pageable);
     }
 
+    // Hàm tìm kiếm với phân trang
+    public Page<GeneralDocumentSearch> searchDocuments(String keyword, Pageable pageable) {
+        Page<Object[]> documents = generalDocumentRepository.searchDocumentsByTitleOrCategory(keyword, pageable);
+        // Mapping dữ liệu từ Object[] sang GeneralDocumentDTO
+        return documents.map(doc -> new GeneralDocumentSearch(
+                (int) doc[0], // id
+
+
+                ((Timestamp) doc[1]).toLocalDateTime(), // created_at
+                (String) doc[2], // description
+                (String) doc[3], // image
+                (String) doc[4], // title
+                ((Timestamp) doc[5]).toLocalDateTime(), // updated_at
+                (String) doc[6], // url
+                (int) doc[7], // view
+                (int) doc[8],
+                (String) doc[9] // category_name
+        ));
+//        return generalDocumentRepository.searchDocumentsByTitleOrCategory(keyword, pageable);
+    }
     @Cacheable(value = "search", key = "'documentsData_100'")
     public List<Object[]> getDocumentsData_100() {
         return generalDocumentRepository.findTop100Documents();

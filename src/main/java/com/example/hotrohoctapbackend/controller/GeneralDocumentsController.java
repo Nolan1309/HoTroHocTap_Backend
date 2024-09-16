@@ -1,13 +1,11 @@
 package com.example.hotrohoctapbackend.controller;
 
-import com.example.hotrohoctapbackend.DTO.DocumentDTO;
-import com.example.hotrohoctapbackend.DTO.GeneralDocumentDTO;
-import com.example.hotrohoctapbackend.DTO.GeneralDocumentDetails;
-import com.example.hotrohoctapbackend.DTO.UpdateDocumentRequest;
+import com.example.hotrohoctapbackend.DTO.*;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
 import com.example.hotrohoctapbackend.service.GeneralDocumentsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,6 +68,15 @@ public class GeneralDocumentsController {
     @GetMapping("/search")
     public Page<Object[]> getDocumentsSearch(@RequestParam String title, Pageable pageable) {
         return generalDocumentsService.getDocumentsWithTitle(title, pageable);
+    }
+    // API tìm kiếm với từ khóa và phân trang
+    @GetMapping("/search-query")
+    public Page<GeneralDocumentSearch> searchDocuments(
+            @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "16") int size) {
+
+        return generalDocumentsService.searchDocuments(keyword, PageRequest.of(page, size));
     }
 
     @GetMapping("/all")

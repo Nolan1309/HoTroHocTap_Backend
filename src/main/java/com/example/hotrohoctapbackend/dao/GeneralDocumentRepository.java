@@ -199,5 +199,18 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "WHERE \n" +
             "    g.id = :id;\n", nativeQuery = true)
     List<Object[]> findDocumentDetailsById(@Param("id") int id);
+    // Native query để tìm kiếm theo title và category với phân trang
+    @Query(value = "SELECT gd.*, c.name AS category_name " +
+            "FROM general_documents gd " +
+            "LEFT JOIN categories c ON gd.id_category = c.id_category " +
+            "WHERE gd.title LIKE %:keyword% " +
+            "OR c.name LIKE %:keyword%",
+            countQuery = "SELECT COUNT(*) FROM general_documents gd " +
+                    "LEFT JOIN categories c ON gd.id_category = c.id_category " +
+                    "WHERE gd.title LIKE %:keyword% " +
+                    "OR c.name LIKE %:keyword%",
+            nativeQuery = true)
+    Page<Object[]> searchDocumentsByTitleOrCategory(@Param("keyword") String keyword, Pageable pageable);
+
 }
 

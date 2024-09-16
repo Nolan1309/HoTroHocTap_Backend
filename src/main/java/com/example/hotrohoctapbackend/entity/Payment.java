@@ -37,11 +37,11 @@ public class Payment {
     @JoinColumn(name = "method_id")
     private PaymentMethod paymentMethod;
 
-    @OneToMany(mappedBy = "payment",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<PaymentDetail> paymentDetailList;
+//    @OneToMany(mappedBy = "payment",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<PaymentDetail> paymentDetailList;
 }

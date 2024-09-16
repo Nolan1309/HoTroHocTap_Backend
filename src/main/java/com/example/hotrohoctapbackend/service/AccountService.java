@@ -2,6 +2,7 @@ package com.example.hotrohoctapbackend.service;
 
 
 import com.example.hotrohoctapbackend.DTO.AccountDTO;
+import com.example.hotrohoctapbackend.DTO.ResponsiveDTOJWT;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
 import com.example.hotrohoctapbackend.dao.RoleUserRepository;
 import com.example.hotrohoctapbackend.entity.Account;
@@ -26,6 +27,12 @@ public class AccountService {
 
     @Autowired
     private RoleUserRepository roleUserRepository;
+
+    public ResponsiveDTOJWT findByAccount(String email){
+        Account account = accountRepository.findByEmail(email);
+        RoleUser role = account.getRole();
+        return new ResponsiveDTOJWT(account.getId(),account.getFullname(),account.getEmail(),role.getId());
+    }
 
     public ResponseEntity<Map<String, String>> dangkyAccount(AccountDTO user) {
         if (accountRepository.existsByEmail(user.getEmail())) {

@@ -33,19 +33,19 @@ public class VipSubscription {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "vipSubscription",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<PaymentDetail> paymentDetailList;
-
-    @OneToMany(mappedBy = "vipSubscription",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<User_VipSubscription> userVipSubscriptionList;
+//    @OneToMany(mappedBy = "vipSubscription",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<PaymentDetail> paymentDetailList;
+//
+//    @OneToMany(mappedBy = "vipSubscription",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<User_VipSubscription> userVipSubscriptionList;
 }

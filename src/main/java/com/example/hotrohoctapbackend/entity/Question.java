@@ -50,11 +50,11 @@ public class Question {
     @OneToMany(mappedBy = "question")
     private List<Test_Question> testQuestions;
 
-    @OneToMany(mappedBy = "question",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<TestUserAnswer> testUserAnswerList;
+//    @OneToMany(mappedBy = "question",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<TestUserAnswer> testUserAnswerList;
 }

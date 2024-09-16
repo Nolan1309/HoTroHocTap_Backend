@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.AccountDTO;
+import com.example.hotrohoctapbackend.DTO.ResponsiveDTOJWT;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.security.JwtResponse;
 import com.example.hotrohoctapbackend.security.LoginRequest;
@@ -25,6 +26,7 @@ public class UserController {
     @Autowired
     private AccountService accountService;
 
+
     @Autowired
     private JwtService jwtService;
 
@@ -45,7 +47,8 @@ public class UserController {
             // Nếu xác thực thành công, tạo token JWT
             if(authentication.isAuthenticated()){
                 final String jwt = jwtService.generateToken(loginRequest.getEmail());
-                return ResponseEntity.ok(new JwtResponse(jwt));
+                ResponsiveDTOJWT account = accountService.findByAccount(loginRequest.getEmail());
+                return ResponseEntity.ok(new JwtResponse(jwt,account));
             }
         }catch (AuthenticationException e){
             // Xác thực không thành công, trả về lỗi hoặc thông báo
