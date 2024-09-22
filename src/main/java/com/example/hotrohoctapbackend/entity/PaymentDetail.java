@@ -25,7 +25,4 @@ public class PaymentDetail {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    @ManyToOne
-    @JoinColumn(name = "vip_subscriptions_id")
-    private VipSubscription vipSubscription;
 }
