@@ -79,6 +79,8 @@ public class Endpoint {
             "/api/courses/check-type/**",
             "/api/enrolled-course/check-enrollment",
 
+//            Thanh toán , api return gọi lại
+            "/api/payment/vnpay/vn-pay-callback",
 
             "/courseDTO",
             "/general-document",
@@ -369,7 +371,23 @@ public class Endpoint {
     };
 
 
-    public static final String[] USERVIP_GET_ENDPOINS = {
+    public static final String[] USER_GET_ENDPOINT = {
+            "/api/account/**",
+            "/api/payment/vnpay/vn-pay",
+            "/api/payments/**",
+            "/api/payment-details/**"
+    };
+
+    public static final String[] USER_POST_ENDPOINT = {
+            "/paymentmethod",
+            "/api/payments/add",
+            "/api/payment-details/add"
+    };
+
+    public static final String[] USER_PUT_ENDPOINT = {
+            "/paymentmethod",
+    };
+    public static final String[] USER_DELETE_ENDPOINT = {
             "/paymentmethod",
     };
 

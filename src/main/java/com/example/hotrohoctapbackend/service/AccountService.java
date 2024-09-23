@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AccountService {
@@ -28,10 +29,21 @@ public class AccountService {
     @Autowired
     private RoleUserRepository roleUserRepository;
 
-    public ResponsiveDTOJWT findByAccount(String email){
+    public AccountDTO findByAccount(int id) {
+        Optional<Account> account = accountRepository.findById(id);
+
+        AccountDTO dto = new AccountDTO();
+        dto.setEmail(account.get().getEmail());
+        dto.setFullname(account.get().getFullname());
+        dto.setPhone(account.get().getPhone());
+        return dto;
+    }
+
+
+    public ResponsiveDTOJWT findByAccount(String email) {
         Account account = accountRepository.findByEmail(email);
         RoleUser role = account.getRole();
-        return new ResponsiveDTOJWT(account.getId(),account.getFullname(),account.getEmail(),role.getId());
+        return new ResponsiveDTOJWT(account.getId(), account.getFullname(), account.getEmail(), role.getId());
     }
 
     public ResponseEntity<Map<String, String>> dangkyAccount(AccountDTO user) {

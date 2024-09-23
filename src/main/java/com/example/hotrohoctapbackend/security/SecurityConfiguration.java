@@ -57,7 +57,10 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.DELETE, Endpoint.ADMIN_DELETE_ENDPOINS).hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, Endpoint.ADMIN_PUT_ENDPOINS).hasAuthority("ADMIN")
 
-//                        .requestMatchers(HttpMethod.GET, Endpoint.USERVIP_GET_ENDPOINS).hasAuthority("USER_VIP")
+                        .requestMatchers(HttpMethod.GET, Endpoint.USER_GET_ENDPOINT).hasAuthority("USER")
+                        .requestMatchers(HttpMethod.POST, Endpoint.USER_POST_ENDPOINT).hasAuthority("USER")
+                        .requestMatchers(HttpMethod.PUT, Endpoint.USER_PUT_ENDPOINT).hasAuthority("USER")
+                        .requestMatchers(HttpMethod.DELETE, Endpoint.USER_DELETE_ENDPOINT).hasAuthority("USER")
 
         );
 //        http.cors(cors -> {

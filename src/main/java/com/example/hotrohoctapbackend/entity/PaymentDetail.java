@@ -16,7 +16,8 @@ public class PaymentDetail {
 
     @Column(name = "price", precision = 18, scale = 2)
     private BigDecimal price;
-
+    @Column(name = "course_title", columnDefinition = "TEXT")
+    private String courseTitle;
     @ManyToOne
     @JoinColumn(name = "payment_id")
     private Payment payment;
