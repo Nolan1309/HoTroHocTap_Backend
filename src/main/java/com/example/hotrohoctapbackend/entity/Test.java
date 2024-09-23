@@ -42,35 +42,35 @@ public class Test {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @OneToMany(mappedBy = "test",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Test_Question> testQuestions;
+//    @OneToMany(mappedBy = "test",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Test_Question> testQuestions;
 
 //    @OneToMany(mappedBy = "test",
-//            fetch = FetchType.EAGER
+//            fetch = FetchType.LAZY
 //            , cascade = {
 //            CascadeType.DETACH, CascadeType.MERGE,
 //            CascadeType.PERSIST, CascadeType.REFRESH
 //    })
 //    private List<Test> testList;
 
-    @OneToMany(mappedBy = "test",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<TestResult> testResultList;
-
-    @OneToMany(mappedBy = "test",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<TestUserAnswer> testUserAnswerList;
+//    @OneToMany(mappedBy = "test",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<TestResult> testResultList;
+//
+//    @OneToMany(mappedBy = "test",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<TestUserAnswer> testUserAnswerList;
 }

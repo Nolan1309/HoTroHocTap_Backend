@@ -34,16 +34,19 @@ public class JwtService {
         boolean isStaff = false;
         boolean isUser = false;
         Account account = userService.findByEmail(tenDangNhap);
+//        System.out.println(account.getRole().getClass().getName());
+
+
         if (account != null && account.getAuthorities().size() > 0) {
-            List<RoleUser> list = (List<RoleUser>) account.getRole();
-            for (RoleUser q : list) {
-                if (q.getRoleName().equals("ADMIN")) {
+            RoleUser role = account.getRole();
+            if (role != null) {
+                if (role.getRoleName().equals("ADMIN")) {
                     isAdmin = true;
                 }
-                if (q.getRoleName().equals("STAFF")) {
+                if (role.getRoleName().equals("STAFF")) {
                     isStaff = true;
                 }
-                if (q.getRoleName().equals("USER")) {
+                if (role.getRoleName().equals("USER")) {
                     isUser = true;
                 }
             }
@@ -54,8 +57,6 @@ public class JwtService {
 
 //        claims.put("isAdmin", true);
 //        claims.put("x", "ABC");
-
-
         return createToken(claims, tenDangNhap);
     }
 
@@ -65,7 +66,7 @@ public class JwtService {
                 .setClaims(claims)
                 .setSubject(tenDangNhap)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 30 * 60 * 1000)) // JWT hết hạn sau 30 phút
+                .setExpiration(new Date(System.currentTimeMillis() + 300 * 60 * 1000)) // JWT hết hạn sau 30 phút
                 .signWith(SignatureAlgorithm.HS256, getSigneKey())
                 .compact();
     }

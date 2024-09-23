@@ -18,12 +18,12 @@ public class RoleUser {
     @Column(name = "role_name")
     private String roleName;
 
-    @OneToMany(mappedBy = "role",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Account> accountList;
+//    @OneToMany(mappedBy = "role",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Account> accountList;
 
 }

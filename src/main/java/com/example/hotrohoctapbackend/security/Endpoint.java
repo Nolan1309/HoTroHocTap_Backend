@@ -27,6 +27,8 @@ public class Endpoint {
             "/documents/**",
             "/generaldocuments",
             "/generaldocuments/**",
+            "/generaldocument_account",
+            "/generaldocument_account/**",
             "/learningresult",
             "/learningresult/**",
             "/lessons",
@@ -58,7 +60,50 @@ public class Endpoint {
             "/videos",
             "/videos/**",
             "/vipsubscriptions",
-            "/vipsubscriptions/**"
+            "/vipsubscriptions/**",
+            "/course_categories",
+            "/course_categories/**",
+            "/categories/level1",
+            "/categories/level2",
+            "/categories/level3",
+            "/categories/level",
+
+            "/api/courses",
+            "/api/courses/**",
+            "/api/courses/top6",
+            "/api/courses/category/**",
+            "/api/courses/categories",
+            "/api/course-categories",
+            "/api/reviews/course/**",
+            "/api/courses/statistics/**",
+            "/api/courses/check-type/**",
+            "/api/enrolled-course/check-enrollment",
+
+//            Thanh toán , api return gọi lại
+            "/api/payment/vnpay/vn-pay-callback",
+
+            "/courseDTO",
+            "/general-document",
+            "/api/general_documents",
+            "/api/general_documents/**",
+            "/api/general_documents/create_desc",
+            "/api/general_documents/view_desc",
+            "/api/general_documents/download_desc",
+            "/api/general_documents/all-general-document",
+            "/api/general_documents/view_desc/top6",
+            "/api/general_documents/category",
+            "/api/general_documents/data",
+            "/api/general_documents/search",
+            "/api/general_documents/search-query",
+            "/api/general_documents/all",
+            "/categories-all",
+            "/categories/level/**",
+            "/categories/parent/**",
+            "/cache",
+            "/cache/evict",
+
+
+
     };
     public static final String[] PUBLIC_POST_ENDPOINS = {
             "/account/dang-ky",
@@ -70,10 +115,8 @@ public class Endpoint {
             "/paymentmethod/**",
             "/payments",
             "/payments/**",
-
             "/rankings",
             "/rankings/**",
-
             "/testresults",
             "/testresults/**",
 
@@ -81,7 +124,7 @@ public class Endpoint {
             "/testuseranswers/**",
 
             "/user_vipsubscriptions",
-            "/user_vipsubscriptions/**"
+            "/user_vipsubscriptions/**",
 
 
     };
@@ -109,7 +152,13 @@ public class Endpoint {
             "/accounts",
             "/accounts/**",
             "/roles",
-            "/roles/**"
+            "/roles/**",
+            "/categories/**",
+            "/categories/level",
+            "/categories_parent_id",
+            "/name-by-id",
+            "/api/general_documents/documents-with-categories",
+            "/api/general_documents/generaldocuments-details/**"
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -177,7 +226,11 @@ public class Endpoint {
             "/videos",
             "/videos/**",
             "/vipsubscriptions",
-            "/vipsubscriptions/**"
+            "/vipsubscriptions/**",
+            "/api/general_documents/upload",
+
+            "/api/convert-docx-to-pdf",
+            "/convert"
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",
@@ -313,11 +366,28 @@ public class Endpoint {
             "/videos",
             "/videos/**",
             "/vipsubscriptions",
-            "/vipsubscriptions/**"
+            "/vipsubscriptions/**",
+            "/api/general_documents/generaldocuments-update/**"
     };
 
 
-    public static final String[] USERVIP_GET_ENDPOINS = {
+    public static final String[] USER_GET_ENDPOINT = {
+            "/api/account/**",
+            "/api/payment/vnpay/vn-pay",
+            "/api/payments/**",
+            "/api/payment-details/**"
+    };
+
+    public static final String[] USER_POST_ENDPOINT = {
+            "/paymentmethod",
+            "/api/payments/add",
+            "/api/payment-details/add"
+    };
+
+    public static final String[] USER_PUT_ENDPOINT = {
+            "/paymentmethod",
+    };
+    public static final String[] USER_DELETE_ENDPOINT = {
             "/paymentmethod",
     };
 

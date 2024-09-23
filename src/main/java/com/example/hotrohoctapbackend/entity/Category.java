@@ -1,4 +1,6 @@
 package com.example.hotrohoctapbackend.entity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -24,19 +26,25 @@ public class Category {
     @Column(name = "level")
     private int level;
 
-    @OneToMany(mappedBy = "category",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Course> courseList;
+//    @OneToMany(mappedBy = "category",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Course> courseList;
 
-    @OneToMany(mappedBy = "category",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<GeneralDocument> generalDocumentList;
+//    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER, cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Category> subCategories;
+
+//    @OneToMany(mappedBy = "category",
+//            fetch = FetchType.EAGER
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<GeneralDocument> generalDocumentList;
 }

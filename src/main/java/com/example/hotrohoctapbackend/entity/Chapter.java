@@ -21,20 +21,20 @@ public class Chapter {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    @OneToMany(mappedBy = "chapter",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Lesson> lessonList;
-
-    @OneToMany(mappedBy = "chapter",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Test> testList;
+//    @OneToMany(mappedBy = "chapter",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Lesson> lessonList;
+//
+//    @OneToMany(mappedBy = "chapter",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Test> testList;
 
 }

@@ -23,25 +23,12 @@ public class Payment {
     @Column(name = "total_payment", precision = 18, scale = 2)
     private BigDecimal total_payment;
 
-    @Column(name = "amount")
-    private int amount;
-
-    @Column(name = "type_payments")
-    private Boolean type_payments;
+    @Column(name = "paymentMethod")
+    private String paymentMethod;
 
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @ManyToOne
-    @JoinColumn(name = "method_id")
-    private PaymentMethod paymentMethod;
 
-    @OneToMany(mappedBy = "payment",
-            fetch = FetchType.EAGER
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<PaymentDetail> paymentDetailList;
 }

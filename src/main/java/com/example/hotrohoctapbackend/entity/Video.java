@@ -19,6 +19,10 @@ public class Video {
 
     @Column(name = "url")
     private String url;
+    @Column(name = "documentShort",columnDefinition = "TEXT")
+    private String documentShort;
+    @Column(name = "documentUrl",columnDefinition = "TEXT")
+    private String documentUrl;
 
     @Column(name = "duration")
     private Integer duration;
