@@ -10,6 +10,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cglib.core.internal.Function;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,9 @@ import java.util.Map;
 
 @Component
 public class JwtService {
-    public static final String SERECT = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+//    public static final String SERECT = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+    @Value("${app.jwtSecret}")
+    private String SERECT;
     @Autowired
     private UserService userService;
 
@@ -66,7 +69,7 @@ public class JwtService {
                 .setClaims(claims)
                 .setSubject(tenDangNhap)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 300 * 60 * 1000)) // JWT hết hạn sau 30 phút
+                .setExpiration(new Date(System.currentTimeMillis() + 3 * 60 * 1000)) // JWT hết hạn sau 30 phút
                 .signWith(SignatureAlgorithm.HS256, getSigneKey())
                 .compact();
     }

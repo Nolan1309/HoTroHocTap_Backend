@@ -125,6 +125,7 @@ public class Endpoint {
 
             "/user_vipsubscriptions",
             "/user_vipsubscriptions/**",
+            "/account/refresh-token"
 
 
     };
@@ -381,7 +382,8 @@ public class Endpoint {
     public static final String[] USER_POST_ENDPOINT = {
             "/paymentmethod",
             "/api/payments/add",
-            "/api/payment-details/add"
+            "/api/payment-details/add",
+
     };
 
     public static final String[] USER_PUT_ENDPOINT = {
