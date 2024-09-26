@@ -15,8 +15,6 @@ public class ReviewController {
 
     @Autowired
     private CourseReviewService reviewService;
-
-    // API để lấy danh sách review theo courseId
     @GetMapping("/course/{courseId}")
     public List<ReviewDTO> getReviewsByCourseId(@PathVariable Integer courseId) {
         return reviewService.getReviewsByCourseId(courseId);
