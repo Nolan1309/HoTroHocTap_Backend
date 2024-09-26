@@ -383,6 +383,7 @@ public class Endpoint {
             "/paymentmethod",
             "/api/payments/add",
             "/api/payment-details/add",
+            "/api/enrolled-course/enroll"
 
     };
 

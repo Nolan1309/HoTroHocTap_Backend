@@ -17,7 +17,13 @@ public class RoleUser {
 
     @Column(name = "role_name")
     private String roleName;
+    public String getRoleName() {
+        return roleName;
+    }
 
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
 //    @OneToMany(mappedBy = "role",
 //            fetch = FetchType.LAZY
 //            , cascade = {

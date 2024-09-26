@@ -20,6 +20,12 @@ public class TestUserAnswer {
     @JoinColumn(name = "question_id")
     private Question question;
 
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
+
     @Column(name = "result")
     private String result;
+
+
 }

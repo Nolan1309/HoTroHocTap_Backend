@@ -25,6 +25,8 @@ public class Ranking {
 
     @Column(name = "ranking")
     private int ranking;
+    @Column(name = "created_at")
+    private LocalDateTime create_at;
 
     @Column(name = "updated_at")
     private LocalDateTime updated_at;
