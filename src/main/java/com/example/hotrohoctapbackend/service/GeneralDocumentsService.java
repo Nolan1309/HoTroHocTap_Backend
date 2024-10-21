@@ -70,6 +70,24 @@ public class GeneralDocumentsService {
         ));
 //        return generalDocumentRepository.searchDocumentsByTitleOrCategory(keyword, pageable);
     }
+
+    public List<DocumentRelateUserDTO> getDocumentsByCategoryId(Long categoryId) {
+        List<Object[]> list = generalDocumentRepository.findDocumentSummariesByCategoryId(categoryId);
+        List<DocumentRelateUserDTO> listDocument = new ArrayList<>();
+        for (Object[] item : list){
+            DocumentRelateUserDTO documentRelateUserDTO = new DocumentRelateUserDTO();
+            documentRelateUserDTO.setId(((Number) item[0]).intValue());
+            documentRelateUserDTO.setTitle((String) item[1]);
+            documentRelateUserDTO.setTotalDownload(((Number) item[2]).intValue());
+            documentRelateUserDTO.setTotalView(((Number) item[3]).intValue());
+            listDocument.add(documentRelateUserDTO);
+        }
+        return listDocument;
+    }
+
+
+
+
     @Cacheable(value = "search", key = "'documentsData_100'")
     public List<Object[]> getDocumentsData_100() {
         return generalDocumentRepository.findTop100Documents();

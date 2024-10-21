@@ -29,37 +29,9 @@ public class Lesson {
     @JoinColumn(name = "chapter_id")
     private Chapter chapter;
 
-//    @OneToMany(mappedBy = "lesson",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Comment> commentList;
-//
-//    @OneToMany(mappedBy = "lesson",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Document> documentList;
-//
-//    @OneToMany(mappedBy = "lesson",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Test> lessonList;
-//
-//    @OneToMany(mappedBy = "lesson",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Video> videoList;
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
 
 
 }

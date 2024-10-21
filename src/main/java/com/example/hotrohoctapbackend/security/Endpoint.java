@@ -92,6 +92,7 @@ public class Endpoint {
             "/api/general_documents/all-general-document",
             "/api/general_documents/view_desc/top6",
             "/api/general_documents/category",
+            "/api/general_documents/category/**",
             "/api/general_documents/data",
             "/api/general_documents/search",
             "/api/general_documents/search-query",
@@ -102,6 +103,13 @@ public class Endpoint {
             "/cache",
             "/cache/evict",
 
+            //BLOG
+            "/api/blogs",
+            "/api/blogs/**",
+            "/api/blog-category",
+            "/api/blogs/category/**",
+            "/api/blogs/newest",
+            "/account/refresh-token"
 
 
     };
@@ -125,7 +133,7 @@ public class Endpoint {
 
             "/user_vipsubscriptions",
             "/user_vipsubscriptions/**",
-            "/account/refresh-token"
+
 
 
     };
@@ -374,9 +382,17 @@ public class Endpoint {
 
     public static final String[] USER_GET_ENDPOINT = {
             "/api/account/**",
+            "/api/account/profile/**",
             "/api/payment/vnpay/vn-pay",
             "/api/payments/**",
-            "/api/payment-details/**"
+            "/api/payment-details/**",
+            "/api/enrolled-course/count/**",
+            "/api/courses/account/enrolled/**",
+            "/api/courses/take-course/**",
+            "/api/progress/*/progress/*",
+            "/api/videos/**",
+            "/api/tests/**",
+            "/api/tests/*/questions"
     };
 
     public static final String[] USER_POST_ENDPOINT = {
@@ -384,11 +400,13 @@ public class Endpoint {
             "/api/payments/add",
             "/api/payment-details/add",
             "/api/enrolled-course/enroll"
-
     };
 
     public static final String[] USER_PUT_ENDPOINT = {
             "/paymentmethod",
+            "/api/account/update/**",
+            "/api/account/change-password/**"
+
     };
     public static final String[] USER_DELETE_ENDPOINT = {
             "/paymentmethod",

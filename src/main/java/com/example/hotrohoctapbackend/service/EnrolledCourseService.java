@@ -1,14 +1,20 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.CountCourseDTO;
+import com.example.hotrohoctapbackend.DTO.CourseDTO_User_Profile;
 import com.example.hotrohoctapbackend.dao.Enrolled_CoursesRepository;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Enrolled_Courses;
 import com.example.hotrohoctapbackend.entity.RoleUser;
+import com.google.type.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class EnrolledCourseService {
@@ -42,7 +48,44 @@ public class EnrolledCourseService {
         enrolledCoursesRepository.save(enrolledCourses);
         return "Actived Success";
     }
+
     public boolean isUserEnrolled(Long userId, Long courseId) {
         return enrolledCoursesRepository.findEnrolledCourse(userId, courseId).isPresent();
     }
+
+    public CountCourseDTO getEnrolledCoursesByAccountId(Integer accountId) {
+        List<Enrolled_Courses> enrolledCourses = enrolledCoursesRepository.findByAccountId(accountId);
+
+        CountCourseDTO item = new CountCourseDTO();
+        item.setTotalCourse(enrolledCourses.size());
+        Integer totalCountCompleted = 0;
+        Integer totalCountStudying = 0;
+        for (Enrolled_Courses courses : enrolledCourses) {
+            if (courses.getStatus().equals("Completed")) {  // Use .equals() to compare string values
+                totalCountCompleted++;
+            }
+            if (courses.getStatus().equals("Studying")) {  // Use .equals() to compare string values
+                totalCountStudying++;
+            }
+
+        }
+        item.setTotalCourseStudying(totalCountStudying);
+        item.setTotalCourseComplete(totalCountCompleted);
+
+        return item;  // returns the number of enrolled courses
+    }
+
+//    public Page<CourseDTO_User_Profile> getCoursesByAccountId(Integer accountId, int page, int size) {
+//        Page<Object[]> results = enrolledCoursesRepository.findCoursesByAccountIdNative(accountId, PageRequest.of(page, size));
+//
+//        return results.map(result -> new CourseDTO_User_Profile(
+//                (Integer) result[0],     // id
+//                (String) result[1],      // duration
+//                (String) result[2],      // image_url
+//                (String) result[3],      // courses_title
+//                (DateTime) result[4]  // enrollment_date
+//        ));
+//    }
+
+
 }

@@ -17,6 +17,9 @@ public class Video {
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
 
+    @Column(name = "videoTitle")
+    private String title;
+
     @Column(name = "url")
     private String url;
     @Column(name = "documentShort",columnDefinition = "TEXT")

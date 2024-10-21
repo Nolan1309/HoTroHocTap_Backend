@@ -33,7 +33,12 @@ public class Account implements UserDetails {
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "image", columnDefinition = "TEXT")
+    @Column(name = "birthday")
+    private LocalDateTime birthday;
+    @Column(name = "gender")
+    private String gender;
+
+    @Column(name = "image", columnDefinition = "LONGTEXT")
     private String image;
 
     @Column(name = "created_at")
@@ -42,120 +47,11 @@ public class Account implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-//    @Transient
-//    @JsonProperty("role_id")
-//    private int roleId;
 
 
     @ManyToOne
     @JoinColumn(name = "role_id")
     private RoleUser role;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<User_Notification> userNotificationList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<ActivityLogs> activityLogsList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Banner> bannerList;
-//
-//    @OneToMany(mappedBy = "author",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Blog> blogList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Comment> commentList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Enrolled_Courses> enrolledCoursesList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Favorites> favoritesList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<LearningResult> learningResultList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Payment> paymentList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Ranking> rankingList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Review> reviewList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<TestResult> testResultList;
-//
-//    @OneToMany(mappedBy = "account",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<User_VipSubscription> userVipSubscriptionList;
-//
-
 
 //    Method
     @Override

@@ -22,7 +22,8 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "    c.price, \n" +
             "    c.cost, \n" +
             "    c.courses_title AS course_title, \n" +
-            "    COUNT(ec.account_id) AS number_of_students, \n" +
+            "    c.type, \n" +
+            "    COUNT(DISTINCT ec.account_id) AS number_of_students, \n" +
             "    COUNT(DISTINCT l.id) AS total_lessons, \n" +
             "    COALESCE(AVG(cr.rating), 0) AS average_rating \n" +
             "FROM \n" +
@@ -33,10 +34,10 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "    chapters ch ON c.id = ch.course_id \n" +
             "LEFT JOIN \n" +
             "    lessons l ON ch.id = l.chapter_id \n" +
-            "LEFT JOIN \n" +
+            "LEFT JOIN\n" +
             "    course_reviews cr ON c.id = cr.course_id \n" +
             "GROUP BY \n" +
-            "    c.id, c.course_category_id, c.image_url, c.price, c.courses_title \n" +
+            "    c.id, c.course_category_id, c.image_url, c.price, c.cost, c.courses_title, c.type \n" +
             "ORDER BY \n" +
             "    number_of_students DESC \n" +
             "LIMIT 6;\n",
@@ -60,7 +61,8 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "c.description, " +
             "c.duration, " +
             "c.language, " +
-            "c.status " +
+            "c.status ," +
+            "c.type " +
             "FROM courses c " +
             "LEFT JOIN enrolled_courses ec ON c.id = ec.course_id " +
             "LEFT JOIN chapters ch ON c.id = ch.course_id " +
@@ -69,7 +71,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "WHERE c.course_category_id = :courseCategoryId " +
             "GROUP BY c.id, c.course_category_id, c.image_url, c.price, c.cost, c.courses_title, " +
             "c.author, c.course_output, c.created_at, c.updated_at, c.description, c.duration, " +
-            "c.language, c.status",
+            "c.language, c.status, c.type",
             countQuery = "SELECT COUNT(c.id) FROM courses c WHERE c.course_category_id = :courseCategoryId",
             nativeQuery = true)
     Page<Object[]> findByCourseCategoryId(@Param("courseCategoryId") Integer courseCategoryId, Pageable pageable);
@@ -91,7 +93,8 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "c.description, " +
             "c.duration, " +
             "c.language, " +
-            "c.status " +
+            "c.status, " +
+            "c.type " +
             "FROM courses c " +
             "LEFT JOIN enrolled_courses ec ON c.id = ec.course_id " +
             "LEFT JOIN chapters ch ON c.id = ch.course_id " +
@@ -100,7 +103,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "WHERE c.course_category_id IN :courseCategoryIds " +
             "GROUP BY c.id, c.course_category_id, c.image_url, c.price, c.cost, c.courses_title, " +
             "c.author, c.course_output, c.created_at, c.updated_at, c.description, c.duration, " +
-            "c.language, c.status",
+            "c.language, c.status, c.type",
             countQuery = "SELECT COUNT(c.id) FROM courses c WHERE c.course_category_id IN :courseCategoryIds",
             nativeQuery = true)
     Page<Object[]> findByCourseCategoryIds(@Param("courseCategoryIds") List<Integer> courseCategoryIds, Pageable pageable);
@@ -123,7 +126,8 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "c.description, " +
             "c.duration, " +
             "c.language, " +
-            "c.status " +
+            "c.status, " +
+            "c.type " +
             "FROM courses c " +
             "LEFT JOIN enrolled_courses ec ON c.id = ec.course_id " +
             "LEFT JOIN chapters ch ON c.id = ch.course_id " +
@@ -131,7 +135,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "LEFT JOIN course_reviews cr ON c.id = cr.course_id " +
             "GROUP BY c.id, c.course_category_id, c.image_url, c.price, c.cost, c.courses_title, " +
             "c.author, c.course_output, c.created_at, c.updated_at, c.description, c.duration, " +
-            "c.language, c.status",
+            "c.language, c.status, c.type",
             countQuery = "SELECT COUNT(c.id) FROM courses c",
             nativeQuery = true)
     Page<Object[]> findAllCourses(Pageable pageable);
@@ -149,5 +153,57 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
 
     @Query("SELECT c.type FROM Course c WHERE c.id = :id")
     String findCourseTypeById(@Param("id") int id);
+
+    @Query(value = "SELECT c.id, c.duration, c.image_url, c.courses_title, e.enrollment_date " +
+            "FROM enrolled_courses e " +
+            "JOIN courses c ON e.course_id = c.id " +
+            "WHERE e.account_id = :accountId",
+            countQuery = "SELECT COUNT(*) FROM enrolled_courses e WHERE e.account_id = :accountId",
+            nativeQuery = true)
+    Page<Object[]> findCoursesByAccountId(@Param("accountId") Integer accountId, Pageable pageable);
+
+//    @Query(value = """
+//            SELECT
+//                c.id,
+//                ch.id AS chapter_id,
+//                ch.chapter_title AS chapter_title,
+//
+//                l.id AS lesson_id,
+//                l.lesson_title AS lesson_title,
+//                l.duration AS lesson_duration,
+//
+//                v.id AS video_id,
+//                v.document_short AS video_title,
+//                v.url AS video_url,
+//                v.document_short AS document_short,
+//                v.document_url AS document_url,
+//
+//                t.id AS test_id,
+//                t.title AS test_title,
+//                CASE
+//                    WHEN t.is_summary = 1 THEN 'Test Bài'
+//                    ELSE 'Test Chương'
+//                END AS test_type
+//
+//            FROM
+//                courses c
+//
+//            JOIN chapters ch
+//                ON c.id = ch.course_id
+//
+//            JOIN lessons l
+//                ON ch.id = l.chapter_id
+//
+//            LEFT JOIN videos v
+//                ON l.id = v.lesson_id
+//
+//            LEFT JOIN tests t
+//                ON l.id = t.lesson_id OR ch.id = t.chapter_id
+//
+//            WHERE
+//                c.id = :courseId
+//            """, nativeQuery = true)
+//    List<Object[]> findCourseDetails(@Param("courseId") Integer courseId);
+
 
 }

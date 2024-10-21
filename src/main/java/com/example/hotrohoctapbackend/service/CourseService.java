@@ -1,11 +1,13 @@
 package com.example.hotrohoctapbackend.service;
 
-import com.example.hotrohoctapbackend.DTO.CourseDTO;
-import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
-import com.example.hotrohoctapbackend.dao.CourseRepository;
-import com.example.hotrohoctapbackend.entity.Course;
+import com.example.hotrohoctapbackend.DTO.*;
+import com.example.hotrohoctapbackend.dao.*;
+import com.example.hotrohoctapbackend.entity.*;
+import com.google.type.DateTime;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +21,17 @@ public class CourseService {
     @Autowired
     private CourseRepository courseRepository;
 
+    @Autowired
+    private ChapterRepository chapterRepository;
 
+    @Autowired
+    private LessonRepository lessonRepository;
+
+    @Autowired
+    private TestRepository testRepository;
+
+    @Autowired
+    private VideoRepository videoRepository;
     // Lấy type của khóa học theo ID
     public String getCourseTypeById(int id) {
         return courseRepository.findCourseTypeById(id);
@@ -47,6 +59,7 @@ public class CourseService {
 
         return statistics;
     }
+
     public CourseDetailDTO getCourseDetailById(Integer id) {
         List<Object[]> result = courseRepository.findCourseById(id);
 
@@ -124,11 +137,12 @@ public class CourseService {
             BigDecimal price = (BigDecimal) row[3];
             BigDecimal cost = (BigDecimal) row[4];
             String title = (String) row[5];
-            Long numberOfStudents = (Long) row[6];
-            Long totalLessons = (Long) row[7];
+            String type = (String) row[6];
+            Long numberOfStudents = (Long) row[7];
+            Long totalLessons = (Long) row[8];
 
-            BigDecimal rate = (BigDecimal) row[8];
-            CourseDTO courseSummary = new CourseDTO(id, danhmucID, title, imageUrl, price, cost, numberOfStudents, totalLessons, rate);
+            BigDecimal rate = (BigDecimal) row[9];
+            CourseDTO courseSummary = new CourseDTO(id, danhmucID, title, imageUrl, price, cost, numberOfStudents, totalLessons, rate, type);
             courseSummaries.add(courseSummary);
         }
 
@@ -155,7 +169,8 @@ public class CourseService {
                 (String) row[13],
                 (String) row[14],
                 (String) row[15],
-                (Boolean) row[16]
+                (Boolean) row[16],
+                (String) row[17]
         ));
     }
 
@@ -181,7 +196,8 @@ public class CourseService {
                 (String) row[13], // description
                 (String) row[14], // duration
                 (String) row[15], // language
-                (Boolean) row[16] // status
+                (Boolean) row[16],// status
+                (String) row[17]
         ));
     }
 
@@ -205,8 +221,79 @@ public class CourseService {
                 (String) row[13],
                 (String) row[14],
                 (String) row[15],
-                (Boolean) row[16]
+                (Boolean) row[16],
+                (String) row[17]
         ));
     }
+    public Page<CourseDTO_User_Profile> getCoursesByAccountId(Integer accountId, int page, int size) {
+        Page<Object[]> results = courseRepository.findCoursesByAccountId(accountId, PageRequest.of(page, size));
+
+        return results.map(result -> new CourseDTO_User_Profile(
+                (Integer) result[0],     // id
+                (String) result[1],      // duration
+                (String) result[2],      // image_url
+                (String) result[3],      // title
+                ((Timestamp) result[4]).toLocalDateTime() // enrollment_date
+        ));
+    }
+
+    //Section Vao Hoc
+//    public List<CourseInfoDetailDTO_User> getCourseDetails(Integer courseId) {
+//        List<Object[]> results = courseRepository.findCourseDetails(courseId);
+//        List<CourseInfoDetailDTO_User> courseInfoDetails = new ArrayList<>();
+//
+//        for (Object[] result : results) {
+//            CourseInfoDetailDTO_User dto = new CourseInfoDetailDTO_User(
+//                    courseId, // id (courseId)
+//                    result[1] != null ? (int) result[1] : 0,
+//                    result[2] != null ? (String) result[2] : null,
+//                    result[3] != null ? (int) result[3] : 0,
+//                    result[4] != null ? (String) result[4] : null,
+//                    result[5] != null ? (int) result[5] : 0,
+//                    result[6] != null ? (int) result[6] : 0,
+//                    result[7] != null ? (String) result[7] : null,
+//                    result[8] != null ? (String) result[8] : null,
+//                    result[9] != null ? (String) result[9] : null,
+//                    result[10] != null ? (String) result[10] : null,
+//                    result[11] != null ? (int) result[11] : 0,
+//                    result[12] != null ? (String) result[12] : null,
+//                    result[13] != null ? (String) result[13] : null
+//            );
+//            courseInfoDetails.add(dto);
+//        }
+//
+//        return courseInfoDetails;
+//    }
+
+    public CourseInfoDetailDTO_User getCourseDetails(Integer courseId) {
+        List<Chapter> chapters = chapterRepository.findChaptersByCourseId(courseId);
+        List<CourseInfoDetailDTO_Chapter_User> chapterDTOs = new ArrayList<>();
+
+        for (Chapter chapter : chapters) {
+            List<Lesson> lessons = lessonRepository.findLessonsByChapterId(chapter.getId());
+            List<CourseInfoDetailDTO_Lesson_User> lessonDTOs = new ArrayList<>();
+
+            for (Lesson lesson : lessons) {
+                Video video = videoRepository.findVideoByLessonId(lesson.getId());
+                Test lessonTest = testRepository.findTestsByLessonId(lesson.getId()).isEmpty() ? null : testRepository.findTestsByLessonId(lesson.getId()).get(0);
+
+                CourseInfoDetailDTO_Video_User videoDTO = video != null ? new CourseInfoDetailDTO_Video_User(video.getId(), video.getTitle(), video.getUrl(), video.getDocumentShort(), video.getDocumentUrl()) : null;
+                CourseInfoDetailDTO_Test_User testDTO = lessonTest != null ? new CourseInfoDetailDTO_Test_User(lessonTest.getId(), lessonTest.getTitle(), "Test Bài") : null;
+
+                CourseInfoDetailDTO_Lesson_User lessonDTO = new CourseInfoDetailDTO_Lesson_User(lesson.getId(), lesson.getTitle(), lesson.getDuration(), videoDTO, testDTO);
+                lessonDTOs.add(lessonDTO);
+            }
+
+            Test chapterTest = testRepository.findChapterTestByChapterId(chapter.getId());
+            CourseInfoDetailDTO_Test_User chapterTestDTO = chapterTest != null ? new CourseInfoDetailDTO_Test_User(chapterTest.getId(), chapterTest.getTitle(), "Test Chương") : null;
+
+            CourseInfoDetailDTO_Chapter_User chapterDTO = new CourseInfoDetailDTO_Chapter_User(chapter.getId(), chapter.getTitle(), lessonDTOs, chapterTestDTO);
+            chapterDTOs.add(chapterDTO);
+        }
+
+        return new CourseInfoDetailDTO_User(courseId, "Course Title", chapterDTOs);
+    }
+
+
 
 }
