@@ -12,4 +12,6 @@ import java.util.List;
 public interface LessonRepository extends JpaRepository<Lesson,Integer> {
     @Query(value = "SELECT * FROM lessons WHERE chapter_id = :chapterId", nativeQuery = true)
     List<Lesson> findLessonsByChapterId(@Param("chapterId") Integer chapterId);
+
+    List<Lesson> findByChapter_IdAndCourse_Id(int chapterId, int courseId);
 }

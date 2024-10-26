@@ -19,6 +19,9 @@ public class Progress {
     @Column(name = "test_completed", columnDefinition = "BIT", nullable = false)
     private boolean testCompleted = false;
 
+    @Column(name = "is_chapter_test", columnDefinition = "BIT", nullable = false)
+    private boolean chapterTested = false;
+
     @Column(name = "test_score")
     private Integer testScore;
 
