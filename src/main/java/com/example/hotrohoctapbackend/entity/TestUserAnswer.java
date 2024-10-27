@@ -24,8 +24,10 @@ public class TestUserAnswer {
     @JoinColumn(name = "account_id")
     private Account account;
 
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
     @Column(name = "result")
     private String result;
-
-
 }

@@ -21,6 +21,10 @@ public class TestResult {
     @JoinColumn(name = "account_id")
     private Account account;
 
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
     @Column(name = "score")
     private int score;
 

@@ -400,7 +400,8 @@ public class Endpoint {
             "/api/payments/add",
             "/api/payment-details/add",
             "/api/enrolled-course/enroll",
-            "/api/progress/add"
+            "/api/progress/add",
+            "/api/test-results/add"
     };
 
     public static final String[] USER_PUT_ENDPOINT = {
