@@ -1,6 +1,5 @@
-package com.example.hotrohoctapbackend.DTO;
+package com.example.hotrohoctapbackend.DTO.User;
 
-import jakarta.persistence.Column;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,15 +10,18 @@ public class TestResultDTO_User {
     private Integer testID;
     private Integer accountID;
     private Integer courseID;
-    private int score;
+    private double score;
     private int correct_answers;
     private int incorrect_answers;
     private int total_questions;
     private LocalDateTime completedAt;
     private String result;
 
+    public TestResultDTO_User() {
+    }
+
     public TestResultDTO_User(Integer id, Integer testID, Integer accountID,
-                              Integer courseID, int score, int correct_answers,
+                              Integer courseID, double score, int correct_answers,
                               int incorrect_answers, int total_questions, LocalDateTime completedAt,
                               String result) {
         this.id = id;

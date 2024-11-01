@@ -1,10 +1,9 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.*;
+import com.example.hotrohoctapbackend.DTO.User.*;
 import com.example.hotrohoctapbackend.dao.*;
 import com.example.hotrohoctapbackend.entity.*;
-import com.google.type.DateTime;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

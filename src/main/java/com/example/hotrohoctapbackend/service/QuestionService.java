@@ -1,6 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
-import com.example.hotrohoctapbackend.DTO.QuestionDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.QuestionDTO_User;
 import com.example.hotrohoctapbackend.dao.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

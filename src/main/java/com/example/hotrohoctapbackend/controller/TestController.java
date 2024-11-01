@@ -1,8 +1,7 @@
 package com.example.hotrohoctapbackend.controller;
 
-import com.example.hotrohoctapbackend.DTO.QuestionDTO_User;
-import com.example.hotrohoctapbackend.DTO.TestDTO_User;
-import com.example.hotrohoctapbackend.entity.Test;
+import com.example.hotrohoctapbackend.DTO.User.QuestionDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.TestDTO_User;
 import com.example.hotrohoctapbackend.service.QuestionService;
 import com.example.hotrohoctapbackend.service.RedisTestService;
 import com.example.hotrohoctapbackend.service.TestService;
@@ -11,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")

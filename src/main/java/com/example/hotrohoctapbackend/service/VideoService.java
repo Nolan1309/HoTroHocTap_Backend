@@ -1,6 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
-import com.example.hotrohoctapbackend.DTO.VideoDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.VideoDTO_User;
 import com.example.hotrohoctapbackend.dao.VideoRepository;
 import com.example.hotrohoctapbackend.entity.Lesson;
 import com.example.hotrohoctapbackend.entity.Video;

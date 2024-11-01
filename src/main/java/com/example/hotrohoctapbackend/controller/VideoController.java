@@ -1,8 +1,7 @@
 package com.example.hotrohoctapbackend.controller;
 
 
-import com.example.hotrohoctapbackend.DTO.VideoDTO_User;
-import com.example.hotrohoctapbackend.entity.Video;
+import com.example.hotrohoctapbackend.DTO.User.VideoDTO_User;
 import com.example.hotrohoctapbackend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

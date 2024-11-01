@@ -1,7 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
-import com.example.hotrohoctapbackend.DTO.TestResultDTO_User;
-import com.example.hotrohoctapbackend.entity.TestResult;
+import com.example.hotrohoctapbackend.DTO.User.TestResultDTO_User;
 import com.example.hotrohoctapbackend.exception.ErrorResponse;
 import com.example.hotrohoctapbackend.service.TestResultService;
 import org.springframework.beans.factory.annotation.Autowired;

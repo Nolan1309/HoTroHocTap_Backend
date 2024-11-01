@@ -1,6 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
-import com.example.hotrohoctapbackend.DTO.TestResultDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.TestResultDTO_User;
 import com.example.hotrohoctapbackend.convert.TestResultConverter;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
 import com.example.hotrohoctapbackend.dao.CourseRepository;

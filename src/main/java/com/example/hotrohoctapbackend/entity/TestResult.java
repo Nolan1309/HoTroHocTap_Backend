@@ -26,7 +26,7 @@ public class TestResult {
     private Course course;
 
     @Column(name = "score")
-    private int score;
+    private double score;
 
     @Column(name = "correct_answers")
     private int correct_answers;

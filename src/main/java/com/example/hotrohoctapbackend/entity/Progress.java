@@ -23,7 +23,7 @@ public class Progress {
     private boolean chapterTested = false;
 
     @Column(name = "test_score")
-    private Integer testScore;
+    private Double testScore;
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;

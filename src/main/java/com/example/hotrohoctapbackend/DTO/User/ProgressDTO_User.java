@@ -1,4 +1,4 @@
-package com.example.hotrohoctapbackend.DTO;
+package com.example.hotrohoctapbackend.DTO.User;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,10 +11,10 @@ public class ProgressDTO_User {
     private Integer lessonId;
     private boolean videoStatus;
     private boolean testStatus;
-    private Integer testScore;
+    private Double testScore;
     private boolean isChapterTest;
 
-    public ProgressDTO_User(int accountId, int courseId, int chapterId, Integer lessonId, boolean videoStatus, boolean testStatus, Integer testScore) {
+    public ProgressDTO_User(int accountId, int courseId, int chapterId, Integer lessonId, boolean videoStatus, boolean testStatus, Double testScore) {
         this.accountId = accountId;
         this.courseId = courseId;
         this.chapterId = chapterId;
@@ -24,7 +24,7 @@ public class ProgressDTO_User {
         this.testScore = testScore;
     }
 
-    public ProgressDTO_User(int accountId, int courseId, int chapterId, Integer lessonId, boolean videoStatus, boolean testStatus, Integer testScore, boolean isChapterTest) {
+    public ProgressDTO_User(int accountId, int courseId, int chapterId, Integer lessonId, boolean videoStatus, boolean testStatus, Double testScore, boolean isChapterTest) {
         this.accountId = accountId;
         this.courseId = courseId;
         this.chapterId = chapterId;

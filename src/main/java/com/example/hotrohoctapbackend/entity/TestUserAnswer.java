@@ -30,4 +30,7 @@ public class TestUserAnswer {
 
     @Column(name = "result")
     private String result;
+    @ManyToOne
+    @JoinColumn(name = "test_result_id")
+    private TestResult testResult;
 }

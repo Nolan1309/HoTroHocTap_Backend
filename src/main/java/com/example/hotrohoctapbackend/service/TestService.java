@@ -1,6 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
-import com.example.hotrohoctapbackend.DTO.TestDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.TestDTO_User;
 import com.example.hotrohoctapbackend.dao.TestRepository;
 import com.example.hotrohoctapbackend.entity.Chapter;
 import com.example.hotrohoctapbackend.entity.Course;

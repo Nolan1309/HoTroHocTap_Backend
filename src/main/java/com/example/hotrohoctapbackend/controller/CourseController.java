@@ -1,10 +1,9 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.CourseDTO;
-import com.example.hotrohoctapbackend.DTO.CourseDTO_User_Profile;
+import com.example.hotrohoctapbackend.DTO.User.CourseDTO_User_Profile;
 import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
-import com.example.hotrohoctapbackend.DTO.CourseInfoDetailDTO_User;
-import com.example.hotrohoctapbackend.entity.Course;
+import com.example.hotrohoctapbackend.DTO.User.CourseInfoDetailDTO_User;
 import com.example.hotrohoctapbackend.service.CourseService;
 import com.example.hotrohoctapbackend.service.EnrolledCourseService;
 import org.springframework.beans.factory.annotation.Autowired;

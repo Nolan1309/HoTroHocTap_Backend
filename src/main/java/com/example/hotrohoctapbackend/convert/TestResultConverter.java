@@ -1,6 +1,6 @@
 package com.example.hotrohoctapbackend.convert;
 
-import com.example.hotrohoctapbackend.DTO.TestResultDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.TestResultDTO_User;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Test;

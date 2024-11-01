@@ -1,16 +1,12 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.CountCourseDTO;
-import com.example.hotrohoctapbackend.DTO.CourseDTO_User_Profile;
 import com.example.hotrohoctapbackend.dao.Enrolled_CoursesRepository;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Enrolled_Courses;
 import com.example.hotrohoctapbackend.entity.RoleUser;
-import com.google.type.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

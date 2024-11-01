@@ -1,4 +1,4 @@
-package com.example.hotrohoctapbackend.DTO;
+package com.example.hotrohoctapbackend.DTO.User;
 
 
 import lombok.Data;
