@@ -1,4 +1,5 @@
 package com.example.hotrohoctapbackend.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ public class Chapter {
 
     @ManyToOne
     @JoinColumn(name = "course_id")
+    @JsonIgnore
     private Course course;
 
     @OneToMany(mappedBy = "chapter",

@@ -29,7 +29,7 @@ public class Test {
     private String description;
 
     @Column(name = "is_summary")
-    private boolean isSummary;
+    private Boolean isSummary;
 
     @Column(name = "total_question", nullable = false)
     private int totalQuestion;
@@ -41,36 +41,8 @@ public class Test {
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
 
-    @OneToMany(mappedBy = "test",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Test_Question> testQuestions;
-
-//    @OneToMany(mappedBy = "test",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Test> testList;
-
-    @OneToMany(mappedBy = "test",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<TestResult> testResultList;
-
-    @OneToMany(mappedBy = "test",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<TestUserAnswer> testUserAnswerList;
 }

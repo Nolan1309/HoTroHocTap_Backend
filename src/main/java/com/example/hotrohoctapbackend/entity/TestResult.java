@@ -38,5 +38,8 @@ public class TestResult {
 
     @Column(name = "result")
     private String result;
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
 
 }

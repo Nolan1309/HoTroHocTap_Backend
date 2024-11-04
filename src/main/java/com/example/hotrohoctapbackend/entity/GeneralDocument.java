@@ -21,7 +21,7 @@ public class GeneralDocument {
     @Column(name = "image", columnDefinition = "TEXT")
     private String image_url;
 
-    @Column(name = "url")
+    @Column(name = "url", columnDefinition = "TEXT")
     private String url;
 
     @Column(name = "title")

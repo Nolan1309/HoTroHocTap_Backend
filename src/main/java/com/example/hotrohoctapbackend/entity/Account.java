@@ -39,7 +39,10 @@ public class Account implements UserDetails {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
+    @Column(name = "birthday")
+    private LocalDateTime birthday;
+    @Column(name = "gender")
+    private String gender;
 //    @Transient
 //    @JsonProperty("role_id")
 //    private int roleId;

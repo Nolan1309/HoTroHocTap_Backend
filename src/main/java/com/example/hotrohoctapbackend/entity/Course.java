@@ -1,4 +1,5 @@
 package com.example.hotrohoctapbackend.entity;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -21,16 +22,16 @@ public class Course {
     private String title;
 
     @ManyToOne
-    @JoinColumn(name = "id_category")
-    private Category category;
+    @JoinColumn(name = "course_category_id")
+    private CourseCategory courseCategory;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "image_url", columnDefinition = "TEXT")
     private String image_url;
 
-    @Column(name = "course_output")
+    @Column(name = "course_output", columnDefinition = "TEXT")
     private String courseOutput;
 
     @Column(name = "language")
@@ -58,11 +59,9 @@ public class Course {
     private Boolean status;
 
 //    @OneToMany(mappedBy = "course",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
+//            fetch = FetchType.LAZY,
+//            cascade = CascadeType.ALL)
+//    @JsonManagedReference // Thêm annotation này
 //    private List<Chapter> chapterList;
 
     @OneToMany(mappedBy = "course",

@@ -39,22 +39,32 @@ public class Question {
     @Column(name = "instruction", columnDefinition = "TEXT")
     private String instruction;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
+    @Column(name = "result_check")
+    private String result_check;
+//    @OneToMany(mappedBy = "question")
+//    private List<Test_Question> testQuestions;
 
-    @OneToMany(mappedBy = "question")
-    private List<Test_Question> testQuestions;
-
-    @OneToMany(mappedBy = "question",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<TestUserAnswer> testUserAnswerList;
+//    @OneToMany(mappedBy = "question",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<TestUserAnswer> testUserAnswerList;
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
