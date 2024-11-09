@@ -63,52 +63,52 @@ public class Course {
 //            cascade = CascadeType.ALL)
 //    @JsonManagedReference // Thêm annotation này
 //    private List<Chapter> chapterList;
-
-    @OneToMany(mappedBy = "course",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Course_Discount> courseDiscountList;
-
-    @OneToMany(mappedBy = "course",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Enrolled_Courses> enrolledCoursesList;
-
-    @OneToMany(mappedBy = "course",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Favorites> favoritesList;
-
-    @OneToMany(mappedBy = "course",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<LearningResult> learningResultList;
-
-    @OneToMany(mappedBy = "course",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<PaymentDetail> paymentDetailList;
-
-    @OneToMany(mappedBy = "course",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Review> reviewList;
+//
+//    @OneToMany(mappedBy = "course",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Course_Discount> courseDiscountList;
+//
+//    @OneToMany(mappedBy = "course",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Enrolled_Courses> enrolledCoursesList;
+//
+//    @OneToMany(mappedBy = "course",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Favorites> favoritesList;
+//
+//    @OneToMany(mappedBy = "course",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<LearningResult> learningResultList;
+//
+//    @OneToMany(mappedBy = "course",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<PaymentDetail> paymentDetailList;
+//
+//    @OneToMany(mappedBy = "course",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Review> reviewList;
 }

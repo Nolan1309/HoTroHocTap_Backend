@@ -126,4 +126,7 @@ public class QuestionService {
             throw new RuntimeException("Có lỗi xảy ra khi xuất dữ liệu ra file Excel");
         }
     }
+    public List<Question> getQuestionsByTestId(Integer testId) {
+        return questionRepository.findQuestionsByTestId(testId);
+    }
 }

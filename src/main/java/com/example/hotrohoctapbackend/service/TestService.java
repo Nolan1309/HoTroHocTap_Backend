@@ -41,11 +41,8 @@ public class TestService {
         test.setTotalQuestion(newTestDTO.getTotalQuestion());
         test.setIsSummary(newTestDTO.getIsSummary());
 
-        if (newTestDTO.getLessonId() != null) {
-            Lesson lesson = lessonRepository.findById(newTestDTO.getLessonId())
-                    .orElseThrow(() -> new RuntimeException("Lesson not found"));
-            test.setLesson(lesson);
-        }
+        test.setLesson(null);
+
 
         if (newTestDTO.getChapterId() != null) {
             Chapter chapter = chapterRepository.findById(newTestDTO.getChapterId())
@@ -76,11 +73,8 @@ public class TestService {
             test.setDescription(updateDTO.getDescription());
         }
 
-        if (updateDTO.getLessonId() != null) {
-            Lesson lesson = lessonRepository.findById(updateDTO.getLessonId())
-                    .orElseThrow(() -> new RuntimeException("Lesson not found"));
-            test.setLesson(lesson);
-        }
+        test.setLesson(null);
+
 
         if (updateDTO.getChapterId() != null) {
             Chapter chapter = chapterRepository.findById(updateDTO.getChapterId())
@@ -106,7 +100,7 @@ public class TestService {
         return testRepository.save(test);
     }
 
-    public AdminTestUpdateDTO getTestById(int id) {
+    public AdminTestUpdateDTO getTestById(int id)   {
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
 
         // Chuyển đổi Test sang AdminTestResponseDTO

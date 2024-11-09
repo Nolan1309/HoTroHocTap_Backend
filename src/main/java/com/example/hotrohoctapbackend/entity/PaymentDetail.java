@@ -13,7 +13,6 @@ public class PaymentDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
-
     @Column(name = "price", precision = 18, scale = 2)
     private BigDecimal price;
 
@@ -25,7 +24,7 @@ public class PaymentDetail {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    @ManyToOne
-    @JoinColumn(name = "vip_subscriptions_id")
-    private VipSubscription vipSubscription;
+    //    @ManyToOne
+    //    @JoinColumn(name = "vip_subscriptions_id")
+    //    private VipSubscription vipSubscription;
 }

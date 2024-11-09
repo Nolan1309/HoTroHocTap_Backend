@@ -157,7 +157,10 @@ public class Endpoint {
             "/api/chapters/course/**",
             "/api/general_documents/documents-with-categories",
             "/api/general_documents/generaldocuments-details/**",
-            "/api/questions/export/excel"
+            "/api/questions/export/excel",
+            "/api/questions/tests/questions/**",
+            "/api/payments/all",
+            "/api/payment-details/**"
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",

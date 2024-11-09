@@ -19,12 +19,12 @@ public class PaymentMethod {
 
     @Column(name = "pay_description")
     private String pay_description;
-
-    @OneToMany(mappedBy = "paymentMethod",
-            fetch = FetchType.LAZY
-            , cascade = {
-            CascadeType.DETACH, CascadeType.MERGE,
-            CascadeType.PERSIST, CascadeType.REFRESH
-    })
-    private List<Payment> paymentList;
+//
+//    @OneToMany(mappedBy = "paymentMethod",
+//            fetch = FetchType.LAZY
+//            , cascade = {
+//            CascadeType.DETACH, CascadeType.MERGE,
+//            CascadeType.PERSIST, CascadeType.REFRESH
+//    })
+//    private List<Payment> paymentList;
 }

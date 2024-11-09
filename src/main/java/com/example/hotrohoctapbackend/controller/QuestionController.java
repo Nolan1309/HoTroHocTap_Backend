@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.entity.Question;
 import com.example.hotrohoctapbackend.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -54,5 +55,9 @@ public class QuestionController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(excelData);
+    }
+    @GetMapping("/tests/questions/{testId}")
+    public List<Question> getQuestionsByTestId(@PathVariable Integer testId) {
+        return questionService.getQuestionsByTestId(testId);
     }
 }
