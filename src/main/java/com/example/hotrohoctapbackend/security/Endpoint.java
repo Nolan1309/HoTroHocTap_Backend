@@ -167,7 +167,15 @@ public class Endpoint {
             "/categories_parent_id",
             "/name-by-id",
             "/api/general_documents/documents-with-categories",
-            "/api/general_documents/generaldocuments-details/**"
+            "/api/general_documents/generaldocuments-details/**",
+            "/api/blogs/blogsall",
+            "/api/chapters/course/**",
+            "/api/payments/all",
+            "/api/payment-details/payment-details/**",
+            "/api/questions/export/excel",
+            "/api/questions/tests/questions/**",
+            "/api/tests/chitiet/**",
+            "/api/payment-details/**"
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -239,7 +247,13 @@ public class Endpoint {
             "/api/general_documents/upload",
 
             "/api/convert-docx-to-pdf",
-            "/convert"
+            "/convert",
+            "/api/blogs/add-branch",
+            "/api/chapters/add",
+            "/api/courses/add-course",
+            "/api/lessons/add",
+            "/api/questions/upload",
+            "/api/tests/add"
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",
@@ -307,7 +321,8 @@ public class Endpoint {
             "/videos",
             "/videos/**",
             "/vipsubscriptions",
-            "/vipsubscriptions/**"
+            "/vipsubscriptions/**",
+            "/api/questions"
     };
     public static final String[] ADMIN_PUT_ENDPOINS = {
             "/accounts",
@@ -376,7 +391,10 @@ public class Endpoint {
             "/videos/**",
             "/vipsubscriptions",
             "/vipsubscriptions/**",
-            "/api/general_documents/generaldocuments-update/**"
+            "/api/general_documents/generaldocuments-update/**",
+            "/api/blogs/update-branch/**",
+            "/api/courses/update-course/**",
+            "/api/tests/**"
     };
 
 
@@ -392,7 +410,9 @@ public class Endpoint {
             "/api/progress/*/progress/*",
             "/api/videos/**",
             "/api/tests/**",
-            "/api/tests/*/questions"
+            "/api/tests/*/questions",
+            "/api/videos/first-video/**",
+            "/api/questions/responsive-test/**"
     };
 
     public static final String[] USER_POST_ENDPOINT = {

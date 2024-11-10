@@ -59,4 +59,14 @@ public interface BlogRepository extends JpaRepository<Blog,Integer> {
 
     List<Blog> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
+    @Query(value = "SELECT b.id AS id, " +
+            "b.title AS title,"+
+            "a.fullname AS authorFullName, " +
+            "bc.name AS category, " +
+            "b.status AS status " +
+            "FROM blogs b " +
+            "JOIN account a ON b.author_id = a.id " +
+            "JOIN blog_categories bc ON b.cat_blog_id = bc.id",
+            nativeQuery = true)
+    List<Object[]> findAllBlogsAsObjectArray();
 }

@@ -4,6 +4,7 @@ import com.example.hotrohoctapbackend.DTO.CourseDTO;
 import com.example.hotrohoctapbackend.DTO.User.CourseDTO_User_Profile;
 import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
 import com.example.hotrohoctapbackend.DTO.User.CourseInfoDetailDTO_User;
+import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.service.CourseService;
 import com.example.hotrohoctapbackend.service.EnrolledCourseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,5 +97,28 @@ public class CourseController {
         return ResponseEntity.ok(courseDetails);
     }
 
+    //Admin
+    @PostMapping("/add-course")
+    public ResponseEntity<Course> addCourse(@RequestBody CourseDTO courseDTO) {
+        try {
+            Course newCourse = courseService.addCourse(courseDTO);
+            return ResponseEntity.ok(newCourse);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+    @PutMapping("/update-course/{courseId}")
+    public ResponseEntity<Course> updateCourse(
+            @PathVariable Integer courseId,
+            @RequestBody CourseDTO courseDTO) {
+        try {
+            Course updatedCourse = courseService.updateCourse(courseId, courseDTO);
+            return ResponseEntity.ok(updatedCourse);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
 }

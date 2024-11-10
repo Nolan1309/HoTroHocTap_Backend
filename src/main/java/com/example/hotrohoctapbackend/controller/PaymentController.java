@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.controller;
 
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminPaymentDTO;
 import com.example.hotrohoctapbackend.DTO.PaymentResponseDTO;
 import com.example.hotrohoctapbackend.entity.Payment;
 import com.example.hotrohoctapbackend.service.PaymentsService;
@@ -9,7 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
+
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/payments")
@@ -43,4 +46,8 @@ public class PaymentController {
         }
     }
 
+    @GetMapping("/all")
+    public List<AdminPaymentDTO> getPayment() {
+        return paymentService.getPayment();
+    }
 }

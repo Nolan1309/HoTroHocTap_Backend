@@ -22,9 +22,9 @@ public class ProgressController {
         List<ProgressDTO_User> progressList = progressService.getProgressByCourseAndAccount(courseId, accountId);
         return ResponseEntity.ok(progressList);
     }
-    @PostMapping("/add")
-    public ResponseEntity<Progress> addProgress(@RequestBody ProgressDTO_User progressDTO) {
-        Progress progress = progressService.addOrUpdateProgress(progressDTO);
-        return ResponseEntity.ok(progress);
-    }
+//    @PostMapping("/add")
+//    public ResponseEntity<Progress> addProgress(@RequestBody ProgressDTO_User progressDTO) {
+//        Progress progress = progressService.addOrUpdateProgress(progressDTO);
+//        return ResponseEntity.ok(progress);
+//    }
 }

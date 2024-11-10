@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.List;
+import java.util.Optional;
 
 @RepositoryRestResource(path = "progress")
 public interface ProgressRepository extends JpaRepository<Progress, Integer> {
@@ -35,4 +36,14 @@ public interface ProgressRepository extends JpaRepository<Progress, Integer> {
             @Param("course") Course course,
             @Param("chapter") Chapter chapter
     );
+
+    Optional<Progress> findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonId(
+            Integer accountId, Integer courseId, Integer chapterId, Boolean chapterTested, Integer lessonId
+    );
+
+    Optional<Progress> findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonIdIsNull(
+            Integer accountId, Integer courseId, Integer chapterId, Boolean chapterTested
+    );
+
+
 }

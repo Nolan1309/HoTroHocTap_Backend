@@ -31,6 +31,9 @@ public class CourseService {
 
     @Autowired
     private VideoRepository videoRepository;
+    @Autowired
+    private CourseCategoryRepository courseCategoryRepository;
+
     // Lấy type của khóa học theo ID
     public String getCourseTypeById(int id) {
         return courseRepository.findCourseTypeById(id);
@@ -148,7 +151,6 @@ public class CourseService {
         return courseSummaries;
     }
 
-
     public Page<CourseDTO> getCoursesByCategory(Integer courseCategoryId, Pageable pageable) {
         Page<Object[]> results = courseRepository.findByCourseCategoryId(courseCategoryId, pageable);
         return results.map(row -> new CourseDTO(
@@ -200,7 +202,6 @@ public class CourseService {
         ));
     }
 
-
     public Page<CourseDTO> getAllCourse(Pageable pageable) {
         Page<Object[]> results = courseRepository.findAllCourses(pageable);
         return results.map(row -> new CourseDTO(
@@ -224,6 +225,7 @@ public class CourseService {
                 (String) row[17]
         ));
     }
+
     public Page<CourseDTO_User_Profile> getCoursesByAccountId(Integer accountId, int page, int size) {
         Page<Object[]> results = courseRepository.findCoursesByAccountId(accountId, PageRequest.of(page, size));
 
@@ -237,33 +239,6 @@ public class CourseService {
     }
 
     //Section Vao Hoc
-//    public List<CourseInfoDetailDTO_User> getCourseDetails(Integer courseId) {
-//        List<Object[]> results = courseRepository.findCourseDetails(courseId);
-//        List<CourseInfoDetailDTO_User> courseInfoDetails = new ArrayList<>();
-//
-//        for (Object[] result : results) {
-//            CourseInfoDetailDTO_User dto = new CourseInfoDetailDTO_User(
-//                    courseId, // id (courseId)
-//                    result[1] != null ? (int) result[1] : 0,
-//                    result[2] != null ? (String) result[2] : null,
-//                    result[3] != null ? (int) result[3] : 0,
-//                    result[4] != null ? (String) result[4] : null,
-//                    result[5] != null ? (int) result[5] : 0,
-//                    result[6] != null ? (int) result[6] : 0,
-//                    result[7] != null ? (String) result[7] : null,
-//                    result[8] != null ? (String) result[8] : null,
-//                    result[9] != null ? (String) result[9] : null,
-//                    result[10] != null ? (String) result[10] : null,
-//                    result[11] != null ? (int) result[11] : 0,
-//                    result[12] != null ? (String) result[12] : null,
-//                    result[13] != null ? (String) result[13] : null
-//            );
-//            courseInfoDetails.add(dto);
-//        }
-//
-//        return courseInfoDetails;
-//    }
-
     public CourseInfoDetailDTO_User getCourseDetails(Integer courseId) {
         List<Chapter> chapters = chapterRepository.findChaptersByCourseId(courseId);
         List<CourseInfoDetailDTO_Chapter_User> chapterDTOs = new ArrayList<>();
@@ -294,5 +269,51 @@ public class CourseService {
     }
 
 
+    public Course addCourse(CourseDTO courseDTO) {
+        Course course = new Course();
+        course.setTitle(courseDTO.getTitle());
+        course.setAuthor(courseDTO.getAuthor());
+        course.setStatus(courseDTO.getStatus());
+        course.setDescription(courseDTO.getDescription());
+        course.setDuration(courseDTO.getDuration());
+        course.setLanguage(courseDTO.getLanguage());
+        course.setCost(courseDTO.getCost());
+        course.setPrice(courseDTO.getPrice());
+        course.setCourseOutput(courseDTO.getCourse_output());
+        course.setImage_url(courseDTO.getImageUrl());
+        course.setCreatedAt(LocalDateTime.now());
+        course.setUpdatedAt(LocalDateTime.now());
+
+        CourseCategory courseCategory = courseCategoryRepository.findById(courseDTO.getId_danhmuc())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        course.setCourseCategory(courseCategory); // Đặt CourseCategory
+
+        return courseRepository.save(course);
+    }
+
+    public Course updateCourse(Integer courseId, CourseDTO courseDTO) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        course.setTitle(courseDTO.getTitle());
+        course.setAuthor(courseDTO.getAuthor());
+        course.setStatus(courseDTO.getStatus());
+        course.setDescription(courseDTO.getDescription());
+        course.setDuration(courseDTO.getDuration());
+        course.setLanguage(courseDTO.getLanguage());
+        course.setCost(courseDTO.getCost());
+        course.setPrice(courseDTO.getPrice());
+        course.setCourseOutput(courseDTO.getCourse_output());
+        course.setImage_url(courseDTO.getImageUrl());
+        course.setUpdatedAt(LocalDateTime.now());
+
+        CourseCategory courseCategory = courseCategoryRepository.findById(courseDTO.getId_danhmuc())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        course.setCourseCategory(courseCategory); // Đặt CourseCategory
+
+        return courseRepository.save(course);
+    }
 
 }

@@ -1,14 +1,18 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.User.ProgressDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.TestResultDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.TestUserAnswerRequestDTO_User;
 import com.example.hotrohoctapbackend.dao.*;
 import com.example.hotrohoctapbackend.entity.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class ProgressService {
@@ -49,7 +53,8 @@ public class ProgressService {
         return progressList;
     }
 
-    public Progress addOrUpdateProgress(ProgressDTO_User progressDTO) {
+    public Map<String, Object> addOrUpdateProgress(ProgressDTO_User progressDTO) {
+        Map<String, Object> result = new HashMap<>();
         // Lấy thông tin Account, Course, Chapter và Lesson từ các repository
         Account account = accountRepository.findById(progressDTO.getAccountId())
                 .orElseThrow(() -> new RuntimeException("Account not found"));
@@ -58,10 +63,32 @@ public class ProgressService {
         Chapter currentChapter = chapterRepository.findById(progressDTO.getChapterId())
                 .orElseThrow(() -> new RuntimeException("Chapter not found"));
 
+        Optional<Progress> existingProgress;
+        if (progressDTO.isChapterTest()) {
+            // Nếu là bài kiểm tra chương (lesson_id là NULL)
+            existingProgress = progressRepository.findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonIdIsNull(
+                    account.getId(), course.getId(), currentChapter.getId(), true
+            );
+        } else {
+            // Nếu là bài kiểm tra thông thường (lesson_id không NULL)
+            Lesson currentLesson = lessonRepository.findById(progressDTO.getLessonId())
+                    .orElseThrow(() -> new RuntimeException("Lesson not found"));
+            existingProgress = progressRepository.findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonId(
+                    account.getId(), course.getId(), currentChapter.getId(), false,currentLesson.getId()
+            );
+        }
+        if (existingProgress.isPresent() && existingProgress.get().isTestCompleted()) {
+            // Nếu đã hoàn thành bài kiểm tra trước đó và bài kiểm tra đã đạt
+            result.put("status", "already_completed");
+            return result;
+        }
+
+
         // Khởi tạo một Progress mới
         Progress progress = new Progress();
         progress.setAccount(account);
         progress.setCourse(course);
+        progress.setCompletedAt(LocalDateTime.now());
         progress.setChapter(currentChapter);
 
         // Kiểm tra nếu đây là chapter test
@@ -87,14 +114,16 @@ public class ProgressService {
 
                     progress.setChapter(nextChapter);
                     progress.setLesson(firstLessonInNextChapter);
-                    progress.setVideoCompleted(progressDTO.isVideoStatus());
-                    progress.setTestCompleted(progressDTO.isTestStatus());
+                    progress.setVideoCompleted(true);
+                    progress.setTestCompleted(true);
+                    progress.setChapterTested(false);
                     progress.setTestScore(progressDTO.getTestScore());
+                    result.put("status", "in_progress");
                 } else {
-                    throw new RuntimeException("Next chapter has no lessons available");
+                    result.put("status", "in_progress");
                 }
             } else {
-                throw new RuntimeException("No more chapters available");
+                result.put("status", "course_completed");
             }
         } else {
             // Nếu không phải chapter test, xử lý logic mở bài học tiếp theo trong chương hiện tại
@@ -117,6 +146,7 @@ public class ProgressService {
                 progress.setVideoCompleted(progressDTO.isVideoStatus());
                 progress.setTestCompleted(progressDTO.isTestStatus());
                 progress.setTestScore(progressDTO.getTestScore());
+                result.put("status", "in_progress");
             } else {
                 Progress chapterTestProgress = progressRepository.findByAccountAndCourseAndChapterAndLessonIsNull(
                         account, course, currentChapter
@@ -163,11 +193,47 @@ public class ProgressService {
                         throw new RuntimeException("No more chapters available");
                     }
                 }
+                result.put("status", "in_progress");
             }
         }
 
-        return progressRepository.save(progress);
-    }
+        if (!"course_completed".equals(result.get("status"))) {
+            progressRepository.save(progress);
+        }
+        return result;
 
+    }
+    public boolean isLastChapter(Integer courseId, Integer chapterId) {
+        List<Chapter> chaptersInCourse = chapterRepository.findChaptersByCourseId(courseId);
+        chaptersInCourse.sort(Comparator.comparingInt(Chapter::getId));
+        return !chaptersInCourse.isEmpty() && chaptersInCourse.get(chaptersInCourse.size() - 1).getId() == chapterId;
+    }
+    public void UpdateScore(TestUserAnswerRequestDTO_User idProgress , TestResultDTO_User score){
+
+
+        Optional<Progress> progress;
+
+        // Kiểm tra nếu là chapter test
+        if (idProgress.isChapterTest()) {
+            progress = progressRepository.findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonIdIsNull(
+                    idProgress.getAccountId(), idProgress.getCourseId(), idProgress.getChapterId(), idProgress.isChapterTest()
+            );
+        } else {
+            // Nếu là lesson test
+            progress = progressRepository.findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonId(
+                    idProgress.getAccountId(), idProgress.getCourseId(), idProgress.getChapterId(), idProgress.isChapterTest(), idProgress.getLessonId()
+            );
+        }
+
+        // Cập nhật điểm nếu progress tồn tại
+        if (progress.isPresent()) {
+            Progress progressEntity = progress.get();
+            progressEntity.setTestScore(score.getScore());
+            progressRepository.save(progressEntity);
+        } else {
+            throw new EntityNotFoundException("Progress không tồn tại cho các tham số được cung cấp.");
+        }
+
+    }
 
 }

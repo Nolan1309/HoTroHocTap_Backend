@@ -18,6 +18,12 @@ public class VideoService {
         Optional<Video> video = videoRepository.findById(id);
         return video.map(this::convertToDTO).orElse(null);
     }
+
+    public VideoDTO_User getFirstVideoByCourseId(int courseId) {
+        Video video = videoRepository.findFirstVideoByCourseId(courseId);
+        return video != null ? convertToDTO(video) : null;
+    }
+
     // Chuyển đổi từ Video sang VideoDTO
     private VideoDTO_User convertToDTO(Video video) {
         VideoDTO_User videoDTO = new VideoDTO_User();

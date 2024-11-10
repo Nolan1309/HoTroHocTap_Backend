@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,7 +93,22 @@ public class BlogService {
         return null;
     }
 
+    public List<BlogDTO> getAllBlogDTOs() {
+        List<Object[]> results = blogRepository.findAllBlogsAsObjectArray();
+        List<BlogDTO> blogDTOs = new ArrayList<>();
 
+        for (Object[] result : results) {
+            BlogDTO blogDTO = new BlogDTO();
+            blogDTO.setId((Integer) result[0]);
+            blogDTO.setTitle((String) result[1]);
+            blogDTO.setAuthor_name((String) result[2]);
+            blogDTO.setCategory_name((String) result[3]);
+            blogDTO.setStatus((Boolean) result[4]);
+            blogDTOs.add(blogDTO);
+        }
+
+        return blogDTOs;
+    }
 
 
 }

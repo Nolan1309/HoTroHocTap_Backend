@@ -9,13 +9,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class TestUserAnswerService {
 
     @Autowired
     private TestUserAnswerRepository testUserAnswerRepository;
-
+    @Autowired
+    private ProgressRepository progressRepository;
     @Autowired
     private ProgressService progressService;
 
@@ -36,9 +40,10 @@ public class TestUserAnswerService {
     @Autowired
     private TestResultRepository testResultRepository;
 
-    public ScoreResponseDTO_User saveTestUserAnswer(TestUserAnswerRequestDTO_User requestDTO) {
+    public Map<String, Object> saveTestUserAnswer(TestUserAnswerRequestDTO_User requestDTO) {
         ScoreResponseDTO_User scoreResponseDTOUser = calculateScore(requestDTO);
         TestResultDTO_User testResultDTOUser = new TestResultDTO_User();
+        Map<String, Object> result = new HashMap<>();
         if (scoreResponseDTOUser != null) {
             testResultDTOUser.setCorrect_answers(scoreResponseDTOUser.getCorrect());
             testResultDTOUser.setIncorrect_answers(scoreResponseDTOUser.getUncorrect());
@@ -54,6 +59,7 @@ public class TestUserAnswerService {
             } else testResultDTOUser.setResult("Fail");
             testResultDTOUser.setTotal_questions(scoreResponseDTOUser.getTotal());
             testResultDTOUser.setCompletedAt(LocalDateTime.now());
+            //Lưu ket qua bai test
             TestResultDTO_User testResult = testResultService.addTestResult(testResultDTOUser);
 
             if (testResult != null) {
@@ -66,10 +72,29 @@ public class TestUserAnswerService {
                     testUserAnswerDTOUser.setQuestionId(userAnswerDTOUser.getQuestionId());
                     testUserAnswerDTOUser.setResult(userAnswerDTOUser.getResult());
 
+                    //Luu dap an cua bai test
                     TestUserAnswerDTO_User testResultDTOUser1 = saveTestUserAnswer(testUserAnswerDTOUser);
 
                 }
-                if (testResult.getResult() == "Pass") {
+                if ("Pass".equals(testResult.getResult())) {
+
+                    boolean isLastChapter = progressService.isLastChapter(requestDTO.getCourseId(), requestDTO.getChapterId());
+
+                    if (requestDTO.isChapterTest()) {
+                        Optional<Progress> existingProgress = progressRepository
+                                .findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonIdIsNull(
+                                        requestDTO.getAccountId(), requestDTO.getCourseId(), requestDTO.getChapterId(), true);
+                        if (existingProgress.isPresent()) {
+                            if (isLastChapter) {
+                                result.put("status", "course_completed");
+                            } else {
+                                result.put("status", "already_completed");
+                            }
+                            result.put("scoreResponse", scoreResponseDTOUser);
+                            return result;
+                        }
+                    }
+
                     ProgressDTO_User progressDTOUser = new ProgressDTO_User();
                     progressDTOUser.setAccountId(requestDTO.getAccountId());
                     progressDTOUser.setCourseId(requestDTO.getCourseId());
@@ -79,13 +104,28 @@ public class TestUserAnswerService {
                     progressDTOUser.setTestStatus(requestDTO.isTestStatus());
                     progressDTOUser.setTestScore(null);
                     progressDTOUser.setChapterTest(requestDTO.isChapterTest());
-                    Progress progress = progressService.addOrUpdateProgress(progressDTOUser);
-                    return scoreResponseDTOUser;
+                    progressService.UpdateScore(requestDTO,testResultDTOUser);
+                    Map<String, Object> progressResult = progressService.addOrUpdateProgress(progressDTOUser);
+                    if ("course_completed".equals(progressResult.get("status"))) {
+                        result.put("status", "course_completed");
+                        result.put("scoreResponse", scoreResponseDTOUser);
+                    } else {
+                        result.put("status", "unlocked");
+                        result.put("scoreResponse", scoreResponseDTOUser);
+                    }
+                    return result;
+                } else {
+                    result.put("status", "locked");
+                    result.put("scoreResponse", scoreResponseDTOUser);
+                    return result;
                 }
             }
         }
 
-        return scoreResponseDTOUser;
+
+        result.put("status", "error");
+        result.put("scoreResponse", null);
+        return result;
     }
 
 
@@ -118,12 +158,12 @@ public class TestUserAnswerService {
 
 
     public TestUserAnswerDTO_User saveTestUserAnswer(TestUserAnswerDTO_User testUserAnswerDTO) {
-        if (isDuplicateAnswer(testUserAnswerDTO)) {
-            throw new IllegalArgumentException("Câu trả lời cho câu hỏi này đã tồn tại.");
-        }
-        if (testUserAnswerDTO.getTestResultId() == null) {
-            throw new IllegalArgumentException("TestResultId không được để trống");
-        }
+//        if (isDuplicateAnswer(testUserAnswerDTO)) {
+//            throw new IllegalArgumentException("Câu trả lời cho câu hỏi này đã tồn tại.");
+//        }
+//        if (testUserAnswerDTO.getTestResultId() == null) {
+//            throw new IllegalArgumentException("TestResultId không được để trống");
+//        }
         TestUserAnswer testUserAnswer = new TestUserAnswer();
 
         // Kiểm tra và set test, question, account, và course từ repository

@@ -47,7 +47,6 @@ public class AccountService {
                 .orElseThrow(() -> new AccountNotFoundException("Không tìm thấy tài khoản với ID: " + id));
     }
 
-
     public Account updatePassword(Account account) {
         return accountRepository.save(account);
     }
@@ -132,7 +131,6 @@ public class AccountService {
         }
     }
 
-
     public AccountDTO_Proflie findByAccountProfile(int id) {
         Optional<Account> account = accountRepository.findById(id);
 
@@ -150,7 +148,6 @@ public class AccountService {
 
         return dto;
     }
-
 
     public ResponsiveDTOJWT findByAccount(String email) {
         Account account = accountRepository.findByEmail(email);

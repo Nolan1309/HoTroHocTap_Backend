@@ -36,6 +36,7 @@ public class BlogController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<BlogDTO> getBlogByID(@PathVariable Integer id) {
         BlogDTO blogDTO = blogService.getBlogByID(id);
@@ -45,6 +46,7 @@ public class BlogController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<Page<BlogDTO>> GetAllBlogByCategoryID(@PathVariable Integer categoryId,Pageable pageable) {
         Page<BlogDTO> blogPage = blogService.getBlogsByCategoryId(categoryId,pageable);
@@ -53,5 +55,11 @@ public class BlogController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+    }
+
+    @GetMapping("/blogsall")
+    public ResponseEntity<List<BlogDTO>> getAllBlogDTOs() {
+        List<BlogDTO> blogDTOs = blogService.getAllBlogDTOs();
+        return ResponseEntity.ok(blogDTOs);
     }
 }
