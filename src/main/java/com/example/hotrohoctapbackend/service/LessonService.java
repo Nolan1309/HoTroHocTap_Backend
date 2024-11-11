@@ -1,6 +1,8 @@
 package com.example.hotrohoctapbackend.service;
 import com.example.hotrohoctapbackend.DTO.LessonDTO2;
+import com.example.hotrohoctapbackend.dao.CourseRepository;
 import com.example.hotrohoctapbackend.entity.Chapter;
+import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Lesson;
 import com.example.hotrohoctapbackend.dao.ChapterRepository;
 import com.example.hotrohoctapbackend.dao.LessonRepository;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class LessonService {
@@ -17,6 +20,9 @@ public class LessonService {
 
     @Autowired
     private ChapterRepository chapterRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
 
     public Lesson addLesson(LessonDTO2 lessonDTO2) {
         // Tìm chapter dựa trên chapter_id
@@ -33,6 +39,8 @@ public class LessonService {
         lesson.setCreatedAt(now);
         lesson.setUpdatedAt(now); // Khi tạo mới, CreatedAt và UpdatedAt sẽ giống nhau
 
+        Optional<Course> course = courseRepository.findById(lessonDTO2.getCourse_id());
+        lesson.setCourse(course.get());
         // Lưu lesson vào cơ sở dữ liệu
         return lessonRepository.save(lesson);
     }

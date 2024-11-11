@@ -14,6 +14,8 @@ public interface TestRepository extends JpaRepository<Test,Integer> {
 
     @Query(value = "SELECT * FROM tests WHERE lesson_id = :lessonId", nativeQuery = true)
     List<Test> findTestsByLessonId(@Param("lessonId") Integer lessonId);
+    @Query(value = "SELECT * FROM tests WHERE chapter_id = :chapterId", nativeQuery = true)
+    List<Test> findTestsByChapterId(@Param("chapterId") Integer chapterId);
 
     @Query(value = "SELECT * FROM tests WHERE chapter_id = :chapterId AND lesson_id IS NULL", nativeQuery = true)
     Test findChapterTestByChapterId(@Param("chapterId") Integer chapterId);

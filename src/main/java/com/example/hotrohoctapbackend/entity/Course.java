@@ -24,13 +24,13 @@ public class Course {
     @JoinColumn(name = "course_category_id")
     private CourseCategory courseCategory;
 
-    @Column(name = "description",columnDefinition = "TEXT")
+    @Column(name = "description",columnDefinition = "LONGTEXT")
     private String description;
 
-    @Column(name = "image_url", columnDefinition = "TEXT")
+    @Column(name = "image_url", columnDefinition = "LONGTEXT")
     private String image_url;
 
-    @Column(name = "course_output",columnDefinition = "TEXT")
+    @Column(name = "course_output",columnDefinition = "LONGTEXT")
     private String courseOutput;
 
     @Column(name = "language")

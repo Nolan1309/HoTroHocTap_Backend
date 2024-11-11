@@ -161,6 +161,6 @@ public class QuestionService {
         }
     }
     public List<Question> getQuestionsByTestIdAdmin(Integer testId) {
-        return questionRepository.findQuestionsByTestId(testId);
+        return questionRepository.findQuestionsByTestIdAdmin(testId);
     }
 }

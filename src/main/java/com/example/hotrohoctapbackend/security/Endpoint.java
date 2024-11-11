@@ -253,7 +253,8 @@ public class Endpoint {
             "/api/courses/add-course",
             "/api/lessons/add",
             "/api/questions/upload",
-            "/api/tests/add"
+            "/api/tests/add",
+            "/add-branch"
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",
@@ -394,7 +395,8 @@ public class Endpoint {
             "/api/general_documents/generaldocuments-update/**",
             "/api/blogs/update-branch/**",
             "/api/courses/update-course/**",
-            "/api/tests/**"
+            "/api/tests/**",
+            "/update-branch/**"
     };
 
 

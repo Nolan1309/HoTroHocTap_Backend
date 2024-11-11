@@ -4,22 +4,22 @@ import java.util.Date;
 import java.util.List;
 
 public class TestDTO {
-    private int id;
+    private Integer id;
     private String title;
     private String description;
     private boolean isSummary;
-    private int totalQuestion;
+    private Integer totalQuestion;
     private Date createdAt;
     private Date updatedAt;
 
-    private int lessonId;  // ID của Lesson
-    private int chapterId; // ID của Chapter
+    private Integer lessonId;  // ID của Lesson
+    private Integer chapterId; // ID của Chapter
 
     // Constructors
     public TestDTO() {
     }
 
-    public TestDTO(int id, String title, String description, boolean isSummary, int totalQuestion, Date createdAt, Date updatedAt, int lessonId, int chapterId) {
+    public TestDTO(Integer id, String title, String description, boolean isSummary, Integer totalQuestion, Date createdAt, Date updatedAt, Integer lessonId, Integer chapterId) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -32,11 +32,11 @@ public class TestDTO {
     }
 
     // Getters và Setters
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -64,11 +64,11 @@ public class TestDTO {
         this.isSummary = isSummary;
     }
 
-    public int getTotalQuestion() {
+    public Integer getTotalQuestion() {
         return totalQuestion;
     }
 
-    public void setTotalQuestion(int totalQuestion) {
+    public void setTotalQuestion(Integer totalQuestion) {
         this.totalQuestion = totalQuestion;
     }
 
@@ -88,19 +88,19 @@ public class TestDTO {
         this.updatedAt = updatedAt;
     }
 
-    public int getLessonId() {
+    public Integer getLessonId() {
         return lessonId;
     }
 
-    public void setLessonId(int lessonId) {
+    public void setLessonId(Integer lessonId) {
         this.lessonId = lessonId;
     }
 
-    public int getChapterId() {
+    public Integer getChapterId() {
         return chapterId;
     }
 
-    public void setChapterId(int chapterId) {
+    public void setChapterId(Integer chapterId) {
         this.chapterId = chapterId;
     }
 

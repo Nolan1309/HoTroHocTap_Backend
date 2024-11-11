@@ -26,10 +26,11 @@ public interface QuestionRepository extends JpaRepository<Question,Integer> {
             "JOIN test_answers ta ON q.id = ta.question_id " +
             "WHERE ta.test_id = :testId", nativeQuery = true)
     List<Object[]> findQuestionsResponsiveByTestId(@Param("testId") Integer testId);
+
     @Transactional
     @Modifying
     @Query(value = "DELETE FROM questions WHERE id IN (:ids)", nativeQuery = true)
     void deleteQuestionsByIds(List<Integer> ids);
     @Query(value = "SELECT q.* FROM questions q INNER JOIN test_question tq ON q.id = tq.question_id WHERE tq.test_id = :testId", nativeQuery = true)
-    List<Question> findQuestionsByTestId(@io.lettuce.core.dynamic.annotation.Param("testId") Integer testId);
+    List<Question> findQuestionsByTestIdAdmin(@io.lettuce.core.dynamic.annotation.Param("testId") Integer testId);
 }
