@@ -70,6 +70,21 @@ public class GeneralDocumentsService {
         ));
 //        return generalDocumentRepository.searchDocumentsByTitleOrCategory(keyword, pageable);
     }
+
+    public List<DocumentRelateUserDTO> getDocumentsByCategoryId(Long categoryId) {
+        List<Object[]> list = generalDocumentRepository.findDocumentSummariesByCategoryId(categoryId);
+        List<DocumentRelateUserDTO> listDocument = new ArrayList<>();
+        for (Object[] item : list){
+            DocumentRelateUserDTO documentRelateUserDTO = new DocumentRelateUserDTO();
+            documentRelateUserDTO.setId(((Number) item[0]).intValue());
+            documentRelateUserDTO.setTitle((String) item[1]);
+            documentRelateUserDTO.setTotalDownload(((Number) item[2]).intValue());
+            documentRelateUserDTO.setTotalView(((Number) item[3]).intValue());
+            listDocument.add(documentRelateUserDTO);
+        }
+        return listDocument;
+    }
+
     @Cacheable(value = "search", key = "'documentsData_100'")
     public List<Object[]> getDocumentsData_100() {
         return generalDocumentRepository.findTop100Documents();
@@ -78,7 +93,6 @@ public class GeneralDocumentsService {
     @Cacheable(value = "all", key = "#pageable.pageNumber")
     public Page<Object> getAll(Pageable pageable) {
         return generalDocumentRepository.GetAll(pageable);
-
     }
 
     public Object[] getDocumentsByIDDanhMuc(int id) {
@@ -89,7 +103,6 @@ public class GeneralDocumentsService {
     public Page<Object[]> getDocumentsByCategory(Long categoryId, Pageable pageable) {
         return generalDocumentRepository.findDocumentsByCategory(categoryId, pageable);
     }
-
 
     public Page<Object[]> getDocumentsWithTitle(String title, Pageable pageable) {
         return generalDocumentRepository.findDocumentsWithTitle(title, pageable);
@@ -164,19 +177,6 @@ public class GeneralDocumentsService {
         generalDocument.setImage_url(firebaseStorageService.uploadFileImage(thumbnail));
         return generalDocumentRepository.save(generalDocument);
     }
-
-
-//    public GeneralDocument saveDocument(MultipartFile file, String title, String description, int idCategory) {
-//        GeneralDocument generalDocument;
-//        try {
-//            generalDocument = firebaseStorageService.uploadFile(file, title, description, idCategory);
-//        } catch (IOException | ExecutionException | InterruptedException e) {
-//            e.printStackTrace();
-//            throw new RuntimeException("Error occurred while uploading the file", e);
-//        }
-//        return generalDocumentRepository.save(generalDocument);
-//    }
-
 
     public GeneralDocument updateGeneralDocument(int id, UpdateDocumentRequest updateRequest) {
         Optional<GeneralDocument> existingDocumentOpt = Optional.ofNullable(generalDocumentRepository.findById(id));

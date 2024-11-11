@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.dao;
 
+import com.example.hotrohoctapbackend.DTO.DocumentRelateUserDTO;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -211,6 +212,15 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
                     "OR c.name LIKE %:keyword%",
             nativeQuery = true)
     Page<Object[]> searchDocumentsByTitleOrCategory(@Param("keyword") String keyword, Pageable pageable);
+
+
+    @Query(value = "SELECT gd.id, gd.title, COUNT(gda.id) AS total_downloads, gd.view AS total_views " +
+            "FROM general_documents gd " +
+            "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id " +
+            "WHERE gd.id_category = :categoryId " +
+            "GROUP BY gd.id, gd.title, gd.view " +
+            "ORDER BY gd.title", nativeQuery = true)
+    List<Object[]> findDocumentSummariesByCategoryId(@Param("categoryId") Long categoryId);
 
 }
 

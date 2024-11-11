@@ -4,6 +4,7 @@ import com.example.hotrohoctapbackend.DTO.CategoryDTO;
 import com.example.hotrohoctapbackend.entity.Category;
 import com.example.hotrohoctapbackend.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,5 +66,23 @@ public class CategoryController {
     public List<Category> getCategoryById(@RequestParam int id_category) {
         return categoryService.findCategoryNameByIdCategory(id_category);
     }
-
+    @PutMapping("/update-branch/{id}")
+    public ResponseEntity<Category> updateCategory(@PathVariable int id, @RequestBody CategoryDTO categoryDTO) {
+        try {
+            // Gọi Service để cập nhật Category
+            Category updatedCategory = categoryService.updateCategory(id, categoryDTO);
+            return ResponseEntity.ok(updatedCategory);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @PostMapping("/add-branch")
+    public ResponseEntity<Category> insertCategory(@RequestBody CategoryDTO categoryDTO) {
+        try {
+            Category newCategory = categoryService.insertCategory(categoryDTO); // Call the service method to add a new category
+            return ResponseEntity.ok(newCategory); // Return the newly added category with status 200
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null); // Return 400 Bad Request if an error occurs
+        }
+    }
 }

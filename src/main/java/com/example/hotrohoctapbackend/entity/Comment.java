@@ -36,8 +36,8 @@ public class Comment {
     private Date updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "lesson_id", nullable = false)
-    private Lesson lesson;
+    @JoinColumn(name = "video_id", nullable = false)
+    private Video video;
 
     @ManyToOne
     @JoinColumn(name = "acc_id", nullable = false)

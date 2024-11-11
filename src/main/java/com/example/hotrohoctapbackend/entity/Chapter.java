@@ -21,6 +21,7 @@ public class Chapter {
     @JoinColumn(name = "course_id")
     private Course course;
 
+
 //    @OneToMany(mappedBy = "chapter",
 //            fetch = FetchType.LAZY
 //            , cascade = {
@@ -36,5 +37,4 @@ public class Chapter {
 //            CascadeType.PERSIST, CascadeType.REFRESH
 //    })
 //    private List<Test> testList;
-
 }

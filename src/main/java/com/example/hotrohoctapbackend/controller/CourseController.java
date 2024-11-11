@@ -1,9 +1,12 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.CourseDTO;
+import com.example.hotrohoctapbackend.DTO.User.CourseDTO_User_Profile;
 import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
+import com.example.hotrohoctapbackend.DTO.User.CourseInfoDetailDTO_User;
 import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.service.CourseService;
+import com.example.hotrohoctapbackend.service.EnrolledCourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,11 +24,14 @@ public class CourseController {
 
     @Autowired
     private CourseService courseService;
+    @Autowired
+    private EnrolledCourseService enrolledCoursesService;
 
     @GetMapping("/{id}")
-    public CourseDetailDTO getCourseById(@PathVariable Integer id){
+    public CourseDetailDTO getCourseById(@PathVariable Integer id) {
         return courseService.getCourseDetailById(id);
     }
+
     @GetMapping("/statistics/{courseId}")
     public ResponseEntity<Map<String, Integer>> getCourseStatistics(@PathVariable("courseId") Integer courseId) {
         Map<String, Integer> statistics = courseService.getCourseStatistics(courseId);
@@ -38,7 +44,7 @@ public class CourseController {
     }
 
     @GetMapping()
-    public ResponseEntity<Page<CourseDTO>> getAllCourses( Pageable pageable) {
+    public ResponseEntity<Page<CourseDTO>> getAllCourses(Pageable pageable) {
         Page<CourseDTO> coursesPage = courseService.getAllCourse(pageable);
         if (coursesPage.hasContent()) {
             return ResponseEntity.ok(coursesPage);
@@ -58,6 +64,7 @@ public class CourseController {
                     .body(null);
         }
     }
+
     @GetMapping("/categories")
     public ResponseEntity<Page<CourseDTO>> getCoursesByCategories(
             @RequestParam List<Integer> courseCategoryIds,
@@ -72,6 +79,46 @@ public class CourseController {
     public ResponseEntity<String> getCourseTypeById(@PathVariable("id") int id) {
         String courseType = courseService.getCourseTypeById(id);
         return ResponseEntity.ok(courseType); // Trả về type của khóa học
+    }
+
+    @GetMapping("/account/enrolled/{accountId}")
+    public Page<CourseDTO_User_Profile> getEnrolledCourses(
+            @PathVariable("accountId") Integer accountId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+
+        return courseService.getCoursesByAccountId(accountId, page, size);
+    }
+
+    //Section vao hoc
+    @GetMapping("/take-course/{courseId}")
+    public ResponseEntity<CourseInfoDetailDTO_User> getCourseDetails(@PathVariable Integer courseId) {
+        CourseInfoDetailDTO_User courseDetails = courseService.getCourseDetails(courseId);
+        return ResponseEntity.ok(courseDetails);
+    }
+
+    //Admin
+    @PostMapping("/add-course")
+    public ResponseEntity<Course> addCourse(@RequestBody CourseDTO courseDTO) {
+        try {
+            Course newCourse = courseService.addCourse(courseDTO);
+            return ResponseEntity.ok(newCourse);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+    @PutMapping("/update-course/{courseId}")
+    public ResponseEntity<Course> updateCourse(
+            @PathVariable Integer courseId,
+            @RequestBody CourseDTO courseDTO) {
+        try {
+            Course updatedCourse = courseService.updateCourse(courseId, courseDTO);
+            return ResponseEntity.ok(updatedCourse);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
 }

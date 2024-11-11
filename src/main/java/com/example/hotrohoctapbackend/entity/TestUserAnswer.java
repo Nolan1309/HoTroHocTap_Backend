@@ -20,6 +20,17 @@ public class TestUserAnswer {
     @JoinColumn(name = "question_id")
     private Question question;
 
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
+
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
     @Column(name = "result")
     private String result;
+    @ManyToOne
+    @JoinColumn(name = "test_result_id")
+    private TestResult testResult;
 }

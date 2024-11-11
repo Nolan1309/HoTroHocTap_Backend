@@ -60,6 +60,12 @@ public class GeneralDocumentsController {
         return generalDocumentsService.getDocumentsByCategory(id, pageable);
     }
 
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<DocumentRelateUserDTO>> getDocumentsByCategoryId(@PathVariable Long categoryId) {
+        List<DocumentRelateUserDTO> documents = generalDocumentsService.getDocumentsByCategoryId(categoryId);
+        return ResponseEntity.ok(documents);
+    }
+
     @GetMapping("/data")
     public List<Object[]> getDocumentsDataRange_100() {
         return generalDocumentsService.getDocumentsData_100();
