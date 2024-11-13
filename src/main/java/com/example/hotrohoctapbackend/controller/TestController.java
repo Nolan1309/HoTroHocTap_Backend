@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestUpdateDTO;
 import com.example.hotrohoctapbackend.DTO.User.QuestionDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.TestDTO_User;
@@ -56,6 +57,10 @@ public class TestController {
     public ResponseEntity<AdminTestUpdateDTO> getTestByIdAdmin(@PathVariable int id) {
         AdminTestUpdateDTO responseDTO = testService.getTestByIdAdmin(id);
         return ResponseEntity.ok(responseDTO);
+    }
+    @GetMapping("/getall")
+    public List<AdminTestGetDTO> getTestSummaries() {
+        return testService.getAllTestSummariesAdmin();
     }
     @PostMapping("/add")
     public ResponseEntity<Test> addTest(@RequestBody AdminTestUpdateDTO newTestDTO) {

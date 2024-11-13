@@ -28,5 +28,8 @@ public class Notification {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 }

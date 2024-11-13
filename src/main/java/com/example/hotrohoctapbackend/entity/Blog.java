@@ -39,4 +39,8 @@ public class Blog {
     @ManyToOne
     @JoinColumn(name = "author_id")
     private Account author;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 }

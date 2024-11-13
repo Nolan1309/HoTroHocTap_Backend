@@ -46,6 +46,9 @@ public class Test {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 
 }

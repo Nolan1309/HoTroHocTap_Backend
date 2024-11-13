@@ -42,5 +42,8 @@ public class TestResult {
 
     @Column(name = "result")
     private String result;
-
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 }

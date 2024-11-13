@@ -39,7 +39,10 @@ public class Discount {
 
     @Column(name = "updated_at")
     private LocalDateTime updated_at;
-
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 //    @OneToMany(mappedBy = "discount",
 //            fetch = FetchType.LAZY
 //            , cascade = {

@@ -42,4 +42,8 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "acc_id", nullable = false)
     private Account account;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 }

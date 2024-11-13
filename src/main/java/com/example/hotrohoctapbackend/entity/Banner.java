@@ -39,4 +39,8 @@ public class Banner {
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 }

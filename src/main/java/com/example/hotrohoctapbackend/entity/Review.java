@@ -33,4 +33,8 @@ public class Review {
 
     @Column(name = "created_at")
     private LocalDateTime created_at;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 }
