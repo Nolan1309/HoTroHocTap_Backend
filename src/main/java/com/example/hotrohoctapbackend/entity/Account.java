@@ -1,4 +1,5 @@
 package com.example.hotrohoctapbackend.entity;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -48,16 +49,29 @@ public class Account implements UserDetails {
     private LocalDateTime updatedAt;
 
 
-
     @ManyToOne
     @JoinColumn(name = "role_id")
     private RoleUser role;
 
-//    Method
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
+
+    @PrePersist
+    protected void onCreate() {
+        if (deletedDate == null) {
+            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
+        }
+    }
+
+    //    Method
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(role.getRoleName()));
     }
+
     @Override
     public String getUsername() {
         return email;

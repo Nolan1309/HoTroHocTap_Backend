@@ -3,6 +3,8 @@ package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.AccountDTO;
 import com.example.hotrohoctapbackend.DTO.AccountDTO_Proflie;
+import com.example.hotrohoctapbackend.DTO.Admin.AddAccountDTOAdmin;
+import com.example.hotrohoctapbackend.DTO.Admin.UpdateAccountDTOAdmin;
 import com.example.hotrohoctapbackend.DTO.ResponsiveDTOJWT;
 import com.example.hotrohoctapbackend.DTO.UpdateAccountDTO;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
@@ -11,6 +13,7 @@ import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.RoleUser;
 import com.example.hotrohoctapbackend.exception.AccountNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -182,5 +185,124 @@ public class AccountService {
         Map<String, String> successResponse = new HashMap<>();
         successResponse.put("message", "Đăng ký thành công!");
         return ResponseEntity.ok(successResponse);
+    }
+
+    public UpdateAccountDTOAdmin getAccountById(Integer id) {
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Account not found with id: " + id));
+
+        return convertToDTOAdmin(account);
+    }
+
+    public ResponseEntity<?> updateAccountAdmin(UpdateAccountDTOAdmin updatedAccountDTO) {
+        Optional<Account> existingAccountOpt = accountRepository.findById(updatedAccountDTO.getId());
+
+        if (existingAccountOpt.isPresent()) {
+            Account existingAccount = existingAccountOpt.get();
+            existingAccount.setFullname(updatedAccountDTO.getFullname());
+            existingAccount.setEmail(updatedAccountDTO.getEmail());
+            existingAccount.setPhone(updatedAccountDTO.getPhone());
+            existingAccount.setGender(updatedAccountDTO.getGender());
+
+            if (updatedAccountDTO.getImage() != null) {
+                existingAccount.setImage(updatedAccountDTO.getImage());
+            }else{
+                existingAccount.setImage(existingAccountOpt.get().getImage());
+            }
+
+
+            existingAccount.setBirthday(updatedAccountDTO.getBirthday());
+            existingAccount.setUpdatedAt(LocalDateTime.now());
+
+            // Kiểm tra và cập nhật role nếu có
+            if (updatedAccountDTO.getRoleId() != null) {
+                RoleUser role = roleUserRepository.findById(updatedAccountDTO.getRoleId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy Role với id: " + updatedAccountDTO.getRoleId()));
+                existingAccount.setRole(role);
+            }
+
+            Account updatedAccount = accountRepository.save(existingAccount);
+            return ResponseEntity.ok(updatedAccount);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy Account với id: " + updatedAccountDTO.getId());
+        }
+    }
+
+    public Account deleteAccountAdmin(int accountId) {
+        // Tìm tài khoản theo ID
+        Optional<Account> accountOpt = accountRepository.findById(accountId);
+
+        if (accountOpt.isPresent()) {
+            Account account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(true);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return accountRepository.save(account);
+        } else {
+            throw new RuntimeException("Account not found with id: " + accountId);
+        }
+    }
+    public Account activeAccountAdmin(int accountId) {
+        // Tìm tài khoản theo ID
+        Optional<Account> accountOpt = accountRepository.findById(accountId);
+
+        if (accountOpt.isPresent()) {
+            Account account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(false);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return accountRepository.save(account);
+        } else {
+            throw new RuntimeException("Account not found with id: " + accountId);
+        }
+    }
+    public Account addAccountAdmin(AddAccountDTOAdmin accountDTOAdmin) {
+        // Tạo đối tượng Account mới
+        Account newAccount = new Account();
+
+        // Đặt các thuộc tính cho Account từ DTO
+        newAccount.setFullname(accountDTOAdmin.getFullname());
+        newAccount.setEmail(accountDTOAdmin.getEmail());
+        newAccount.setPhone(accountDTOAdmin.getPhone());
+        newAccount.setGender(accountDTOAdmin.getGender());
+        newAccount.setBirthday(accountDTOAdmin.getBirthday());
+        newAccount.setImage(accountDTOAdmin.getImage());
+
+        // Mặc định ban đầu cho trường createdAt và updatedAt là thời điểm hiện tại
+        newAccount.setCreatedAt(LocalDateTime.now());
+        newAccount.setUpdatedAt(LocalDateTime.now());
+
+        // Thiết lập role cho tài khoản mới
+        if (accountDTOAdmin.getRoleId() != null) {
+            RoleUser role = roleUserRepository.findById(accountDTOAdmin.getRoleId())
+                    .orElseThrow(() -> new RuntimeException("Role not found with ID: " + accountDTOAdmin.getRoleId()));
+            newAccount.setRole(role);
+        }
+
+        // Thiết lập trạng thái ban đầu cho isDeleted và deletedDate
+        newAccount.setDeleted(false);
+        newAccount.setDeletedDate(LocalDateTime.now());
+
+        // Mã hóa mật khẩu
+        String encodedPassword = passwordEncoder.encode(accountDTOAdmin.getPassword());
+        newAccount.setPassword(encodedPassword);
+
+        // Lưu đối tượng Account mới vào cơ sở dữ liệu
+        return accountRepository.save(newAccount);
+    }
+
+    private UpdateAccountDTOAdmin convertToDTOAdmin(Account account) {
+        UpdateAccountDTOAdmin dto = new UpdateAccountDTOAdmin();
+        dto.setId(account.getId());
+        dto.setFullname(account.getFullname());
+        dto.setEmail(account.getEmail());
+        dto.setPhone(account.getPhone());
+        dto.setGender(account.getGender());
+        dto.setImage(account.getImage());
+        dto.setBirthday(account.getBirthday());
+        dto.setRoleId(account.getRole().getId());
+        return dto;
     }
 }

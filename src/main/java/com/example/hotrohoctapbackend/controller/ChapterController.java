@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.Admin.ChapterDTOAdmin;
 import com.example.hotrohoctapbackend.entity.Chapter;
 import com.example.hotrohoctapbackend.DTO.ChapterDTO;
 import com.example.hotrohoctapbackend.service.ChapterService;
@@ -29,5 +30,13 @@ public class ChapterController {
         Chapter newChapter = chapterService.addChapter(chapterDTO);
         return ResponseEntity.ok(newChapter);
     }
+
+    //ADmin get
+    @GetMapping("/admin-all")
+    public List<ChapterDTOAdmin> getChaptersAllAdmin() {
+        return chapterService.findAllChapters();
+    }
+
+
 
 }

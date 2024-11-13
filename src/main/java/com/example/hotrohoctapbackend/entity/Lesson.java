@@ -36,5 +36,11 @@ public class Lesson {
     @JsonIgnore
     private Course course;
 
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
+
 
 }

@@ -20,7 +20,7 @@ public class Video {
     @Column(name = "videoTitle")
     private String title;
 
-    @Column(name = "url")
+    @Column(name = "url",columnDefinition = "TEXT")
     private String url;
     @Column(name = "documentShort",columnDefinition = "TEXT")
     private String documentShort;
@@ -35,4 +35,17 @@ public class Video {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
+
+    @PrePersist
+    protected void onCreate() {
+        if (deletedDate == null) {
+            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
+        }
+    }
 }

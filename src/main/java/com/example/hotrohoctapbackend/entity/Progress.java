@@ -44,4 +44,5 @@ public class Progress {
     @JoinColumn(name = "lessonId")
     private Lesson lesson;
 
+
 }

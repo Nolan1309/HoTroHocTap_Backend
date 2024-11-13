@@ -135,7 +135,6 @@ public class Endpoint {
             "/user_vipsubscriptions/**",
 
 
-
     };
     public static final String[] PUBLIC_PUT_ENDPOINS = {
             "/user_notifications",
@@ -175,7 +174,10 @@ public class Endpoint {
             "/api/questions/export/excel",
             "/api/questions/tests/questions/**",
             "/api/tests/chitiet/**",
-            "/api/payment-details/**"
+            "/api/payment-details/**",
+            "/api/account/admin/**",
+            "/api/chapters/admin-all",
+            "/api/lessons/**"
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -254,7 +256,10 @@ public class Endpoint {
             "/api/lessons/add",
             "/api/questions/upload",
             "/api/tests/add",
-            "/add-branch"
+            "/add-branch",
+            "/api/account/admin/add",
+//            "/api/videos/uploadVideo",
+            "/api/lessons/updateLessonWithVideo"
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",
@@ -323,7 +328,8 @@ public class Endpoint {
             "/videos/**",
             "/vipsubscriptions",
             "/vipsubscriptions/**",
-            "/api/questions"
+            "/api/questions",
+            "/api/videos/**"
     };
     public static final String[] ADMIN_PUT_ENDPOINS = {
             "/accounts",
@@ -396,7 +402,11 @@ public class Endpoint {
             "/api/blogs/update-branch/**",
             "/api/courses/update-course/**",
             "/api/tests/**",
-            "/update-branch/**"
+            "/update-branch/**",
+            "/api/account/admin/**",
+            "/api/account/delete/**",
+            "/api/account/active/**",
+            "/api/lessons/updateLessonWithVideoOrDocument"
     };
 
 

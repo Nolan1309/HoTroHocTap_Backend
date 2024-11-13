@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.Admin.ChapterDTOAdmin;
 import com.example.hotrohoctapbackend.DTO.ChapterDTO;
 
 import com.example.hotrohoctapbackend.DTO.LessonDTO;
@@ -82,6 +83,22 @@ public class ChapterService {
 
         return chapterDTOList;
 
+    }
+
+    public List<ChapterDTOAdmin> findAllChapters()
+    {
+        List<Chapter> chapters = chapterRepository.findAll();
+
+        List<ChapterDTOAdmin> chapterDTOAdmins = new ArrayList<>();
+        for (Chapter item : chapters){
+            ChapterDTOAdmin chapterDTOAdmin = new ChapterDTOAdmin();
+            chapterDTOAdmin.setId(item.getId());
+            chapterDTOAdmin.setTitle(item.getTitle());
+            chapterDTOAdmin.setCourse_id(item.getCourse().getId());
+            chapterDTOAdmin.setDeleted(item.isDeleted());
+            chapterDTOAdmins.add(chapterDTOAdmin);
+        }
+        return chapterDTOAdmins;
     }
 
 //    private ChapterDTO convertToDTO(Chapter chapter) {

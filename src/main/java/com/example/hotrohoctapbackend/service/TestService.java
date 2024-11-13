@@ -160,4 +160,8 @@ public class TestService {
 
         return responseDTO;
     }
+
+    public Test addTestToLessonAdmin(Test test){
+        return testRepository.saveAndFlush(test);
+    }
 }

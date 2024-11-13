@@ -1,4 +1,6 @@
 package com.example.hotrohoctapbackend.service;
+
+import com.example.hotrohoctapbackend.DTO.Admin.LessonDTOVideo_Admin;
 import com.example.hotrohoctapbackend.DTO.LessonDTO2;
 import com.example.hotrohoctapbackend.dao.CourseRepository;
 import com.example.hotrohoctapbackend.entity.Chapter;
@@ -9,7 +11,10 @@ import com.example.hotrohoctapbackend.dao.LessonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -39,9 +44,77 @@ public class LessonService {
         lesson.setCreatedAt(now);
         lesson.setUpdatedAt(now); // Khi tạo mới, CreatedAt và UpdatedAt sẽ giống nhau
 
+        lesson.setDuration(lessonDTO2.getDuration());
         Optional<Course> course = courseRepository.findById(lessonDTO2.getCourse_id());
+
+
         lesson.setCourse(course.get());
+
+        lesson.setDeleted(false);
+        lesson.setDeletedDate(LocalDateTime.now());
         // Lưu lesson vào cơ sở dữ liệu
+        return lessonRepository.save(lesson);
+    }
+
+    public LessonDTO2 getLessonByIdAdmin(int id) {
+        Optional<Lesson> optionalLesson = lessonRepository.findById(id);
+        if (optionalLesson.isPresent()) {
+            Lesson lesson = optionalLesson.get();
+            return convertToDTO(lesson);
+        } else {
+            throw new RuntimeException("Lesson not found with id: " + id);
+        }
+    }
+
+    public List<LessonDTOVideo_Admin> getLessonVideoTestDataByLessonId(int lessonId) {
+
+        List<Object[]> list = lessonRepository.findLessonVideoTestDataByLessonId(lessonId);
+
+        List<LessonDTOVideo_Admin> lessonDTOVideoAdmins = new ArrayList<>();
+
+        for (Object[] item : list) {
+            LessonDTOVideo_Admin lessonDTOVideoAdmin = new LessonDTOVideo_Admin();
+
+            // Ánh xạ các giá trị từ Object[] vào LessonDTOVideo_Admin
+            lessonDTOVideoAdmin.setId((Integer) item[0]);            // id
+            lessonDTOVideoAdmin.setTitle((String) item[1]);          // title
+            lessonDTOVideoAdmin.setCreatedAt(((Timestamp) item[2]).toLocalDateTime()); // createdAt
+            lessonDTOVideoAdmin.setUpdatedAt(((Timestamp) item[3]).toLocalDateTime());
+            lessonDTOVideoAdmin.setDuration((Integer) item[4]);      // duration
+            lessonDTOVideoAdmin.setChapter_id((Integer) item[5]);    // chapter_id
+            lessonDTOVideoAdmin.setCourse_id((Integer) item[6]);     // course_id
+            lessonDTOVideoAdmin.setVideo_id((Integer) item[7]);      // video_id
+            lessonDTOVideoAdmin.setVideo_title((String) item[8]);    // video_title
+            lessonDTOVideoAdmin.setVideo_url((String) item[9]);      // video_url
+
+            lessonDTOVideoAdmin.setDocument_short((String) item[10]);      // video_url
+            lessonDTOVideoAdmin.setDocument_url((String) item[11]);      // video_url
+
+            lessonDTOVideoAdmin.setTest_id((Integer) item[12]);      // test_id
+            lessonDTOVideoAdmin.setTest_title((String) item[13]);    // test_title
+
+            lessonDTOVideoAdmins.add(lessonDTOVideoAdmin);
+
+        }
+
+
+        return lessonDTOVideoAdmins;
+    }
+
+    private LessonDTO2 convertToDTO(Lesson lesson) {
+        return new LessonDTO2(
+                lesson.getId(),
+                lesson.getTitle(),
+                lesson.getCreatedAt(),
+                lesson.getUpdatedAt(),
+                lesson.getDuration(),
+                lesson.getChapter().getId(),
+                lesson.getCourse().getId()
+        );
+    }
+
+    public Lesson updateLessonAdmin(Lesson lesson) {
+        lesson.setUpdatedAt(LocalDateTime.now());
         return lessonRepository.save(lesson);
     }
 }

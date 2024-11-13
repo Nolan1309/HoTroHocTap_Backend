@@ -2,11 +2,13 @@ package com.example.hotrohoctapbackend.controller;
 
 
 import com.example.hotrohoctapbackend.DTO.User.VideoDTO_User;
+import com.example.hotrohoctapbackend.entity.Video;
 import com.example.hotrohoctapbackend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/videos")
@@ -34,5 +36,26 @@ public class VideoController {
         } else {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
+    }
+
+
+//    //ADMIN
+//    @PostMapping("/uploadVideo")
+//    public ResponseEntity<Video> uploadVideoAdmin(
+//            @RequestParam("title") String title,
+//            @RequestParam("description") String description,
+//            @RequestParam("file") MultipartFile file) {
+//
+//        try {
+//            Video video = videoService.uploadVideo(title, description, file);
+//            return ResponseEntity.ok(video);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(500).body(null);
+//        }
+//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteVideoAdmin(@PathVariable int id) {
+        videoService.deleteVideo(id);
+        return ResponseEntity.noContent().build();
     }
 }

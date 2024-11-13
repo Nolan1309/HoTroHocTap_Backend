@@ -11,7 +11,7 @@ public class LessonDTO2 {
     private String title;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private int duration;  // Đơn vị tính là phút
+    private Integer duration;  // Đơn vị tính là phút
     private int chapter_id;
     private Integer course_id;
 
@@ -19,7 +19,7 @@ public class LessonDTO2 {
     public LessonDTO2() {
     }
 
-    public LessonDTO2(int id, String title, LocalDateTime createdAt, LocalDateTime updatedAt, int duration, int chapter_id, Integer course_id) {
+    public LessonDTO2(int id, String title, LocalDateTime createdAt, LocalDateTime updatedAt, Integer duration, int chapter_id, Integer course_id) {
         this.id = id;
         this.title = title;
         this.createdAt = createdAt;

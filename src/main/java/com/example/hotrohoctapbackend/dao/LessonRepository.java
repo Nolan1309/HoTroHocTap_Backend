@@ -14,4 +14,29 @@ public interface LessonRepository extends JpaRepository<Lesson,Integer> {
     List<Lesson> findLessonsByChapterId(@Param("chapterId") Integer chapterId);
 
     List<Lesson> findByChapter_IdAndCourse_Id(int chapterId, int courseId);
+
+    @Query(value = "SELECT " +
+            "l.id AS id, " +
+            "l.lesson_title AS title, " +
+            "l.created_at AS createdAt, " +
+            "l.updated_at AS updatedAt, " +
+            "l.duration AS duration, " +
+            "l.chapter_id AS chapter_id, " +
+            "l.course_id AS course_id, " +
+            "v.id AS video_id, " +
+            "v.video_title AS video_title, " +
+            "v.url AS video_url, " +
+            "v.document_short AS document_short, " +
+            "v.document_url AS document_url, " +
+            "t.id AS test_id, " +
+            "t.title AS test_title " +
+            "FROM lessons l " +
+            "LEFT JOIN videos v ON l.id = v.lesson_id " +
+            "LEFT JOIN tests t ON l.id = t.lesson_id " +
+            "WHERE l.id = :lessonId",  // Thêm điều kiện WHERE
+            nativeQuery = true)
+    List<Object[]> findLessonVideoTestDataByLessonId(@Param("lessonId") int lessonId);
+
+
+
 }
