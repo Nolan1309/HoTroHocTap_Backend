@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminQuestionGetDTO;
 import com.example.hotrohoctapbackend.DTO.User.QuestionDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.QuestionResponseDTO_User;
 import com.example.hotrohoctapbackend.dao.QuestionRepository;
@@ -13,6 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -162,5 +165,51 @@ public class QuestionService {
     }
     public List<Question> getQuestionsByTestIdAdmin(Integer testId) {
         return questionRepository.findQuestionsByTestIdAdmin(testId);
+    }
+    public AdminQuestionGetDTO getQuestionDetailsByIdAdmin(int id) {
+        return questionRepository.getQuestionDetailsById(id).stream()
+                .map(result -> new AdminQuestionGetDTO(
+                        (int) result[0],                // id
+                        (String) result[1],              // content
+                        (String) result[2],              // optionA
+                        (String) result[3],              // optionB
+                        (String) result[4],              // optionC
+                        (String) result[5],              // optionD
+                        (String) result[6],              // result
+                        (String) result[7],              // instruction
+                        (String) result[8]               // resultCheck
+                ))
+                .findFirst()
+                .orElse(null);
+    }
+    public boolean updateQuestionAdmin(int id, AdminQuestionGetDTO adminQuestionGetDTO) {
+        Question question = questionRepository.findById(id).orElse(null);
+        if (question == null) {
+            return false;
+        }
+        question.setContent(adminQuestionGetDTO.getContent());
+        question.setOptionA(adminQuestionGetDTO.getOptionA());
+        question.setOptionB(adminQuestionGetDTO.getOptionB());
+        question.setOptionC(adminQuestionGetDTO.getOptionC());
+        question.setOptionD(adminQuestionGetDTO.getOptionD());
+        question.setResult(adminQuestionGetDTO.getResult());
+        question.setInstruction(adminQuestionGetDTO.getInstruction());
+        question.setResult_check(adminQuestionGetDTO.getResultCheck());
+        question.setUpdatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+        questionRepository.save(question);
+        return true;
+    }
+    public void addQuestionAdmin(AdminQuestionGetDTO adminQuestionGetDTO) {
+        Question question = new Question();
+        question.setContent(adminQuestionGetDTO.getContent());
+        question.setOptionA(adminQuestionGetDTO.getOptionA());
+        question.setOptionB(adminQuestionGetDTO.getOptionB());
+        question.setOptionC(adminQuestionGetDTO.getOptionC());
+        question.setOptionD(adminQuestionGetDTO.getOptionD());
+        question.setResult(adminQuestionGetDTO.getResult());
+        question.setInstruction(adminQuestionGetDTO.getInstruction());
+        question.setResult_check(adminQuestionGetDTO.getResultCheck());
+        question.setCreatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+        questionRepository.save(question);
     }
 }

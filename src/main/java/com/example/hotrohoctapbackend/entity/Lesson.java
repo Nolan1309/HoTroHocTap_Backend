@@ -35,6 +35,9 @@ public class Lesson {
     @JoinColumn(name = "course_id")
     @JsonIgnore
     private Course course;
-
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 
 }

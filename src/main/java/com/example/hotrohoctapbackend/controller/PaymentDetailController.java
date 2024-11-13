@@ -61,7 +61,7 @@ public class PaymentDetailController {
         }
     }
 
-    @GetMapping("/payment-details/{paymentId}")
+    @GetMapping("/admin/{paymentId}")
     public List<AdminPaymentDetailDTO> getCoursePaymentDetailsByPaymentId(@PathVariable Integer paymentId) {
         return paymentDetailService.getCoursePaymentDetailsByPaymentId(paymentId);
     }

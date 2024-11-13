@@ -59,4 +59,8 @@ public class Course {
 
     @Column(name="type")
     private String type;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 }

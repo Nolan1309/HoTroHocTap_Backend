@@ -22,6 +22,9 @@ public class ActivityLogs {
 
     @Column(name = "activity_date")
     private LocalDateTime activity_date;
-
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 
 }

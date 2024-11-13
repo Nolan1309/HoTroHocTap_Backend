@@ -45,6 +45,9 @@ public class Question {
 
     @Column(name = "result_check")
     private String result_check;
-
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 
 }

@@ -3,6 +3,8 @@ package com.example.hotrohoctapbackend.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "user_answers")
@@ -33,4 +35,8 @@ public class TestUserAnswer {
     @ManyToOne
     @JoinColumn(name = "test_result_id")
     private TestResult testResult;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 }

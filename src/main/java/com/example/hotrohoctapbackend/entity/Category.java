@@ -25,7 +25,10 @@ public class Category {
 
     @Column(name = "level")
     private int level;
-
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 //    @OneToMany(mappedBy = "category",
 //            fetch = FetchType.LAZY
 //            , cascade = {

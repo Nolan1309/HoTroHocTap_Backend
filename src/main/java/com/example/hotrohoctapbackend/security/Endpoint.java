@@ -175,7 +175,9 @@ public class Endpoint {
             "/api/questions/export/excel",
             "/api/questions/tests/questions/**",
             "/api/tests/chitiet/**",
-            "/api/payment-details/**"
+            "/api/tests/getall",
+            "/api/payment-details/admin/**",
+            "/api/questions/detail/**"
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -254,7 +256,8 @@ public class Endpoint {
             "/api/lessons/add",
             "/api/questions/upload",
             "/api/tests/add",
-            "/add-branch"
+            "/add-branch",
+            "/api/questions/add"
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",
@@ -396,7 +399,8 @@ public class Endpoint {
             "/api/blogs/update-branch/**",
             "/api/courses/update-course/**",
             "/api/tests/**",
-            "/update-branch/**"
+            "/update-branch/**",
+            "/api/questions/update/**"
     };
 
 
