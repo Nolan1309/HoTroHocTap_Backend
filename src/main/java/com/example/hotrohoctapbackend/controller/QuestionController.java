@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminQuestionGetDTO;
 import com.example.hotrohoctapbackend.DTO.User.QuestionResponseDTO_User;
 import com.example.hotrohoctapbackend.entity.Question;
 import com.example.hotrohoctapbackend.service.QuestionService;
@@ -68,5 +69,36 @@ public class QuestionController {
     @GetMapping("/tests/questions/{testId}")
     public List<Question> getQuestionsByTestIdAdmin(@PathVariable Integer testId) {
         return questionService.getQuestionsByTestIdAdmin(testId);
+    }
+    @GetMapping("detail/{id}")
+    public ResponseEntity<AdminQuestionGetDTO> getQuestionDetailsById(@PathVariable int id) {
+        AdminQuestionGetDTO questionDTO = questionService.getQuestionDetailsByIdAdmin(id);
+        if (questionDTO != null) {
+            return ResponseEntity.ok(questionDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @PostMapping("/add")
+    public ResponseEntity<String> addQuestion(@RequestBody AdminQuestionGetDTO adminQuestionGetDTO) {
+        try {
+            questionService.addQuestionAdmin(adminQuestionGetDTO);
+            return new ResponseEntity<>("Thêm câu hỏi thành công", HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Có lỗi xảy ra khi thêm câu hỏi", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PutMapping("update/{id}")
+    public ResponseEntity<String> updateQuestion(@PathVariable int id, @RequestBody AdminQuestionGetDTO adminQuestionGetDTO) {
+        try {
+            boolean updated = questionService.updateQuestionAdmin(id, adminQuestionGetDTO);
+            if (updated) {
+                return new ResponseEntity<>("Cập nhật câu hỏi thành công", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Không tìm thấy câu hỏi", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Có lỗi xảy ra khi cập nhật câu hỏi", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

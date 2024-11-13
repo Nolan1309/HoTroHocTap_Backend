@@ -174,10 +174,16 @@ public class Endpoint {
             "/api/questions/export/excel",
             "/api/questions/tests/questions/**",
             "/api/tests/chitiet/**",
+
             "/api/payment-details/**",
             "/api/account/admin/**",
             "/api/chapters/admin-all",
-            "/api/lessons/**"
+            "/api/lessons/**",
+
+            "/api/tests/getall",
+            "/api/payment-details/admin/**",
+            "/api/questions/detail/**"
+
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -257,9 +263,13 @@ public class Endpoint {
             "/api/questions/upload",
             "/api/tests/add",
             "/add-branch",
+
             "/api/account/admin/add",
 //            "/api/videos/uploadVideo",
-            "/api/lessons/updateLessonWithVideo"
+            "/api/lessons/updateLessonWithVideo",
+
+            "/api/questions/add"
+
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",
@@ -406,7 +416,9 @@ public class Endpoint {
             "/api/account/admin/**",
             "/api/account/delete/**",
             "/api/account/active/**",
-            "/api/lessons/updateLessonWithVideoOrDocument"
+            "/api/lessons/updateLessonWithVideoOrDocument",
+            "/api/questions/update/**"
+
     };
 
 

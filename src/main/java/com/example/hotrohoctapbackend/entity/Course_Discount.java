@@ -20,7 +20,6 @@ public class Course_Discount {
     @JoinColumn(name = "discount_id")
     private Discount discount;
 
-
     @Column(name = "deletedDate")
     private LocalDateTime deletedDate;
 

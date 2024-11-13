@@ -58,5 +58,4 @@ public class Test {
             deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
         }
     }
-
 }

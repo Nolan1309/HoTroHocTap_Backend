@@ -20,7 +20,10 @@ public class Chapter {
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
-
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+    @Column(name = "isDeleted")
+    private boolean isDeleted;
 
     @Column(name = "deletedDate")
     private LocalDateTime deletedDate;

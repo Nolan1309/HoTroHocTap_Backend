@@ -42,5 +42,4 @@ public class Lesson {
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
 
-
 }

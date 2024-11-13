@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestUpdateDTO;
 import com.example.hotrohoctapbackend.DTO.User.TestDTO_User;
 import com.example.hotrohoctapbackend.dao.ChapterRepository;
@@ -10,11 +11,17 @@ import com.example.hotrohoctapbackend.entity.Chapter;
 import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Lesson;
 import com.example.hotrohoctapbackend.entity.Test;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TestService {
@@ -69,7 +76,7 @@ public class TestService {
     }
 
     @Transactional
-    public Test addTest(AdminTestUpdateDTO newTestDTO) {
+    public Test addTest(@NotNull AdminTestUpdateDTO newTestDTO) {
         // Khởi tạo một đối tượng Test mới
         Test test = new Test();
 
@@ -78,7 +85,7 @@ public class TestService {
         test.setDescription(newTestDTO.getDescription());
         test.setTotalQuestion(newTestDTO.getTotalQuestion());
         test.setSummary(newTestDTO.getIsSummary());
-
+        test.setCreatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
         test.setLesson(null);
 
 
@@ -101,7 +108,7 @@ public class TestService {
     public Test updateTest(int id, AdminTestUpdateDTO updateDTO)    {
         // Lấy Test từ database
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
-
+        test.setUpdatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
         // Cập nhật các trường
         if (updateDTO.getTitle() != null) {
             test.setTitle(updateDTO.getTitle());
@@ -138,7 +145,7 @@ public class TestService {
         return testRepository.save(test);
     }
 
-    public AdminTestUpdateDTO getTestByIdAdmin(int id)   {
+    public AdminTestUpdateDTO getTestByIdAdmin(int id)       {
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
 
         // Chuyển đổi Test sang AdminTestResponseDTO
@@ -161,7 +168,17 @@ public class TestService {
         return responseDTO;
     }
 
-    public Test addTestToLessonAdmin(Test test){
+    public Test addTestToLessonAdmin(Test test) {
         return testRepository.saveAndFlush(test);
+    }
+    public List<AdminTestGetDTO> getAllTestSummariesAdmin() {
+        return testRepository.findAllTestSummaries().stream()
+                .map(result -> new AdminTestGetDTO(
+                        (Integer) result[0],                // id
+                        (String) result[1],                 // title
+                        (Integer) result[2],                // totalQuestion
+                        (Date) result[3]                    // createdAt
+                ))
+                .collect(Collectors.toList());
     }
 }
