@@ -6,10 +6,7 @@ import com.example.hotrohoctapbackend.dao.ChapterRepository;
 import com.example.hotrohoctapbackend.dao.CourseRepository;
 import com.example.hotrohoctapbackend.dao.LessonRepository;
 import com.example.hotrohoctapbackend.dao.VideoRepository;
-import com.example.hotrohoctapbackend.entity.Chapter;
-import com.example.hotrohoctapbackend.entity.Course;
-import com.example.hotrohoctapbackend.entity.Lesson;
-import com.example.hotrohoctapbackend.entity.Video;
+import com.example.hotrohoctapbackend.entity.*;
 import com.example.hotrohoctapbackend.service.LessonService;
 import com.example.hotrohoctapbackend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,6 +158,26 @@ public class LessonController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/delete/{id}")
+    public ResponseEntity<?> deleteAccountAdmin(@PathVariable int id) {
+        try {
+            Lesson deletedLesson = lessonService.deleteLessonAdmin(id);
+            return ResponseEntity.ok().body("Lesson with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lesson not found with ID: " + id);
+        }
+    }
+
+    @PutMapping("/active/{id}")
+    public ResponseEntity<?> activeLessonAdmin(@PathVariable int id) {
+        try {
+            Lesson deletedLesson = lessonService.activeLessonAdmin(id);
+            return ResponseEntity.ok().body("Lesson with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lesson not found with ID: " + id);
         }
     }
 

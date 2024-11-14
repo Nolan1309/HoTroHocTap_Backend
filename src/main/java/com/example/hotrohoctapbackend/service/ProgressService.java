@@ -63,25 +63,25 @@ public class ProgressService {
         Chapter currentChapter = chapterRepository.findById(progressDTO.getChapterId())
                 .orElseThrow(() -> new RuntimeException("Chapter not found"));
 
-        Optional<Progress> existingProgress;
-        if (progressDTO.isChapterTest()) {
-            // Nếu là bài kiểm tra chương (lesson_id là NULL)
-            existingProgress = progressRepository.findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonIdIsNull(
-                    account.getId(), course.getId(), currentChapter.getId(), true
-            );
-        } else {
-            // Nếu là bài kiểm tra thông thường (lesson_id không NULL)
-            Lesson currentLesson = lessonRepository.findById(progressDTO.getLessonId())
-                    .orElseThrow(() -> new RuntimeException("Lesson not found"));
-            existingProgress = progressRepository.findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonId(
-                    account.getId(), course.getId(), currentChapter.getId(), false,currentLesson.getId()
-            );
-        }
-        if (existingProgress.isPresent() && existingProgress.get().isTestCompleted()) {
-            // Nếu đã hoàn thành bài kiểm tra trước đó và bài kiểm tra đã đạt
-            result.put("status", "already_completed");
-            return result;
-        }
+//        Optional<Progress> existingProgress;
+//        if (progressDTO.isChapterTest()) {
+//            // Nếu là bài kiểm tra chương (lesson_id là NULL)
+//            existingProgress = progressRepository.findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonIdIsNull(
+//                    account.getId(), course.getId(), currentChapter.getId(), true
+//            );
+//        } else {
+//            // Nếu là bài kiểm tra thông thường (lesson_id không NULL)
+//            Lesson currentLesson = lessonRepository.findById(progressDTO.getLessonId())
+//                    .orElseThrow(() -> new RuntimeException("Lesson not found"));
+//            existingProgress = progressRepository.findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonId(
+//                    account.getId(), course.getId(), currentChapter.getId(), false,currentLesson.getId()
+//            );
+//        }
+//        if (existingProgress.isPresent() && existingProgress.get().getTestScore() >= 8.0) {
+//            // Nếu đã hoàn thành bài kiểm tra trước đó và bài kiểm tra đã đạt
+//            result.put("status", "already_completed");
+//            return result;
+//        }
 
 
         // Khởi tạo một Progress mới

@@ -7,10 +7,7 @@ import com.example.hotrohoctapbackend.dao.ChapterRepository;
 import com.example.hotrohoctapbackend.dao.CourseRepository;
 import com.example.hotrohoctapbackend.dao.LessonRepository;
 import com.example.hotrohoctapbackend.dao.TestRepository;
-import com.example.hotrohoctapbackend.entity.Chapter;
-import com.example.hotrohoctapbackend.entity.Course;
-import com.example.hotrohoctapbackend.entity.Lesson;
-import com.example.hotrohoctapbackend.entity.Test;
+import com.example.hotrohoctapbackend.entity.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -104,8 +101,9 @@ public class TestService {
         // Lưu lại Test mới
         return testRepository.save(test);
     }
+
     @Transactional
-    public Test updateTest(int id, AdminTestUpdateDTO updateDTO)    {
+    public Test updateTest(int id, AdminTestUpdateDTO updateDTO) {
         // Lấy Test từ database
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
         test.setUpdatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
@@ -145,7 +143,7 @@ public class TestService {
         return testRepository.save(test);
     }
 
-    public AdminTestUpdateDTO getTestByIdAdmin(int id)       {
+    public AdminTestUpdateDTO getTestByIdAdmin(int id) {
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
 
         // Chuyển đổi Test sang AdminTestResponseDTO
@@ -171,14 +169,49 @@ public class TestService {
     public Test addTestToLessonAdmin(Test test) {
         return testRepository.saveAndFlush(test);
     }
+
     public List<AdminTestGetDTO> getAllTestSummariesAdmin() {
         return testRepository.findAllTestSummaries().stream()
                 .map(result -> new AdminTestGetDTO(
                         (Integer) result[0],                // id
                         (String) result[1],                 // title
                         (Integer) result[2],                // totalQuestion
-                        (Date) result[3]                    // createdAt
+                        (Date) result[3],                    // createdAt
+                        (Boolean) result[4]                // createdAt
                 ))
                 .collect(Collectors.toList());
+    }
+
+
+    public Test deleteTestAdmin(int testID) {
+        // Tìm tài khoản theo ID
+        Optional<Test> accountOpt = testRepository.findById(testID);
+
+        if (accountOpt.isPresent()) {
+            Test account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(true);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return testRepository.save(account);
+        } else {
+            throw new RuntimeException("Test not found with id: " + testID);
+        }
+    }
+
+    public Test activeTestAdmin(int testID) {
+        // Tìm tài khoản theo ID
+        Optional<Test> accountOpt = testRepository.findById(testID);
+
+        if (accountOpt.isPresent()) {
+            Test account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(false);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return testRepository.save(account);
+        } else {
+            throw new RuntimeException("Account not found with id: " + testID);
+        }
     }
 }

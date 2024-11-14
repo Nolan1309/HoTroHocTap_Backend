@@ -62,6 +62,7 @@ public class QuestionService {
         dto.setUpdatedAt((Date) result[7]);
         return dto;
     }
+
     public void saveQuestionsFromExcel(MultipartFile file) throws IOException {
         List<Question> questionList = new ArrayList<>();
 
@@ -111,9 +112,11 @@ public class QuestionService {
                 return "";
         }
     }
+
     public void deleteQuestions(List<Integer> ids) {
         questionRepository.deleteQuestionsByIds(ids);
     }
+
     public List<Question> getAllQuestions() {
         return questionRepository.findAll();
     }
@@ -163,9 +166,11 @@ public class QuestionService {
             throw new RuntimeException("Có lỗi xảy ra khi xuất dữ liệu ra file Excel");
         }
     }
+
     public List<Question> getQuestionsByTestIdAdmin(Integer testId) {
         return questionRepository.findQuestionsByTestIdAdmin(testId);
     }
+
     public AdminQuestionGetDTO getQuestionDetailsByIdAdmin(int id) {
         return questionRepository.getQuestionDetailsById(id).stream()
                 .map(result -> new AdminQuestionGetDTO(
@@ -182,6 +187,7 @@ public class QuestionService {
                 .findFirst()
                 .orElse(null);
     }
+
     public boolean updateQuestionAdmin(int id, AdminQuestionGetDTO adminQuestionGetDTO) {
         Question question = questionRepository.findById(id).orElse(null);
         if (question == null) {
@@ -195,10 +201,11 @@ public class QuestionService {
         question.setResult(adminQuestionGetDTO.getResult());
         question.setInstruction(adminQuestionGetDTO.getInstruction());
         question.setResult_check(adminQuestionGetDTO.getResultCheck());
-        question.setUpdatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+        question.setUpdatedAt(new Date());
         questionRepository.save(question);
         return true;
     }
+
     public void addQuestionAdmin(AdminQuestionGetDTO adminQuestionGetDTO) {
         Question question = new Question();
         question.setContent(adminQuestionGetDTO.getContent());
@@ -206,10 +213,26 @@ public class QuestionService {
         question.setOptionB(adminQuestionGetDTO.getOptionB());
         question.setOptionC(adminQuestionGetDTO.getOptionC());
         question.setOptionD(adminQuestionGetDTO.getOptionD());
-        question.setResult(adminQuestionGetDTO.getResult());
+
+        if (adminQuestionGetDTO.getResultCheck().equals("A")) {
+            question.setResult(adminQuestionGetDTO.getOptionA());
+            question.setResult_check(adminQuestionGetDTO.getResultCheck());
+        } else if (adminQuestionGetDTO.getResultCheck().equals("B")) {
+            question.setResult(adminQuestionGetDTO.getOptionB());
+            question.setResult_check(adminQuestionGetDTO.getResultCheck());
+        } else if (adminQuestionGetDTO.getResultCheck().equals("C")) {
+            question.setResult(adminQuestionGetDTO.getOptionC());
+            question.setResult_check(adminQuestionGetDTO.getResultCheck());
+        } else {
+            question.setResult(adminQuestionGetDTO.getOptionD());
+            question.setResult_check(adminQuestionGetDTO.getResultCheck());
+        }
+
+
         question.setInstruction(adminQuestionGetDTO.getInstruction());
-        question.setResult_check(adminQuestionGetDTO.getResultCheck());
-        question.setCreatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+
+        question.setCreatedAt(new Date());
+        question.setUpdatedAt(new Date());
         questionRepository.save(question);
     }
 }

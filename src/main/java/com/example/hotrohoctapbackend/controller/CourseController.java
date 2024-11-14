@@ -5,6 +5,7 @@ import com.example.hotrohoctapbackend.DTO.User.CourseDTO_User_Profile;
 import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
 import com.example.hotrohoctapbackend.DTO.User.CourseInfoDetailDTO_User;
 import com.example.hotrohoctapbackend.entity.Course;
+import com.example.hotrohoctapbackend.entity.Lesson;
 import com.example.hotrohoctapbackend.service.CourseService;
 import com.example.hotrohoctapbackend.service.EnrolledCourseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,6 +119,26 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PutMapping("/delete/{id}")
+    public ResponseEntity<?> deleteAccountAdmin(@PathVariable int id) {
+        try {
+            Course deletedCourse = courseService.deleteCourseAdmin(id);
+            return ResponseEntity.ok().body("Course with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
+        }
+    }
+
+    @PutMapping("/active/{id}")
+    public ResponseEntity<?> activeCourseAdmin(@PathVariable int id) {
+        try {
+            Course deletedCourse = courseService.activeCourseAdmin(id);
+            return ResponseEntity.ok().body("Course with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
         }
     }
 

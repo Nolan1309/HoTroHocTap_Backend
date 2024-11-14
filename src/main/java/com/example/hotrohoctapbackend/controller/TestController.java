@@ -137,4 +137,24 @@ public class TestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Có lỗi xảy ra: " + e.getMessage());
         }
     }
+    @PutMapping("/delete/{id}")
+    public ResponseEntity<?> deleteTestAdmin(@PathVariable int id) {
+        try {
+            Test deletedTest = testService.deleteTestAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+
+    @PutMapping("/active/{id}")
+    public ResponseEntity<?> activeQuestionAdmin(@PathVariable int id) {
+        try {
+            Test activedTest = testService.activeTestAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+
 }

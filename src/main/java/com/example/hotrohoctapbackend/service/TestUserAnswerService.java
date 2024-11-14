@@ -80,20 +80,20 @@ public class TestUserAnswerService {
 
                     boolean isLastChapter = progressService.isLastChapter(requestDTO.getCourseId(), requestDTO.getChapterId());
 
-                    if (requestDTO.isChapterTest()) {
-                        Optional<Progress> existingProgress = progressRepository
-                                .findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonIdIsNull(
-                                        requestDTO.getAccountId(), requestDTO.getCourseId(), requestDTO.getChapterId(), true);
-                        if (existingProgress.isPresent()) {
-                            if (isLastChapter) {
-                                result.put("status", "course_completed");
-                            } else {
-                                result.put("status", "already_completed");
-                            }
-                            result.put("scoreResponse", scoreResponseDTOUser);
-                            return result;
-                        }
-                    }
+//                    if (requestDTO.isChapterTest()) {
+//                        Optional<Progress> existingProgress = progressRepository
+//                                .findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonIdIsNull(
+//                                        requestDTO.getAccountId(), requestDTO.getCourseId(), requestDTO.getChapterId(), true);
+//                        if (existingProgress.isPresent()) {
+//                            if (isLastChapter) {
+//                                result.put("status", "course_completed");
+//                            } else {
+//                                result.put("status", "already_completed");
+//                            }
+//                            result.put("scoreResponse", scoreResponseDTOUser);
+//                            return result;
+//                        }
+//                    }
 
                     ProgressDTO_User progressDTOUser = new ProgressDTO_User();
                     progressDTOUser.setAccountId(requestDTO.getAccountId());

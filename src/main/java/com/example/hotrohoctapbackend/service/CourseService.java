@@ -316,4 +316,35 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
+    public Course deleteCourseAdmin(int courseId) {
+        // Tìm tài khoản theo ID
+        Optional<Course> accountOpt = courseRepository.findById(courseId);
+
+        if (accountOpt.isPresent()) {
+            Course account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(true);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return courseRepository.save(account);
+        } else {
+            throw new RuntimeException("Course not found with id: " + courseId);
+        }
+    }
+
+    public Course activeCourseAdmin(int courseId) {
+        // Tìm tài khoản theo ID
+        Optional<Course> lessonOpt = courseRepository.findById(courseId);
+
+        if (lessonOpt.isPresent()) {
+            Course lesson = lessonOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            lesson.setDeleted(false);
+            lesson.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return courseRepository.save(lesson);
+        } else {
+            throw new RuntimeException("Course not found with id: " + courseId);
+        }
+    }
 }

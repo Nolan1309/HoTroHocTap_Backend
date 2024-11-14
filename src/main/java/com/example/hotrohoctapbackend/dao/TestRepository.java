@@ -20,7 +20,7 @@ public interface TestRepository extends JpaRepository<Test,Integer> {
 
     @Query(value = "SELECT * FROM tests WHERE chapter_id = :chapterId AND lesson_id IS NULL", nativeQuery = true)
     Test findChapterTestByChapterId(@Param("chapterId") Integer chapterId);
-    @Query(value = "SELECT t.id, t.title, t.total_question AS totalQuestion, t.created_at AS createdAt " +
+    @Query(value = "SELECT t.id, t.title, t.total_question AS totalQuestion, t.created_at AS createdAt, t.is_deleted " +
             "FROM tests t", nativeQuery = true)
     List<Object[]> findAllTestSummaries();
 }

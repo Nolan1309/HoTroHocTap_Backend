@@ -417,8 +417,13 @@ public class Endpoint {
             "/api/account/delete/**",
             "/api/account/active/**",
             "/api/lessons/updateLessonWithVideoOrDocument",
-            "/api/questions/update/**"
-
+            "/api/questions/update/**",
+            "/api/tests/delete/**",
+            "/api/tests/active/**",
+            "/api/lessons/delete/**",
+            "/api/lessons/active/**",
+            "/api/courses/delete/**",
+            "/api/courses/active/**"
     };
 
 

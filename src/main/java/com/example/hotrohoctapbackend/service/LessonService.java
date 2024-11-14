@@ -8,6 +8,7 @@ import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Lesson;
 import com.example.hotrohoctapbackend.dao.ChapterRepository;
 import com.example.hotrohoctapbackend.dao.LessonRepository;
+import com.example.hotrohoctapbackend.entity.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -116,5 +117,37 @@ public class LessonService {
     public Lesson updateLessonAdmin(Lesson lesson) {
         lesson.setUpdatedAt(LocalDateTime.now());
         return lessonRepository.save(lesson);
+    }
+
+    public Lesson deleteLessonAdmin(int testID) {
+        // Tìm tài khoản theo ID
+        Optional<Lesson> accountOpt = lessonRepository.findById(testID);
+
+        if (accountOpt.isPresent()) {
+            Lesson account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(true);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return lessonRepository.save(account);
+        } else {
+            throw new RuntimeException("Lesson not found with id: " + testID);
+        }
+    }
+
+    public Lesson activeLessonAdmin(int testID) {
+        // Tìm tài khoản theo ID
+        Optional<Lesson> lessonOpt = lessonRepository.findById(testID);
+
+        if (lessonOpt.isPresent()) {
+            Lesson lesson = lessonOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            lesson.setDeleted(false);
+            lesson.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return lessonRepository.save(lesson);
+        } else {
+            throw new RuntimeException("Account not found with id: " + testID);
+        }
     }
 }

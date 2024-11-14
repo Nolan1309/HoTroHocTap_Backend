@@ -22,11 +22,6 @@ public class Chapter {
     private Course course;
     @Column(name = "deletedDate")
     private LocalDateTime deletedDate;
-    @Column(name = "isDeleted")
-    private boolean isDeleted;
-
-    @Column(name = "deletedDate")
-    private LocalDateTime deletedDate;
 
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
