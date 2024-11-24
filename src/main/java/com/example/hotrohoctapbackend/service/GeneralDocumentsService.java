@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -77,7 +76,7 @@ public class GeneralDocumentsService {
     public List<DocumentRelateUserDTO> getDocumentsByCategoryId(Long categoryId) {
         List<Object[]> list = generalDocumentRepository.findDocumentSummariesByCategoryId(categoryId);
         List<DocumentRelateUserDTO> listDocument = new ArrayList<>();
-        for (Object[] item : list) {
+        for (Object[] item : list){
             DocumentRelateUserDTO documentRelateUserDTO = new DocumentRelateUserDTO();
             documentRelateUserDTO.setId(((Number) item[0]).intValue());
             documentRelateUserDTO.setTitle((String) item[1]);
@@ -147,32 +146,25 @@ public class GeneralDocumentsService {
     }
 
     //Man
-    public List<GeneralDocumentDTO> getDocumentsWithCategories() {
-        List<Object[]> results = generalDocumentRepository.findDocumentsWithCategories();
+    public Page<GeneralDocumentDTO> getDocumentsWithCategories(Pageable pageable) {
+        Page<Object[]> resultsPage = generalDocumentRepository.findDocumentsWithCategories(pageable);
 
-        List<GeneralDocumentDTO> documentWithCategoriesList = new ArrayList<>();
-        for (Object[] row : results) {
-            Integer documentId = (Integer) row[0];
-            String documentTitle = (String) row[1];
-            String documentDescription = (String) row[2];
-            String documentUrl = (String) row[3];
-            String categoryLevel1 = (String) row[4];
-            String categoryLevel2 = (String) row[5];
-            String categoryLevel3 = (String) row[6];
+        // Map the content of the Page<Object[]> to a list of GeneralDocumentDTO
+        List<GeneralDocumentDTO> documentWithCategoriesList = resultsPage.getContent().stream()
+                .map(row -> new GeneralDocumentDTO(
+                        (Integer) row[0],   // documentId
+                        (String) row[1],    // documentTitle
+                        (String) row[2],    // documentDescription
+                        (String) row[3],    // documentUrl
+                        (Boolean) row[4],   // deleted
+                        (String) row[5],    // categoryLevel1
+                        (String) row[6],    // categoryLevel2
+                        (String) row[7]     // categoryLevel3
+                ))
+                .collect(Collectors.toList());
 
-            GeneralDocumentDTO dto = new GeneralDocumentDTO(
-                    documentId,
-                    documentTitle,
-                    documentDescription,
-                    documentUrl,
-                    categoryLevel1,
-                    categoryLevel2,
-                    categoryLevel3
-            );
-            documentWithCategoriesList.add(dto);
-        }
-
-        return documentWithCategoriesList;
+        // Return the mapped result as a Page
+        return new PageImpl<>(documentWithCategoriesList, pageable, resultsPage.getTotalElements());
     }
 
     public GeneralDocument saveDocument(MultipartFile file, String title, String description, int idCategory, MultipartFile thumbnail) throws Exception {
@@ -182,7 +174,7 @@ public class GeneralDocumentsService {
     }
 
     public GeneralDocument updateGeneralDocument(int id, UpdateDocumentRequest updateRequest) {
-        Optional<GeneralDocument> existingDocumentOpt = Optional.ofNullable(generalDocumentRepository.findById(id));
+        Optional<GeneralDocument> existingDocumentOpt = generalDocumentRepository.findById(id);
         if (existingDocumentOpt.isPresent()) {
             GeneralDocument existingDocument = existingDocumentOpt.get();
 
@@ -226,7 +218,6 @@ public class GeneralDocumentsService {
 
         return Optional.of(documentDetails);
     }
-
     public Page<GeneralDocumentDTO_User> getDocumentsByAccountIdUser(Long accountId, int page, int size) {
         int offset = page * size;
 
@@ -245,6 +236,34 @@ public class GeneralDocumentsService {
 
         return new PageImpl<>(documents, PageRequest.of(page, size), totalElements);
     }
+    public GeneralDocument hideGeneralDocumentAdmin(int documentID) {
+        // Tìm tài khoản theo ID
+        Optional<GeneralDocument> accountOpt = generalDocumentRepository.findById(documentID);
 
+        if (accountOpt.isPresent()) {
+            GeneralDocument account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(true);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return generalDocumentRepository.save(account);
+        } else {
+            throw new RuntimeException("Test not found with id: " + documentID);
+        }
+    }
 
+    public GeneralDocument showGeneralDocumentAdmin(int documentID) {
+        // Tìm tài khoản theo ID
+        Optional<GeneralDocument> accountOpt = generalDocumentRepository.findById(documentID);
+
+        if (accountOpt.isPresent()) {
+            GeneralDocument account = accountOpt.get();
+            account.setDeleted(false);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return generalDocumentRepository.save(account);
+        } else {
+            throw new RuntimeException("Account not found with id: " + documentID);
+        }
+    }
 }

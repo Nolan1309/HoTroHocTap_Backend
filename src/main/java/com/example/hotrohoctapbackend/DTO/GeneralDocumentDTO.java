@@ -7,15 +7,17 @@ public class GeneralDocumentDTO {
     private String documentTitle;
     private String documentDescription;
     private String documentUrl;
+    private boolean deleted;
     private String categoryLevel1;
     private String categoryLevel2;
     private String categoryLevel3;
 
-    public GeneralDocumentDTO(Integer documentId, String documentTitle, String documentDescription, String documentUrl, String categoryLevel1, String categoryLevel2, String categoryLevel3) {
+    public GeneralDocumentDTO(Integer documentId, String documentTitle, String documentDescription, String documentUrl, boolean deleted, String categoryLevel1, String categoryLevel2, String categoryLevel3) {
         this.documentId = documentId;
         this.documentTitle = documentTitle;
         this.documentDescription = documentDescription;
         this.documentUrl = documentUrl;
+        this.deleted = deleted;
         this.categoryLevel1 = categoryLevel1;
         this.categoryLevel2 = categoryLevel2;
         this.categoryLevel3 = categoryLevel3;
@@ -23,6 +25,7 @@ public class GeneralDocumentDTO {
 
     public GeneralDocumentDTO() {
     }
+
     public Integer getDocumentId() {
         return documentId;
     }
@@ -30,6 +33,7 @@ public class GeneralDocumentDTO {
     public void setDocumentId(Integer documentId) {
         this.documentId = documentId;
     }
+
     public String getDocumentTitle() {
         return documentTitle;
     }
@@ -52,6 +56,14 @@ public class GeneralDocumentDTO {
 
     public void setDocumentUrl(String documentUrl) {
         this.documentUrl = documentUrl;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     public String getCategoryLevel1() {
@@ -80,11 +92,12 @@ public class GeneralDocumentDTO {
 
     @Override
     public String toString() {
-        return "DocumentWithCategoriesDTO{" +
-                "documentId='" + documentId + '\'' +
-                "documentTitle='" + documentTitle + '\'' +
+        return "GeneralDocumentDTO{" +
+                "documentId=" + documentId +
+                ", documentTitle='" + documentTitle + '\'' +
                 ", documentDescription='" + documentDescription + '\'' +
                 ", documentUrl='" + documentUrl + '\'' +
+                ", deleted=" + deleted +
                 ", categoryLevel1='" + categoryLevel1 + '\'' +
                 ", categoryLevel2='" + categoryLevel2 + '\'' +
                 ", categoryLevel3='" + categoryLevel3 + '\'' +
@@ -96,7 +109,8 @@ public class GeneralDocumentDTO {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GeneralDocumentDTO that = (GeneralDocumentDTO) o;
-        return Objects.equals(documentId, that.documentId) &&
+        return deleted == that.deleted &&
+                Objects.equals(documentId, that.documentId) &&
                 Objects.equals(documentTitle, that.documentTitle) &&
                 Objects.equals(documentDescription, that.documentDescription) &&
                 Objects.equals(documentUrl, that.documentUrl) &&
@@ -107,6 +121,6 @@ public class GeneralDocumentDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(documentId, documentTitle, documentDescription, documentUrl, categoryLevel1, categoryLevel2, categoryLevel3);
+        return Objects.hash(documentId, documentTitle, documentDescription, documentUrl, deleted, categoryLevel1, categoryLevel2, categoryLevel3);
     }
 }

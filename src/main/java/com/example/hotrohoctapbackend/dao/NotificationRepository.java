@@ -1,7 +1,8 @@
 package com.example.hotrohoctapbackend.dao;
 
-import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
 import com.example.hotrohoctapbackend.entity.Notification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,5 +30,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
             "ORDER BY noti.created_at DESC", nativeQuery = true)
     List<Object[]> findNotificationsByUserIdNative(@Param("userId") Long userId);
 
+    @Query(value = "SELECT id, is_deleted, message, title, topic FROM notifications", nativeQuery = true)
+    Page<Object[]> findCustomNotificationsWithPagination(Pageable pageable);
 //    List<Notification> findByUserIdAndIsDeleted(Long userId, boolean isDeleted);
 }

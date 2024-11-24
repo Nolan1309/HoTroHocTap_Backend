@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.dao;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.example.hotrohoctapbackend.entity.Lesson;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -40,6 +41,21 @@ public interface LessonRepository extends JpaRepository<Lesson,Integer> {
     @Query(value = "SELECT COUNT(DISTINCT l.id) FROM lessons l WHERE l.course_id = :courseId", nativeQuery = true)
     Long countsLessonsByCourseIdUser(@Param("courseId") Integer courseId);
 
+    @Query(value = "SELECT " +
+            "l.id AS lesson_id, " +
+            "l.lesson_title AS lesson_title, " +
+            "c.courses_title AS course_name, " +
+            "ch.chapter_title AS chapter_name," +
+            "l.is_deleted AS deleted "+
+            "FROM lessons l " +
+            "LEFT JOIN courses c ON l.course_id = c.id " +
+            "LEFT JOIN chapters ch ON l.chapter_id = ch.id",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM lessons l " +
+                    "LEFT JOIN courses c ON l.course_id = c.id " +
+                    "LEFT JOIN chapters ch ON l.chapter_id = ch.id",
+            nativeQuery = true)
+    Page<Object[]> findLessonCourseChapterData(Pageable pageable);
 
 
 }

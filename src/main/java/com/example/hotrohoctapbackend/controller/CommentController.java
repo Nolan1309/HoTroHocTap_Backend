@@ -1,5 +1,5 @@
 package com.example.hotrohoctapbackend.controller;
-
+import com.example.hotrohoctapbackend.DTO.Admin.AdminCommentGetDTO;
 import com.example.hotrohoctapbackend.DTO.User.CommentDTO_User;
 import com.example.hotrohoctapbackend.entity.Comment;
 import com.example.hotrohoctapbackend.service.CommentService;
@@ -61,6 +61,47 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
-
+    @GetMapping("/getall")
+    public Page<AdminCommentGetDTO> getAllComments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return commentService.getAllCommentAdmin(page, size);
+    }
+    @PutMapping("/hide/{id}")
+    public ResponseEntity<?> hideCommnetAdmin(@PathVariable int id) {
+        try {
+            Comment hidedComment = commentService.hideCommentAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+    @PutMapping("/show/{id}")
+    public ResponseEntity<?> showCommnetAdmin(@PathVariable int id) {
+        try {
+            Comment showComment = commentService.showCommentAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+    @PutMapping("/active/{id}")
+    public ResponseEntity<?> activeCommnetAdmin(@PathVariable int id) {
+        try {
+            Comment activeComment = commentService.activeCommentAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+    @PutMapping("/unactive/{id}")
+    public ResponseEntity<?> unactiveCommentAdmin(@PathVariable int id) {
+        try {
+            Comment unactivedComment = commentService.unactiveCommentAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
 
 }

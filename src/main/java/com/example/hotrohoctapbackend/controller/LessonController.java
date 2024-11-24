@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminLessonGetDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.LessonDTOVideo_Admin;
 import com.example.hotrohoctapbackend.DTO.LessonDTO2;
 import com.example.hotrohoctapbackend.dao.ChapterRepository;
@@ -10,6 +11,7 @@ import com.example.hotrohoctapbackend.entity.*;
 import com.example.hotrohoctapbackend.service.LessonService;
 import com.example.hotrohoctapbackend.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -180,5 +182,11 @@ public class LessonController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Lesson not found with ID: " + id);
         }
     }
-
+    @GetMapping("/getall")
+    public ResponseEntity<Page<AdminLessonGetDTO>> getLessonsWithCourseAndChapter(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<AdminLessonGetDTO> lessons = lessonService.getLessonWithCourseAndChapter(page, size);
+        return ResponseEntity.ok(lessons);
+    }
 }

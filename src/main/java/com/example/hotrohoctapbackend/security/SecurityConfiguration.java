@@ -17,6 +17,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.Arrays;
 
 @Configuration
 public class SecurityConfiguration {
@@ -41,29 +44,29 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(
-                        config -> config
+                config -> config
 
 
-                                .requestMatchers(HttpMethod.GET, Endpoint.PUBLIC_GET_ENDPOINS).permitAll()
-                                .requestMatchers(HttpMethod.POST, Endpoint.PUBLIC_POST_ENDPOINS).permitAll()
-                                .requestMatchers(HttpMethod.PUT, Endpoint.PUBLIC_PUT_ENDPOINS).permitAll()
-                                .requestMatchers(HttpMethod.DELETE, Endpoint.PUBLIC_DELETE_ENDPOINS).permitAll()
+                        .requestMatchers(HttpMethod.GET, Endpoint.PUBLIC_GET_ENDPOINS).permitAll()
+                        .requestMatchers(HttpMethod.POST, Endpoint.PUBLIC_POST_ENDPOINS).permitAll()
+                        .requestMatchers(HttpMethod.PUT, Endpoint.PUBLIC_PUT_ENDPOINS).permitAll()
+                        .requestMatchers(HttpMethod.DELETE, Endpoint.PUBLIC_DELETE_ENDPOINS).permitAll()
 
-//                                .requestMatchers(HttpMethod.GET,"/api/tests/getall").hasAnyAuthority("STAFF","ADMIN")
-                                .requestMatchers(HttpMethod.GET, Endpoint.ADMIN_GET_ENDPOINT).hasAnyAuthority("ADMIN","STAFF")
-                                .requestMatchers(HttpMethod.POST, Endpoint.ADMIN_POST_ENDPOINS).hasAnyAuthority("ADMIN","STAFF")
-                                .requestMatchers(HttpMethod.DELETE, Endpoint.ADMIN_DELETE_ENDPOINS).hasAnyAuthority("ADMIN","STAFF")
-                                .requestMatchers(HttpMethod.PUT, Endpoint.ADMIN_PUT_ENDPOINS).hasAnyAuthority("ADMIN","STAFF")
 
-                                .requestMatchers(HttpMethod.GET, Endpoint.USER_GET_ENDPOINT).hasAuthority("USER")
-                                .requestMatchers(HttpMethod.POST, Endpoint.USER_POST_ENDPOINT).hasAuthority("USER")
-                                .requestMatchers(HttpMethod.PUT, Endpoint.USER_PUT_ENDPOINT).hasAuthority("USER")
-                                .requestMatchers(HttpMethod.DELETE, Endpoint.USER_DELETE_ENDPOINT).hasAuthority("USER")
+                        .requestMatchers(HttpMethod.GET, Endpoint.ADMIN_GET_ENDPOINT).hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, Endpoint.ADMIN_POST_ENDPOINS).hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, Endpoint.ADMIN_DELETE_ENDPOINS).hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, Endpoint.ADMIN_PUT_ENDPOINS).hasAuthority("ADMIN")
 
-                                .requestMatchers(HttpMethod.GET,"/ws","/ws/","/ws/info", "/oauth2/authorization/google", "/account/oauth2/success").permitAll()
-                                .requestMatchers(HttpMethod.POST,"/ws","/ws/","/ws/info", "/oauth2/authorization/google", "/account/oauth2/success").permitAll()
-                                .requestMatchers("/ws/**").permitAll()
-                                .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.GET, Endpoint.USER_GET_ENDPOINT).hasAuthority("USER")
+                        .requestMatchers(HttpMethod.POST, Endpoint.USER_POST_ENDPOINT).hasAuthority("USER")
+                        .requestMatchers(HttpMethod.PUT, Endpoint.USER_PUT_ENDPOINT).hasAuthority("USER")
+                        .requestMatchers(HttpMethod.DELETE, Endpoint.USER_DELETE_ENDPOINT).hasAuthority("USER")
+
+                        .requestMatchers(HttpMethod.GET,"/ws","/ws/","/ws/info", "/oauth2/authorization/google", "/account/oauth2/success").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/ws","/ws/","/ws/info", "/oauth2/authorization/google", "/account/oauth2/success").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .anyRequest().authenticated()
 
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -73,6 +76,16 @@ public class SecurityConfiguration {
                         )
                 );
 
+//        http.cors(cors -> {
+//            cors.configurationSource(request -> {
+//                CorsConfiguration corsConfig = new CorsConfiguration();
+//                corsConfig.addAllowedOrigin(Endpoint.front_end_host);
+//                corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+//                corsConfig.addAllowedHeader("*");
+//                return corsConfig;
+//            });
+//        });
+
         //Fillter truoc khi vo Check quyen
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -80,6 +93,8 @@ public class SecurityConfiguration {
 //        http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
+
+//        http.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.httpBasic(Customizer.withDefaults());
         http.csrf(csrf -> csrf.disable());
         return http.build();

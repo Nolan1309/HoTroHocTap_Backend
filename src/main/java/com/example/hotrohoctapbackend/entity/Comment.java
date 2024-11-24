@@ -53,6 +53,4 @@ public class Comment {
 
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
-
-
 }

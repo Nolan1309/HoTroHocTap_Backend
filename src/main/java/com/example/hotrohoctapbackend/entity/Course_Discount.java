@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 @Table(name = "course_discounts")
 public class Course_Discount {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Integer id;
-
+    private int id;
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
@@ -19,10 +19,10 @@ public class Course_Discount {
     @ManyToOne
     @JoinColumn(name = "discount_id")
     private Discount discount;
-
+    @Column(name = "isCheck")
+    private boolean isCheck = false;
     @Column(name = "deletedDate")
     private LocalDateTime deletedDate;
-
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
 

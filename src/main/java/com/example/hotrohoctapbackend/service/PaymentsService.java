@@ -1,7 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminPaymentDTO;
-import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO;
 import com.example.hotrohoctapbackend.DTO.PaymentResponseDTO;
 import com.example.hotrohoctapbackend.DTO.User.PaymentDetailDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.PaymentSummaryDTO_User;
@@ -12,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -53,15 +52,14 @@ public class PaymentsService {
         dto.setAccount_id(payment.get().getAccount().getId());
         return dto;
     }
-
     public PaymentsService(PaymentRepository paymentRepository) {
         this.paymentRepository = paymentRepository;
     }
 
-    public List<AdminPaymentDTO> getPayment() {
-        List<Object[]> rawResults = paymentRepository.findPayment();
+    public Page<AdminPaymentDTO> getPaymentAdmin(Pageable pageable) {
+        Page<Object[]> rawResults = paymentRepository.findPaymentAdmin(pageable);
 
-        return rawResults.stream().map(result ->
+        return rawResults.map(result ->
                 new AdminPaymentDTO(
                         (Integer) result[0],                   // payment_id
                         (String) result[1],                 // buyer_name
@@ -69,9 +67,8 @@ public class PaymentsService {
                         (Date) result[3],                   // payment_date
                         (String) result[4]                  // payment_method
                 )
-        ).collect(Collectors.toList());
+        );
     }
-
     public Page<PaymentSummaryDTO_User> getPaymentSummariesByAccountId(Long accountId, int page, int size) {
         int offset = page * size;
         List<Object[]> results = paymentRepository.findPaymentSummariesByAccountIdUser(accountId, offset, size);
@@ -110,5 +107,4 @@ public class PaymentsService {
                 ))
                 .collect(Collectors.toList());
     }
-
 }

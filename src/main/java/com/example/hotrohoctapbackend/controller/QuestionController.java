@@ -3,7 +3,9 @@ package com.example.hotrohoctapbackend.controller;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminQuestionGetDTO;
 import com.example.hotrohoctapbackend.DTO.User.QuestionResponseDTO_User;
 import com.example.hotrohoctapbackend.entity.Question;
+import com.example.hotrohoctapbackend.entity.Test;
 import com.example.hotrohoctapbackend.service.QuestionService;
+import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -65,7 +67,13 @@ public class QuestionController {
                 .headers(headers)
                 .body(excelData);
     }
-
+    @GetMapping("/all")
+    public Page<AdminQuestionGetDTO> getAllQuestions(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        // Trả về các câu hỏi với phân trang
+        return questionService.getAllQuestionsAdmin(page, size);
+    }
     @GetMapping("/tests/questions/{testId}")
     public List<Question> getQuestionsByTestIdAdmin(@PathVariable Integer testId) {
         return questionService.getQuestionsByTestIdAdmin(testId);
@@ -99,6 +107,25 @@ public class QuestionController {
             }
         } catch (Exception e) {
             return new ResponseEntity<>("Có lỗi xảy ra khi cập nhật câu hỏi", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PutMapping("/hide/{id}")
+    public ResponseEntity<?> deleteTestAdmin(@PathVariable int id) {
+        try {
+            Question deletedQuestion = questionService.deleteQuestionAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+
+    @PutMapping("/show/{id}")
+    public ResponseEntity<?> activeQuestionAdmin(@PathVariable int id) {
+        try {
+            Question activedQuestion = questionService.activeQuestionAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
         }
     }
 }

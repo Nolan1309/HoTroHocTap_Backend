@@ -1,5 +1,8 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseGetDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseOfDiscount;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseResultDTO;
 import com.example.hotrohoctapbackend.DTO.CourseDTO;
 import com.example.hotrohoctapbackend.DTO.User.CourseDTO_User_Profile;
 import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
@@ -121,7 +124,13 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
+    @GetMapping("/getall")
+    public ResponseEntity<Page<AdminCourseGetDTO>> getCourses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<AdminCourseGetDTO> courses = courseService.getCoursesWithCategoryAdmin(page, size);
+        return ResponseEntity.ok(courses);
+    }
     @PutMapping("/delete/{id}")
     public ResponseEntity<?> deleteAccountAdmin(@PathVariable int id) {
         try {
@@ -141,5 +150,27 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
         }
     }
+    @GetMapping("/courses/ofaccount/{accountId}")
+    public Page<AdminCourseResultDTO> getCoursesByAccountId(
+            @PathVariable("accountId") int accountId,
+            @RequestParam(value = "page", defaultValue = "0") int page, // Giá trị mặc định là 0
+            @RequestParam(value = "size", defaultValue = "10") int size // Giá trị mặc định là 10
+    ) {
+        return courseService.getCoursesByAccountIdAdmin(accountId, page, size);
+    }
+    @GetMapping("/getallresult")
+    public Page<AdminCourseResultDTO> getAllCourses(
+            @RequestParam(value = "page", defaultValue = "0") int page, // Giá trị mặc định là 0
+            @RequestParam(value = "size", defaultValue = "10") int size // Giá trị mặc định là 10
+    ) {
+        return courseService.getAllCoursesAdmin(page, size);
+    }
+    @GetMapping("/courses/discounts")
+    public Page<AdminCourseOfDiscount> getCoursesWithDiscounts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return courseService.getCoursesWithDiscounts(page, size);
+    }
+
 
 }

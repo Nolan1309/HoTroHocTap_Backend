@@ -1,0 +1,70 @@
+package com.example.hotrohoctapbackend.DTO.Admin;
+
+import java.math.BigDecimal;
+
+public class AdminCourseResultDTO {
+    private int id;
+    private String courseTitle;
+    private String duration;
+    private BigDecimal price;
+    private boolean status;
+    private boolean deleted;
+    // Constructors
+    public AdminCourseResultDTO(int id, String courseTitle, String duration, BigDecimal  price, boolean status,boolean deleted) {
+        this.id = id;
+        this.courseTitle = courseTitle;
+        this.duration = duration;
+        this.price = price;
+        this.status = status;
+        this.deleted = deleted;
+    }
+
+    // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getCourseTitle() {
+        return courseTitle;
+    }
+
+    public void setCourseTitle(String courseTitle) {
+        this.courseTitle = courseTitle;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal  price) {
+        this.price = price;
+    }
+
+    public boolean isStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+}
+

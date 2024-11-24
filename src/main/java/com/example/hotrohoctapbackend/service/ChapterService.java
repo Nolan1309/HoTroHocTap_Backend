@@ -9,15 +9,13 @@ import com.example.hotrohoctapbackend.dao.ChapterRepository;
 import com.example.hotrohoctapbackend.dao.CourseRepository;
 import com.example.hotrohoctapbackend.dao.LessonRepository;
 import com.example.hotrohoctapbackend.dao.TestRepository;
-import com.example.hotrohoctapbackend.entity.Chapter;
-import com.example.hotrohoctapbackend.entity.Course;
-import com.example.hotrohoctapbackend.entity.Lesson;
-import com.example.hotrohoctapbackend.entity.Test;
+import com.example.hotrohoctapbackend.entity.*;
 import com.google.common.collect.FluentIterable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -133,5 +131,35 @@ public class ChapterService {
 
         // Lưu chapter vào database
         return chapterRepository.save(chapter);
+    }
+    public Chapter hideChapterAdmin(int chapterID) {
+        // Tìm tài khoản theo ID
+        Optional<Chapter> accountOpt = chapterRepository.findById(chapterID);
+
+        if (accountOpt.isPresent()) {
+            Chapter account = accountOpt.get();
+            account.setDeleted(true);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return chapterRepository.save(account);
+        } else {
+            throw new RuntimeException("Test not found with id: " + chapterID);
+        }
+    }
+
+    public Chapter showChapterAdmin(int testID) {
+        // Tìm tài khoản theo ID
+        Optional<Chapter> accountOpt = chapterRepository.findById(testID);
+
+        if (accountOpt.isPresent()) {
+            Chapter account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(false);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return chapterRepository.save(account);
+        } else {
+            throw new RuntimeException("Account not found with id: " + testID);
+        }
     }
 }

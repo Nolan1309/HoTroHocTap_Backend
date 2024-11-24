@@ -1,11 +1,15 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.*;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseGetDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseOfDiscount;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseResultDTO;
 import com.example.hotrohoctapbackend.DTO.User.*;
 import com.example.hotrohoctapbackend.dao.*;
 import com.example.hotrohoctapbackend.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,6 +18,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
@@ -315,6 +320,32 @@ public class CourseService {
 
         return courseRepository.save(course);
     }
+    public Page<AdminCourseGetDTO> getCoursesWithCategoryAdmin(int page, int size) {
+        // Tạo đối tượng Pageable từ page và size
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Gọi repository để lấy dữ liệu phân trang
+        Page<Object[]> resultPage = courseRepository.findCourseWithCategory(pageable);
+
+        // Chuyển đổi từ Object[] sang DTO
+        List<AdminCourseGetDTO> dtoList = resultPage.getContent().stream()
+                .map(row -> {
+                    AdminCourseGetDTO dto = new AdminCourseGetDTO();
+                    dto.setId((Integer) row[0]);  // id
+                    dto.setCourseTitle((String) row[1]);  // courseTitle
+                    dto.setDuration((String) row[2]);  // duration
+                    dto.setLanguage((String) row[3]);  // language
+                    dto.setCategoryName((String) row[4]);  // categoryName
+                    dto.setDeleted((Boolean) row[5]);  // deleted
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        // Trả về Page<AdminCourseGetDTO>
+        return new PageImpl<>(dtoList, pageable, resultPage.getTotalElements());
+    }
+
+
 
     public Course deleteCourseAdmin(int courseId) {
         // Tìm tài khoản theo ID
@@ -347,4 +378,69 @@ public class CourseService {
             throw new RuntimeException("Course not found with id: " + courseId);
         }
     }
+    public Page<AdminCourseResultDTO> getCoursesByAccountIdAdmin(int accountId, int page, int size) {
+        // Tạo đối tượng Pageable để phân trang
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Gọi repository để lấy dữ liệu dạng Page<Object[]>
+        Page<Object[]> dataPage = courseRepository.findCoursesByAccountIdAdmin(accountId, pageable);
+
+        // Map dữ liệu từ Object[] sang AdminCourseResultDTO
+        Page<AdminCourseResultDTO> resultPage = dataPage.map(row -> {
+            // Xử lý từng phần tử từ Object[]
+            Integer id = (row[0] instanceof Integer) ? (Integer) row[0] : null; // id
+            String courseTitle = (row[1] instanceof String) ? (String) row[1] : ""; // courseTitle
+            String duration = (row[2] instanceof String) ? (String) row[2] : ""; // duration
+            BigDecimal price = (row[3] instanceof BigDecimal) ? (BigDecimal) row[3] : BigDecimal.ZERO; // price
+            Boolean status = (row[4] instanceof Boolean) ? (Boolean) row[4] : false; // status
+            Boolean isDeleted = (row[5] instanceof Boolean) ? (Boolean) row[5] : false; // isDeleted
+
+            // Tạo DTO từ các giá trị đã xử lý
+            return new AdminCourseResultDTO(id, courseTitle, duration, price, status, isDeleted);
+        });
+
+        // Trả về Page<AdminCourseResultDTO>
+        return resultPage;
+    }
+    public Page<AdminCourseResultDTO> getAllCoursesAdmin(int page, int size) {
+        // Tạo đối tượng Pageable để phân trang
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Gọi repository để lấy dữ liệu dạng Page<Object[]>
+        Page<Object[]> dataPage = courseRepository.findAllCoursesResult(pageable);
+
+        // Map dữ liệu từ Object[] sang AdminCourseResultDTO
+        return dataPage.map(row -> {
+            // Map các giá trị từ Object[] sang AdminCourseResultDTO
+            Integer id = (Integer) row[0];                         // id
+            String courseTitle = (String) row[1];                  // courseTitle
+            String duration = (String) row[2];                    // duration
+            BigDecimal price = (BigDecimal) row[3];               // price
+            Boolean status = (Boolean) row[4];                    // status
+            Boolean isDeleted = (Boolean) row[5];                 // isDeleted
+
+            // Tạo và trả về DTO
+            return new AdminCourseResultDTO(id, courseTitle, duration, price, status, isDeleted);
+        });
+    }
+    public Page<AdminCourseOfDiscount> getCoursesWithDiscounts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Fetch raw data
+        Page<Object[]> rawData = courseRepository.getCourseofDiscount(pageable);
+
+        // Map raw data to DTO
+        Page<AdminCourseOfDiscount> result = rawData.map(data -> {
+            Integer id = (Integer) data[0];
+            String coursesTitle = (String) data[1];
+            String duration = (String) data[2];
+            Double price = (data[3] != null) ? ((Number) data[3]).doubleValue() : null;
+            Double cost = (data[4] != null) ? ((Number) data[4]).doubleValue() : null;
+
+            return new AdminCourseOfDiscount(id, coursesTitle, duration, price, cost);
+        });
+
+        return result;
+    }
+
 }
