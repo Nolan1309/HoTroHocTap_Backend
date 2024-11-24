@@ -22,8 +22,5 @@ public class Test_Question {
     @ManyToOne
     @JoinColumn(name = "question_id")
     private Question question;
-    @Column(name = "deletedDate")
-    private LocalDateTime deletedDate;
-    @Column(name = "isDeleted")
-    private boolean isDeleted;
+
 }

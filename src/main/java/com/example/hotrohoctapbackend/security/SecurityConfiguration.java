@@ -62,6 +62,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.PUT, Endpoint.USER_PUT_ENDPOINT).hasAuthority("USER")
                         .requestMatchers(HttpMethod.DELETE, Endpoint.USER_DELETE_ENDPOINT).hasAuthority("USER")
 
+
         );
 //        http.cors(cors -> {
 //            cors.configurationSource(request -> {

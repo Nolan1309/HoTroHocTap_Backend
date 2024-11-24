@@ -6,6 +6,9 @@ import com.example.hotrohoctapbackend.DTO.PaymentResponseDTO;
 import com.example.hotrohoctapbackend.entity.Payment;
 import com.example.hotrohoctapbackend.service.PaymentsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +50,10 @@ public class PaymentController {
     }
 
     @GetMapping("/all")
-    public List<AdminPaymentDTO> getPayment() {
-        return paymentService.getPayment();
+    public Page<AdminPaymentDTO> getPaymentsAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return paymentService.getPaymentAdmin(pageable);
     }
 }

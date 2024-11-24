@@ -22,9 +22,6 @@ public class Discount {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "discount_type")
-    private String discount_type;
-
     @Column(name = "discount_value", precision = 10, scale = 2)
     private BigDecimal discount_value;
 

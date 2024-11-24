@@ -5,21 +5,23 @@ import com.example.hotrohoctapbackend.DTO.User.QuestionDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.QuestionResponseDTO_User;
 import com.example.hotrohoctapbackend.dao.QuestionRepository;
 import com.example.hotrohoctapbackend.entity.Question;
+import com.example.hotrohoctapbackend.entity.Test;
+import org.springframework.data.domain.Page;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.data.domain.Pageable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -228,11 +230,67 @@ public class QuestionService {
             question.setResult_check(adminQuestionGetDTO.getResultCheck());
         }
 
-
         question.setInstruction(adminQuestionGetDTO.getInstruction());
 
         question.setCreatedAt(new Date());
         question.setUpdatedAt(new Date());
+
         questionRepository.save(question);
+    }
+    public Page<AdminQuestionGetDTO> getAllQuestionsAdmin(int page, int size) {
+        // Tạo đối tượng Pageable từ page và size
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Gọi repository để lấy dữ liệu phân trang
+        Page<Object[]> result = questionRepository.getAllQuestions(pageable);
+
+        // Chuyển đổi từ Object[] sang DTO
+        List<AdminQuestionGetDTO> dtoList = result.getContent().stream()
+                .map(row -> new AdminQuestionGetDTO(
+                        (Integer) row[0],  // questionId
+                        (String) row[1],   // content
+                        (String) row[2],   // optionA
+                        (String) row[3],   // optionB
+                        (String) row[4],   // optionC
+                        (String) row[5],   // optionD
+                        (String) row[6],   // result
+                        (String) row[7],   // instruction
+                        (String) row[8]    // resultCheck
+                ))
+                .collect(Collectors.toList());
+
+        // Trả về Page<AdminQuestionGetDTO>
+        return new PageImpl<>(dtoList, pageable, result.getTotalElements());
+    }
+    public Question deleteQuestionAdmin(int testID) {
+        // Tìm tài khoản theo ID
+        Optional<Question> accountOpt = questionRepository.findById(testID);
+
+        if (accountOpt.isPresent()) {
+            Question account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(true);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return questionRepository.save(account);
+        } else {
+            throw new RuntimeException("Test not found with id: " + testID);
+        }
+    }
+
+    public Question activeQuestionAdmin(int testID) {
+        // Tìm tài khoản theo ID
+        Optional<Question> accountOpt = questionRepository.findById(testID);
+
+        if (accountOpt.isPresent()) {
+            Question account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(false);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return questionRepository.save(account);
+        } else {
+            throw new RuntimeException("Account not found with id: " + testID);
+        }
     }
 }

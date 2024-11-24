@@ -3,8 +3,10 @@ package com.example.hotrohoctapbackend.controller;
 import com.example.hotrohoctapbackend.DTO.Admin.ChapterDTOAdmin;
 import com.example.hotrohoctapbackend.entity.Chapter;
 import com.example.hotrohoctapbackend.DTO.ChapterDTO;
+import com.example.hotrohoctapbackend.entity.Comment;
 import com.example.hotrohoctapbackend.service.ChapterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +38,24 @@ public class ChapterController {
     public List<ChapterDTOAdmin> getChaptersAllAdmin() {
         return chapterService.findAllChapters();
     }
-
+    @PutMapping("/hide/{id}")
+    public ResponseEntity<?> hideCommnetAdmin(@PathVariable int id) {
+        try {
+            Chapter hidedComment = chapterService.hideChapterAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+    @PutMapping("/show/{id}")
+    public ResponseEntity<?> showCommnetAdmin(@PathVariable int id) {
+        try {
+            Chapter showComment = chapterService.showChapterAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
 
 
 }

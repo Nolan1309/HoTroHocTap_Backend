@@ -204,6 +204,44 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
 //                c.id = :courseId
 //            """, nativeQuery = true)
 //    List<Object[]> findCourseDetails(@Param("courseId") Integer courseId);
-
-
+    @Query(value = "SELECT " +
+            "c.id AS course_id, " +
+            "c.courses_title AS course_title, " +
+            "c.duration AS course_duration, " +
+            "c.language AS course_language, " +
+            "cat.name AS category_name, " +
+            "c.is_deleted AS deleted " +
+            "FROM courses c " +
+            "LEFT JOIN course_categories cat ON c.course_category_id = cat.id",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM courses c " +
+                    "LEFT JOIN course_categories cat ON c.course_category_id = cat.id",
+            nativeQuery = true)
+    Page<Object[]> findCourseWithCategory(Pageable pageable);
+    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.status, c.is_deleted " +
+            "FROM courses c " +
+            "JOIN account a ON c.account_id = a.id " +
+            "WHERE c.account_id = :accountId",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM courses c " +
+                    "JOIN account a ON c.account_id = a.id " +
+                    "WHERE c.account_id = :accountId",
+            nativeQuery = true)
+    Page<Object[]> findCoursesByAccountIdAdmin(@Param("accountId") int accountId, Pageable pageable);
+    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.status, c.is_deleted " +
+            "FROM courses c " +
+            "JOIN account a ON c.account_id = a.id",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM courses c " +
+                    "JOIN account a ON c.account_id = a.id",
+            nativeQuery = true)
+    Page<Object[]> findAllCoursesResult(Pageable pageable);
+    @Query(value = "SELECT c.id, c.courses_title, c.duration, c.price, c.cost " +
+            "FROM courses c " +
+            "WHERE c.is_deleted = 0 ",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM courses c " +
+                    "WHERE c.is_deleted = 0 ",
+            nativeQuery = true)
+    Page<Object[]> getCourseofDiscount(Pageable pageable);
 }
