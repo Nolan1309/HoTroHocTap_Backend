@@ -4,6 +4,7 @@ import com.convertapi.client.ConversionResult;
 import com.convertapi.client.ConvertApi;
 import com.convertapi.client.Param;
 import com.example.hotrohoctapbackend.DTO.*;
+import com.example.hotrohoctapbackend.DTO.User.GeneralDocumentDTO_User;
 import com.example.hotrohoctapbackend.dao.CategoryRepository;
 import com.example.hotrohoctapbackend.dao.GeneralDocumentRepository;
 import com.example.hotrohoctapbackend.entity.Category;
@@ -14,12 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -74,7 +77,7 @@ public class GeneralDocumentsService {
     public List<DocumentRelateUserDTO> getDocumentsByCategoryId(Long categoryId) {
         List<Object[]> list = generalDocumentRepository.findDocumentSummariesByCategoryId(categoryId);
         List<DocumentRelateUserDTO> listDocument = new ArrayList<>();
-        for (Object[] item : list){
+        for (Object[] item : list) {
             DocumentRelateUserDTO documentRelateUserDTO = new DocumentRelateUserDTO();
             documentRelateUserDTO.setId(((Number) item[0]).intValue());
             documentRelateUserDTO.setTitle((String) item[1]);
@@ -222,6 +225,25 @@ public class GeneralDocumentsService {
         );
 
         return Optional.of(documentDetails);
+    }
+
+    public Page<GeneralDocumentDTO_User> getDocumentsByAccountIdUser(Long accountId, int page, int size) {
+        int offset = page * size;
+
+        List<Object[]> results = generalDocumentRepository.findDocumentsByAccountIdUser(accountId, offset, size);
+
+        List<GeneralDocumentDTO_User> documents = results.stream().map(record -> {
+            GeneralDocumentDTO_User dto = new GeneralDocumentDTO_User();
+            dto.setDocumentId(((Integer) record[0]));
+            dto.setTitle((String) record[1]);
+            dto.setDateDownload(record[2].toString());
+            dto.setUrl((String) record[3]);
+            return dto;
+        }).collect(Collectors.toList());
+
+        long totalElements = generalDocumentRepository.countDocumentsByAccountIdUser(accountId);
+
+        return new PageImpl<>(documents, PageRequest.of(page, size), totalElements);
     }
 
 

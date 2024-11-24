@@ -47,10 +47,12 @@ public class Account implements UserDetails {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-//    @Column(name = "deletedDate")
-//    private LocalDateTime deletedDate;
-//    @Column(name = "isDeleted")
-//    private boolean isDeleted;
+
+    @Column(name = "google_id", unique = true)
+    private String googleId; // ID từ Google, cho phép null
+
+    @Column(name = "is_google_account", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean isGoogleAccount = false; // Đặt mặc định là tài khoản thường
 
     @ManyToOne
     @JoinColumn(name = "role_id")

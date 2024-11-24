@@ -37,6 +37,9 @@ public interface LessonRepository extends JpaRepository<Lesson,Integer> {
             nativeQuery = true)
     List<Object[]> findLessonVideoTestDataByLessonId(@Param("lessonId") int lessonId);
 
+    @Query(value = "SELECT COUNT(DISTINCT l.id) FROM lessons l WHERE l.course_id = :courseId", nativeQuery = true)
+    Long countsLessonsByCourseIdUser(@Param("courseId") Integer courseId);
+
 
 
 }

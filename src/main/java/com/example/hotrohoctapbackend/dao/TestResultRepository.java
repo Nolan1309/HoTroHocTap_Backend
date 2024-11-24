@@ -1,9 +1,99 @@
 package com.example.hotrohoctapbackend.dao;
 
 import com.example.hotrohoctapbackend.entity.TestResult;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+
+import java.util.List;
 
 @RepositoryRestResource(path = "testresults")
 public interface TestResultRepository extends JpaRepository<TestResult,Integer> {
+    @Query(value = """
+        SELECT r.*, t.title 
+        FROM test_results r 
+        INNER JOIN tests t ON t.id = r.test_id 
+        WHERE r.is_deleted = false 
+          AND r.account_id = :accountId
+          AND (:search IS NULL OR t.title LIKE %:search%)
+        ORDER BY r.completed_at DESC
+        """,
+            countQuery = """
+        SELECT COUNT(*) 
+        FROM test_results r 
+        INNER JOIN tests t ON t.id = r.test_id 
+        WHERE r.is_deleted = false 
+          AND r.account_id = :accountId
+          AND (:search IS NULL OR t.title LIKE %:search%)
+        """,
+            nativeQuery = true)
+    Page<Object[]> findTestResultsWithTestTitle(Pageable pageable, @Param("accountId") Integer accountId, @Param("search") String search);
+
+    @Query(value = """
+        SELECT 
+            (SUM(CASE 
+                    WHEN tr.is_chapter_test = 0 THEN tr.score 
+                    WHEN tr.is_chapter_test = 1 THEN tr.score * 2 
+                 END) 
+            / 
+            (COUNT(CASE WHEN tr.is_chapter_test = 0 THEN 1 END) 
+            + COUNT(CASE WHEN tr.is_chapter_test = 1 THEN 1 END) * 2)) AS average_score
+        FROM 
+            test_results tr
+        WHERE 
+            tr.account_id = :accountId 
+            AND tr.course_id = :courseId
+            AND tr.score IS NOT NULL
+            AND tr.score > 0
+        """, nativeQuery = true)
+    Double calculateAverageScoreUser(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+
+    @Query(value = """
+        SELECT 
+          (SUM(CASE WHEN result = 'Pass' THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS pass_rate
+        FROM 
+          test_results
+        WHERE 
+          account_id = :accountId AND course_id = :courseId
+        """, nativeQuery = true)
+    Double calculatePassRateUser(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+
+    @Query(value = """
+        SELECT 
+            tr.test_result_id,
+            t.title AS test_name, 
+            tr.score, 
+            tr.result, 
+            tr.completed_at
+        FROM 
+            test_results tr
+        JOIN 
+            tests t ON tr.test_id = t.id
+        WHERE 
+            tr.account_id = :accountId AND t.course_id = :courseId
+        ORDER BY 
+            tr.completed_at DESC
+        """, nativeQuery = true)
+    List<Object> getTestResultsByAccountAndCourseUser(
+            @Param("accountId") Long accountId,
+            @Param("courseId") Long courseId
+    );
+
+    @Query(value = """
+        SELECT 
+            result, COUNT(*) AS total
+        FROM 
+            test_results
+        WHERE 
+            account_id = :accountId AND course_id = :courseId
+        GROUP BY 
+            result
+        """, nativeQuery = true)
+    List<Object[]> countResultsGroupedByResultUser(
+            @Param("accountId") Long accountId,
+            @Param("courseId") Long courseId
+    );
 }

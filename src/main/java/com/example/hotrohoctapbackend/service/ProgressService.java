@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.User.ExistProgressPassDTO_USER;
 import com.example.hotrohoctapbackend.DTO.User.ProgressDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.TestResultDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.TestUserAnswerRequestDTO_User;
@@ -203,12 +204,14 @@ public class ProgressService {
         return result;
 
     }
+
     public boolean isLastChapter(Integer courseId, Integer chapterId) {
         List<Chapter> chaptersInCourse = chapterRepository.findChaptersByCourseId(courseId);
         chaptersInCourse.sort(Comparator.comparingInt(Chapter::getId));
         return !chaptersInCourse.isEmpty() && chaptersInCourse.get(chaptersInCourse.size() - 1).getId() == chapterId;
     }
-    public void UpdateScore(TestUserAnswerRequestDTO_User idProgress , TestResultDTO_User score){
+
+    public void UpdateScore(TestUserAnswerRequestDTO_User idProgress, TestResultDTO_User score) {
 
 
         Optional<Progress> progress;
@@ -236,4 +239,76 @@ public class ProgressService {
 
     }
 
+    public boolean isNextProgressExists(Integer accountId, Integer courseId, Integer chapterId, Integer lessonId, boolean isChapterTest) {
+        if (isChapterTest) {
+            // Lấy danh sách tất cả các chapterId của khóa học
+            List<Integer> chapterIds = progressRepository.findAllChaptersByCourseId(courseId);
+
+            // Kiểm tra nếu chapterId hiện tại là chapterId cuối cùng trong danh sách
+            boolean isLastChapter = !chapterIds.isEmpty() && chapterIds.get(chapterIds.size() - 1).equals(chapterId);
+
+            if (!isLastChapter) {
+                // Nếu không phải chương cuối, tìm bài đầu tiên của chương tiếp theo
+                Integer nextChapterId = chapterIds.get(chapterIds.indexOf(chapterId) + 1); // Tìm chapterId kế tiếp trong danh sách
+                Integer firstLessonInNextChapter = progressRepository.findFirstLessonInChapter(courseId, nextChapterId);
+
+                // Kiểm tra nếu bài đầu tiên của chương tiếp theo đã có tiến trình
+                return progressRepository.existsByAccountIdAndCourseIdAndChapterIdAndLessonId(accountId, courseId, nextChapterId, firstLessonInNextChapter);
+            } else {
+                // Đây là chương cuối cùng, không có chương tiếp theo
+                return false;
+            }
+        } else {
+            // Kiểm tra có phải là bài cuối trong chương không
+            Integer lastLessonInCurrentChapter = progressRepository.findLastLessonInChapter(courseId, chapterId);
+
+            if (!lessonId.equals(lastLessonInCurrentChapter)) {
+                // Nếu không phải bài cuối, kiểm tra tiến trình của bài kế tiếp trong chương hiện tại
+                Integer nextLessonId = lessonId + 1;
+                return progressRepository.existsByAccountIdAndCourseIdAndChapterIdAndLessonId(accountId, courseId, chapterId, nextLessonId);
+            } else {
+                // Nếu là bài cuối của chương, kiểm tra bài test của chương đó
+                return progressRepository.existsByAccountIdAndCourseIdAndChapterIdAndLessonIdAndChapterTested(accountId, courseId, chapterId, null, true);
+            }
+        }
+    }
+
+    public Double calculateProgress(Integer accountId, Integer courseId) {
+        // Total lessons and chapters in the course
+        Long totalLessons = lessonRepository.countsLessonsByCourseIdUser(courseId);
+        Long totalChapters = chapterRepository.countChaptersByCourseIdUser(courseId);
+
+        // Completed lessons and chapters for the user
+        Long completedLessons = progressRepository.countCompletedLessonsUser(accountId, courseId);
+        Long completedChapters = progressRepository.countCompletedChaptersUser(accountId, courseId);
+
+        // Calculate progress
+        Long totalItems = totalLessons + totalChapters;
+        Long completedItems = completedLessons + completedChapters;
+
+        return (completedItems.doubleValue() / totalItems.doubleValue()) * 100;
+    }
+
+    public Boolean checkPassResult_User(ExistProgressPassDTO_USER existProgressPassDTOUser) {
+
+
+        Optional<Progress> progressOptional;
+
+        if (existProgressPassDTOUser.isChapterTest()) {
+            progressOptional = progressRepository.findProgressByChapterTest(
+                    existProgressPassDTOUser.getCourseId(),
+                    existProgressPassDTOUser.getAccountId(),
+                    existProgressPassDTOUser.getChapterId()
+            );
+        } else {
+            progressOptional = progressRepository.findProgressByLesson(
+                    existProgressPassDTOUser.getCourseId(),
+                    existProgressPassDTOUser.getAccountId(),
+                    existProgressPassDTOUser.getLessonId()
+            );
+        }
+        return progressOptional
+                .map(progress -> progress.getTestScore() != null && progress.getTestScore() > 6)
+                .orElse(false);
+    }
 }

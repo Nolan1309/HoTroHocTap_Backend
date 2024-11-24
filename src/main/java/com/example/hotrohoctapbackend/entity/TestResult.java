@@ -49,6 +49,9 @@ public class TestResult {
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
 
+    @Column(name = "is_chapter_test", columnDefinition = "BIT", nullable = false)
+    private boolean chapterTested;
+
     @PrePersist
     protected void onCreate() {
         if (deletedDate == null) {

@@ -23,7 +23,7 @@ public interface ProgressRepository extends JpaRepository<Progress, Integer> {
             "up.video_completed AS video_status, " +
             "up.test_completed AS test_status, " +
             "up.test_score, " +
-            "up.is_chapter_test "+
+            "up.is_chapter_test " +
             "FROM progress up " +
             "WHERE up.course_id = :courseId " +
             "AND up.account_id = :accountId",
@@ -45,5 +45,41 @@ public interface ProgressRepository extends JpaRepository<Progress, Integer> {
             Integer accountId, Integer courseId, Integer chapterId, Boolean chapterTested
     );
 
+    @Query(value = "SELECT c.id FROM chapters c WHERE c.course_id = :courseId ORDER BY c.id ASC", nativeQuery = true)
+    List<Integer> findAllChaptersByCourseId(@Param("courseId") Integer courseId);
 
+    @Query(value = "SELECT MIN(l.id) FROM lessons l WHERE l.course_id = :courseId AND l.chapter_id = :chapterId", nativeQuery = true)
+    Integer findFirstLessonInChapter(@Param("courseId") Integer courseId, @Param("chapterId") Integer chapterId);
+
+
+    @Query(value = "SELECT MAX(l.id) FROM lessons l WHERE l.course_id = :courseId AND l.chapter_id = :chapterId", nativeQuery = true)
+    Integer findLastLessonInChapter(@Param("courseId") Integer courseId, @Param("chapterId") Integer chapterId);
+
+    // Kiểm tra nếu tiến trình tồn tại
+    boolean existsByAccountIdAndCourseIdAndChapterId(Integer accountId, Integer courseId, Integer chapterId);
+
+    // Kiểm tra nếu tiến trình của bài học tồn tại
+    boolean existsByAccountIdAndCourseIdAndChapterIdAndLessonId(Integer accountId, Integer courseId, Integer chapterId, Integer lessonId);
+
+    boolean existsByAccountIdAndCourseIdAndChapterIdAndLessonIdAndChapterTested(
+            Integer accountId, Integer courseId, Integer chapterId, Integer lessonId, boolean chapterTested);
+
+    @Query(value = "SELECT COUNT(DISTINCT CASE WHEN p.lesson_id IS NOT NULL THEN p.lesson_id END) as countLesson " +
+            "FROM progress p WHERE p.account_id = :accountId AND p.course_id = :courseId AND p.test_score > 0",nativeQuery = true)
+    Long countCompletedLessonsUser(@Param("accountId") Integer accountId, @Param("courseId") Integer courseId);
+
+    @Query(value = "SELECT COUNT(DISTINCT CASE WHEN p.is_chapter_test = true THEN p.chapter_id END) as countChapter " +
+            "FROM progress p WHERE p.account_id = :accountId AND p.course_id = :courseId AND p.test_score > 0", nativeQuery = true)
+    Long countCompletedChaptersUser(@Param("accountId") Integer accountId, @Param("courseId") Integer courseId);
+
+    @Query(value = "SELECT * FROM progress WHERE course_id = :courseId AND account_id = :accountId AND lesson_id = :lessonId AND is_chapter_test = 0 LIMIT 1", nativeQuery = true)
+    Optional<Progress> findProgressByLesson(@Param("courseId") int courseId,
+                                            @Param("accountId") int accountId,
+                                            @Param("lessonId") int lessonId);
+
+    // Lấy một dòng duy nhất cho bài kiểm tra chương
+    @Query(value = "SELECT * FROM progress WHERE course_id = :courseId AND account_id = :accountId AND lesson_id IS NULL AND chapter_id = :chapterId AND is_chapter_test = 1 LIMIT 1", nativeQuery = true)
+    Optional<Progress> findProgressByChapterTest(@Param("courseId") int courseId,
+                                                 @Param("accountId") int accountId,
+                                                 @Param("chapterId") int chapterId);
 }

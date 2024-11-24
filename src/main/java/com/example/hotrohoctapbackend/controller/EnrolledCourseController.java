@@ -1,12 +1,24 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.CountCourseDTO;
+import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
+import com.example.hotrohoctapbackend.dao.AccountRepository;
+import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Enrolled_Courses;
+import com.example.hotrohoctapbackend.entity.Notification;
 import com.example.hotrohoctapbackend.service.EnrolledCourseService;
+import com.example.hotrohoctapbackend.service.NotificationService;
+import com.example.hotrohoctapbackend.service.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+import static com.example.hotrohoctapbackend.util.topic.DangKyKhoaHoc;
+
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -15,6 +27,18 @@ public class EnrolledCourseController {
 
     @Autowired
     private EnrolledCourseService enrolledCourseService;
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("/check-enrollment")
     public String checkUserEnrollment(@RequestParam Long userId, @RequestParam Long courseId) {
@@ -35,6 +59,16 @@ public class EnrolledCourseController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
             }
 
+            Optional<Account> account = accountRepository.findById(accountId);
+            String title = "Đăng ký khóa học";
+            String getMessage = "Tài khoản " + account.get().getFullname() + " đăng ký khóa học thành công!";
+
+            Notification notification = notificationService.createNotification(
+                    title, getMessage, DangKyKhoaHoc);
+            UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
+
+            emailService.sendNotificationEmail(account.orElseThrow().getEmail(), title, getMessage);
+            messagingTemplate.convertAndSendToUser(String.valueOf(account.get().getId()), "/queue/notifications", notificationDTOUser);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error");
@@ -55,9 +89,6 @@ public class EnrolledCourseController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
-
-
 
 
 }

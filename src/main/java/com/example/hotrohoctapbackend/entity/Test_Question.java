@@ -1,4 +1,5 @@
 package com.example.hotrohoctapbackend.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -14,7 +15,6 @@ public class Test_Question {
     private Integer id;
 
 
-
     @ManyToOne
     @JoinColumn(name = "test_id")
     private Test test;
@@ -22,8 +22,5 @@ public class Test_Question {
     @ManyToOne
     @JoinColumn(name = "question_id")
     private Question question;
-    @Column(name = "deletedDate")
-    private LocalDateTime deletedDate;
-    @Column(name = "isDeleted")
-    private boolean isDeleted;
+
 }

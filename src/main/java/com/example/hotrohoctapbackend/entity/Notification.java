@@ -17,11 +17,11 @@ public class Notification {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "content")
-    private String content;
+    @Column(name = "message", columnDefinition = "TEXT")
+    private String message;
 
-    @Column(name = "notification_type")
-    private String notificationType;
+    @Column(name = "topic")
+    private String topic;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -33,7 +33,7 @@ public class Notification {
     private LocalDateTime deletedDate;
 
     @Column(name = "isDeleted")
-    private boolean isDeleted = false; // Đặt mặc định là false
+    private boolean isDeleted = false;
 
     @PrePersist
     protected void onCreate() {

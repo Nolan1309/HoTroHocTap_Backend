@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.User.ExistProgressPassDTO_USER;
 import com.example.hotrohoctapbackend.DTO.User.ProgressDTO_User;
 import com.example.hotrohoctapbackend.entity.Progress;
 import com.example.hotrohoctapbackend.service.ProgressService;
@@ -27,4 +28,19 @@ public class ProgressController {
 //        Progress progress = progressService.addOrUpdateProgress(progressDTO);
 //        return ResponseEntity.ok(progress);
 //    }
+
+
+    @PostMapping("/check-pass")
+    public ResponseEntity<Boolean> checkPassResult(@RequestBody ExistProgressPassDTO_USER dto) {
+        boolean result = progressService.checkPassResult_User(dto);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/calculate")
+    public ResponseEntity<Double> calculateProgress(
+            @RequestParam Integer accountId,
+            @RequestParam Integer courseId) {
+        Double progress = progressService.calculateProgress(accountId, courseId);
+        return ResponseEntity.ok(progress);
+    }
 }

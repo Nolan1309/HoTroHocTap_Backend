@@ -16,6 +16,7 @@ public class TestResultDTO_User {
     private int total_questions;
     private LocalDateTime completedAt;
     private String result;
+    private boolean isChapterTest;
 
     public TestResultDTO_User() {
     }

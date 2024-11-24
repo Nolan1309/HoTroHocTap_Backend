@@ -180,11 +180,19 @@ public class AccountService {
         roleUser.setId(2);
         user1.setRole(roleUser);
 
-        accountRepository.save(user1);
-
-        Map<String, String> successResponse = new HashMap<>();
-        successResponse.put("message", "Đăng ký thành công!");
-        return ResponseEntity.ok(successResponse);
+        Account account = accountRepository.save(user1);
+        if (account != null) {
+            Map<String, String> successResponse = new HashMap<>();
+            successResponse.put("message", "Đăng ký thành công!");
+            successResponse.put("accountID", String.valueOf(account.getId()));
+            successResponse.put("email", account.getEmail());
+            successResponse.put("fullname", account.getFullname());
+            return ResponseEntity.ok(successResponse);
+        } else {
+            Map<String, String> successResponse = new HashMap<>();
+            successResponse.put("message", "Đăng ký không thành công!");
+            return ResponseEntity.ok(successResponse);
+        }
     }
 
     public UpdateAccountDTOAdmin getAccountById(Integer id) {
@@ -206,7 +214,7 @@ public class AccountService {
 
             if (updatedAccountDTO.getImage() != null) {
                 existingAccount.setImage(updatedAccountDTO.getImage());
-            }else{
+            } else {
                 existingAccount.setImage(existingAccountOpt.get().getImage());
             }
 
@@ -243,6 +251,7 @@ public class AccountService {
             throw new RuntimeException("Account not found with id: " + accountId);
         }
     }
+
     public Account activeAccountAdmin(int accountId) {
         // Tìm tài khoản theo ID
         Optional<Account> accountOpt = accountRepository.findById(accountId);
@@ -258,6 +267,7 @@ public class AccountService {
             throw new RuntimeException("Account not found with id: " + accountId);
         }
     }
+
     public Account addAccountAdmin(AddAccountDTOAdmin accountDTOAdmin) {
         // Tạo đối tượng Account mới
         Account newAccount = new Account();
@@ -305,4 +315,15 @@ public class AccountService {
         dto.setRoleId(account.getRole().getId());
         return dto;
     }
+
+    public Account updatePasswordResetUser(Integer accountId, String passwordReset) {
+        Optional<Account> userOptional = accountRepository.findById(accountId);
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("Account with ID " + accountId + " not found");
+        }
+        Account user = userOptional.get();
+        user.setPassword(passwordReset);
+        return accountRepository.saveAndFlush(user);
+    }
+
 }

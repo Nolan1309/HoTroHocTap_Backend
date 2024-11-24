@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.*;
+import com.example.hotrohoctapbackend.DTO.User.GeneralDocumentDTO_User;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
 import com.example.hotrohoctapbackend.service.GeneralDocumentsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,5 +152,14 @@ public class GeneralDocumentsController {
         }
     }
 
+    @GetMapping("/account/view-list")
+    public ResponseEntity<Page<GeneralDocumentDTO_User>> getDocuments(
+            @RequestParam Long accountId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<GeneralDocumentDTO_User> documents = generalDocumentsService.getDocumentsByAccountIdUser(accountId, page, size);
+        return ResponseEntity.ok(documents);
+    }
 
 }

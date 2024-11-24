@@ -222,5 +222,43 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "ORDER BY gd.title", nativeQuery = true)
     List<Object[]> findDocumentSummariesByCategoryId(@Param("categoryId") Long categoryId);
 
+
+    @Query(value = """
+        SELECT 
+            d.id AS documentId, 
+            d.title AS title, 
+            dc.date_download AS dateDownload, 
+            d.url AS url
+        FROM 
+            general_documents d
+        INNER JOIN 
+            general_document_acount dc 
+        ON 
+            d.id = dc.generaldocument_id
+        WHERE 
+            dc.account_id = :accountId
+        ORDER BY 
+            dc.date_download DESC
+        LIMIT :offset, :pageSize
+    """, nativeQuery = true)
+    List<Object[]> findDocumentsByAccountIdUser(
+            @Param("accountId") Long accountId,
+            @Param("offset") int offset,
+            @Param("pageSize") int pageSize
+    );
+
+    @Query(value = """
+        SELECT COUNT(*)
+        FROM 
+            general_documents d
+        INNER JOIN 
+            general_document_acount dc 
+        ON 
+            d.id = dc.generaldocument_id
+        WHERE 
+            dc.account_id = :accountId
+    """, nativeQuery = true)
+    long countDocumentsByAccountIdUser(@Param("accountId") Long accountId);
+
 }
 

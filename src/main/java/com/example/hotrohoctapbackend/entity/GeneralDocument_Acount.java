@@ -3,6 +3,8 @@ package com.example.hotrohoctapbackend.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "generalDocument_acount")
@@ -18,5 +20,8 @@ public class GeneralDocument_Acount {
     @ManyToOne
     @JoinColumn(name = "generaldocument_id")
     private GeneralDocument generalDocument;
+
+    @Column(name = "dateDownload")
+    private LocalDateTime dateDownload;
 
 }

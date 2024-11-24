@@ -53,12 +53,14 @@ public class TestUserAnswerService {
             testResultDTOUser.setAccountID(requestDTO.getAccountId());
             testResultDTOUser.setCourseID(requestDTO.getCourseId());
 
+
             testResultDTOUser.setScore(scoreResponseDTOUser.getScore());
             if (scoreResponseDTOUser.getScore() >= 8.0) {
                 testResultDTOUser.setResult("Pass");
             } else testResultDTOUser.setResult("Fail");
             testResultDTOUser.setTotal_questions(scoreResponseDTOUser.getTotal());
             testResultDTOUser.setCompletedAt(LocalDateTime.now());
+            testResultDTOUser.setChapterTest(requestDTO.isChapterTest());
             //Lưu ket qua bai test
             TestResultDTO_User testResult = testResultService.addTestResult(testResultDTOUser);
 
@@ -80,20 +82,6 @@ public class TestUserAnswerService {
 
                     boolean isLastChapter = progressService.isLastChapter(requestDTO.getCourseId(), requestDTO.getChapterId());
 
-//                    if (requestDTO.isChapterTest()) {
-//                        Optional<Progress> existingProgress = progressRepository
-//                                .findByAccountIdAndCourseIdAndChapterIdAndChapterTestedAndLessonIdIsNull(
-//                                        requestDTO.getAccountId(), requestDTO.getCourseId(), requestDTO.getChapterId(), true);
-//                        if (existingProgress.isPresent()) {
-//                            if (isLastChapter) {
-//                                result.put("status", "course_completed");
-//                            } else {
-//                                result.put("status", "already_completed");
-//                            }
-//                            result.put("scoreResponse", scoreResponseDTOUser);
-//                            return result;
-//                        }
-//                    }
 
                     ProgressDTO_User progressDTOUser = new ProgressDTO_User();
                     progressDTOUser.setAccountId(requestDTO.getAccountId());
@@ -104,15 +92,25 @@ public class TestUserAnswerService {
                     progressDTOUser.setTestStatus(requestDTO.isTestStatus());
                     progressDTOUser.setTestScore(null);
                     progressDTOUser.setChapterTest(requestDTO.isChapterTest());
-                    progressService.UpdateScore(requestDTO,testResultDTOUser);
-                    Map<String, Object> progressResult = progressService.addOrUpdateProgress(progressDTOUser);
-                    if ("course_completed".equals(progressResult.get("status"))) {
-                        result.put("status", "course_completed");
-                        result.put("scoreResponse", scoreResponseDTOUser);
-                    } else {
-                        result.put("status", "unlocked");
-                        result.put("scoreResponse", scoreResponseDTOUser);
+                    progressService.UpdateScore(requestDTO, testResultDTOUser);
+
+                    boolean nextProgressExists = progressService.isNextProgressExists(requestDTO.getAccountId(), requestDTO.getCourseId(), requestDTO.getChapterId(), requestDTO.getLessonId(),requestDTO.isChapterTest());
+
+
+                    if (!nextProgressExists) {
+                        Map<String, Object> progressResult = progressService.addOrUpdateProgress(progressDTOUser);
+                        if ("course_completed".equals(progressResult.get("status"))) {
+                            result.put("status", "course_completed");
+                            result.put("scoreResponse", scoreResponseDTOUser);
+                            return result;
+                        } else {
+                            result.put("status", "unlocked");
+                            result.put("scoreResponse", scoreResponseDTOUser);
+                            return result;
+                        }
                     }
+                    result.put("status", "already_completed");
+                    result.put("scoreResponse", scoreResponseDTOUser);
                     return result;
                 } else {
                     result.put("status", "locked");

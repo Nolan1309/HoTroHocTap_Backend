@@ -9,8 +9,12 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import java.util.List;
 
 @RepositoryRestResource(path = "chapters")
-public interface ChapterRepository extends JpaRepository<Chapter,Integer> {
+public interface ChapterRepository extends JpaRepository<Chapter, Integer> {
     @Query(value = "SELECT * FROM chapters WHERE course_id = :courseId", nativeQuery = true)
     List<Chapter> findChaptersByCourseId(@Param("courseId") Integer courseId);
+
     List<Chapter> findByCourseId(Integer courseId);
+
+    @Query(value = "SELECT COUNT(DISTINCT c.id) FROM chapters c WHERE c.course_id = :courseId",nativeQuery = true)
+    Long countChaptersByCourseIdUser(@Param("courseId") Integer courseId);
 }

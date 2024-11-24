@@ -1,10 +1,13 @@
 package com.example.hotrohoctapbackend.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+
 @Data
 @Entity
 @Table(name = "comments")
@@ -18,11 +21,13 @@ public class Comment {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "content_type", nullable = false)
-    private String contentType;
+    @ManyToOne
+    @JoinColumn(name = "content_id", nullable = true)
+    private Comment comment;
 
-    @Column(name = "content_id", nullable = false)
-    private int contentId;
+    @ManyToOne
+    @JoinColumn(name = "lesson_id")
+    private Lesson lesson;
 
     @Column(name = "is_approved")
     private boolean isApproved;
@@ -49,10 +54,5 @@ public class Comment {
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
 
-    @PrePersist
-    protected void onCreate() {
-        if (deletedDate == null) {
-            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
-        }
-    }
+
 }

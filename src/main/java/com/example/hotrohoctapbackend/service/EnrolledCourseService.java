@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.CountCourseDTO;
+import com.example.hotrohoctapbackend.DTO.User.AccountSendNotification_User;
 import com.example.hotrohoctapbackend.dao.Enrolled_CoursesRepository;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Course;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EnrolledCourseService {
@@ -83,5 +85,11 @@ public class EnrolledCourseService {
 //        ));
 //    }
 
+    public List<AccountSendNotification_User> getActiveEnrolledUsers() {
+        List<Object[]> results = enrolledCoursesRepository.findActiveEnrolledUsers();
+        return results.stream()
+                .map(r -> new AccountSendNotification_User((Integer) r[0], (String) r[1], (String) r[2]))
+                .collect(Collectors.toList());
+    }
 
 }

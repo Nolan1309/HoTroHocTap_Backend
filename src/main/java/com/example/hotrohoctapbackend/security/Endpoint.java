@@ -102,15 +102,17 @@ public class Endpoint {
             "/categories/parent/**",
             "/cache",
             "/cache/evict",
-
+            "/ws/info",
+            "/ws",
             //BLOG
             "/api/blogs",
             "/api/blogs/**",
             "/api/blog-category",
             "/api/blogs/category/**",
             "/api/blogs/newest",
-            "/account/refresh-token"
+            "/account/refresh-token",
 
+            "/account/oauth2/success"
 
     };
     public static final String[] PUBLIC_POST_ENDPOINS = {
@@ -133,6 +135,8 @@ public class Endpoint {
 
             "/user_vipsubscriptions",
             "/user_vipsubscriptions/**",
+            "/api/account/forgot-password",
+            "/api/account/reset-password"
 
 
     };
@@ -156,7 +160,7 @@ public class Endpoint {
             "/comments/**",
     };
 
-    public static final String[] ADMIN_GET_ENDPOINS = {
+    public static final String[] ADMIN_GET_ENDPOINT = {
             "/accounts",
             "/accounts/**",
             "/roles",
@@ -182,7 +186,8 @@ public class Endpoint {
 
             "/api/tests/getall",
             "/api/payment-details/admin/**",
-            "/api/questions/detail/**"
+            "/api/questions/detail/**",
+
 
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
@@ -268,7 +273,9 @@ public class Endpoint {
 //            "/api/videos/uploadVideo",
             "/api/lessons/updateLessonWithVideo",
 
-            "/api/questions/add"
+            "/api/questions/add",
+            "/api/notifications/send",
+            "/api/notifications/notify"
 
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
@@ -441,7 +448,21 @@ public class Endpoint {
             "/api/tests/**",
             "/api/tests/*/questions",
             "/api/videos/first-video/**",
-            "/api/questions/responsive-test/**"
+            "/api/questions/responsive-test/**",
+            "/api/comments/video/*/lesson/*",
+            "/api/comments/*/children/video/*/lesson/*",
+            "/api/test-results/view-user",
+            "/api/payments/summary",
+            "/api/payments/*/details",
+            "/api/general_documents/account/view-list",
+            "/api/progress/calculate",
+            "/api/test-results/average-score",
+            "/api/test-results/pass-rate",
+            "/api/test-results/result/detail",
+            "/api/test-results/result-count",
+            "/ws/info",
+            "/ws",
+            "/api/notifications/user/**"
     };
 
     public static final String[] USER_POST_ENDPOINT = {
@@ -452,18 +473,298 @@ public class Endpoint {
             "/api/progress/add",
             "/api/test-results/add",
             "/api/user-answers/add",
-            "/api/user-answers/submit"
+            "/api/user-answers/submit",
+            "/api/comments/submit",
+            "/api/document-account/download",
+            "/api/progress/check-pass",
+            "/api/reviews/course"
+
     };
 
     public static final String[] USER_PUT_ENDPOINT = {
             "/paymentmethod",
             "/api/account/update/**",
-            "/api/account/change-password/**"
+            "/api/account/change-password/**",
+            "/api/comments/delete/**",
+            "/api/notifications/mark-all-as-read/**",
+            "/api/notifications/mark-as-read/**"
 
     };
     public static final String[] USER_DELETE_ENDPOINT = {
             "/paymentmethod",
-    };
 
+    };
+//    public static final String[] STAFF_GET_ENDPOINT = {
+//            "/accounts",
+//            "/accounts/**",
+//            "/roles",
+//            "/roles/**",
+//            "/categories/**",
+//            "/categories/level",
+//            "/categories_parent_id",
+//            "/name-by-id",
+//            "/api/general_documents/documents-with-categories",
+//            "/api/general_documents/generaldocuments-details/**",
+//            "/api/blogs/blogsall",
+//            "/api/chapters/course/**",
+//            "/api/payments/all",
+//            "/api/payment-details/payment-details/**",
+//            "/api/questions/export/excel",
+//            "/api/questions/tests/questions/**",
+//            "/api/tests/chitiet/**",
+//
+//            "/api/payment-details/**",
+//            "/api/account/admin/**",
+//            "/api/chapters/admin-all",
+//            "/api/lessons/**",
+//
+//            "/api/tests/getall",
+//            "/api/payment-details/admin/**",
+//            "/api/questions/detail/**",
+//
+//
+//    };
+//    public static final String[] ADMIN_POST_ENDPOINS = {
+//            "/accounts",
+//            "/accounts/**",
+//            "/activitylogs",
+//            "/activitylogs/**",
+//            "/roles/**",
+//            "/roles/**",
+//            "/banners",
+//            "/banners/**",
+//            "/blogcategorys",
+//            "/blogcategorys/**",
+//            "/blogs",
+//            "/blogs/**",
+//            "/categorys/",
+//            "/categorys/**",
+//            "/chapters",
+//            "/chapters/**",
+//            "/comments",
+//            "/comments/**",
+//            "/course_discounts",
+//            "/course_discounts/**",
+//            "/courses",
+//            "/courses/**",
+//            "/discounts",
+//            "/discounts/**",
+//            "/documents",
+//            "/documents/**",
+//            "/enrolled_courses",
+//            "/enrolled_courses/**",
+//            "/favorites",
+//            "/favorites/**",
+//            "/generaldocuments",
+//            "/generaldocuments/**",
+//            "/learningresult",
+//            "/learningresult/**",
+//            "/lessons",
+//            "/lessons/**",
+//            "/notifications",
+//            "/notifications/**",
+//            "/paymentdetail",
+//            "/paymentdetail/**",
+//            "/paymentmethod",
+//            "/paymentmethod/**",
+//            "/payments",
+//            "/payments/**",
+//            "/questions",
+//            "/questions/**",
+//            "/rankings",
+//            "/rankings/**",
+//            "/reviews",
+//            "/reviews/**",
+//            "/test_questions",
+//            "/test_questions/**",
+//            "/tests",
+//            "/tests/**",
+//            "/testresults",
+//            "/testresults/**",
+//            "/testuseranswers",
+//            "/testuseranswers/**",
+//            "/user_notifications",
+//            "/user_notifications/**",
+//            "/user_vipsubscriptions",
+//            "/user_vipsubscriptions/**",
+//            "/videos",
+//            "/videos/**",
+//            "/vipsubscriptions",
+//            "/vipsubscriptions/**",
+//            "/api/general_documents/upload",
+//
+//            "/api/convert-docx-to-pdf",
+//            "/convert",
+//            "/api/blogs/add-branch",
+//            "/api/chapters/add",
+//            "/api/courses/add-course",
+//            "/api/lessons/add",
+//            "/api/questions/upload",
+//            "/api/tests/add",
+//            "/add-branch",
+//
+//            "/api/account/admin/add",
+////            "/api/videos/uploadVideo",
+//            "/api/lessons/updateLessonWithVideo",
+//
+//            "/api/questions/add",
+//            "/api/notifications/send",
+//            "/api/notifications/notify"
+//
+//    };
+//    public static final String[] ADMIN_DELETE_ENDPOINS = {
+//            "/accounts",
+//            "/accounts/**",
+//            "/activitylogs",
+//            "/activitylogs/**",
+//            "/roles/**",
+//            "/roles/**",
+//            "/banners",
+//            "/banners/**",
+//            "/blogcategorys",
+//            "/blogcategorys/**",
+//            "/blogs",
+//            "/blogs/**",
+//            "/categorys/",
+//            "/categorys/**",
+//            "/chapters",
+//            "/chapters/**",
+//            "/comments",
+//            "/comments/**",
+//            "/course_discounts",
+//            "/course_discounts/**",
+//            "/courses",
+//            "/courses/**",
+//            "/discounts",
+//            "/discounts/**",
+//            "/documents",
+//            "/documents/**",
+//            "/enrolled_courses",
+//            "/enrolled_courses/**",
+//            "/favorites",
+//            "/favorites/**",
+//            "/generaldocuments",
+//            "/generaldocuments/**",
+//            "/learningresult",
+//            "/learningresult/**",
+//            "/lessons",
+//            "/lessons/**",
+//            "/notifications",
+//            "/notifications/**",
+//            "/paymentdetail",
+//            "/paymentdetail/**",
+//            "/paymentmethod",
+//            "/paymentmethod/**",
+//            "/payments",
+//            "/payments/**",
+//            "/questions",
+//            "/questions/**",
+//            "/rankings",
+//            "/rankings/**",
+//            "/reviews",
+//            "/reviews/**",
+//            "/test_questions",
+//            "/test_questions/**",
+//            "/tests",
+//            "/tests/**",
+//            "/testresults",
+//            "/testresults/**",
+//            "/testuseranswers",
+//            "/testuseranswers/**",
+//            "/user_notifications",
+//            "/user_notifications/**",
+//            "/user_vipsubscriptions",
+//            "/user_vipsubscriptions/**",
+//            "/videos",
+//            "/videos/**",
+//            "/vipsubscriptions",
+//            "/vipsubscriptions/**",
+//            "/api/questions",
+//            "/api/videos/**"
+//    };
+//    public static final String[] STAFF_PUT_ENDPOINS = {
+//            "/accounts",
+//            "/accounts/**",
+//            "/activitylogs",
+//            "/activitylogs/**",
+//            "/roles/**",
+//            "/roles/**",
+//            "/banners",
+//            "/banners/**",
+//            "/blogcategorys",
+//            "/blogcategorys/**",
+//            "/blogs",
+//            "/blogs/**",
+//            "/categorys/",
+//            "/categorys/**",
+//            "/chapters",
+//            "/chapters/**",
+//            "/comments",
+//            "/comments/**",
+//            "/course_discounts",
+//            "/course_discounts/**",
+//            "/courses",
+//            "/courses/**",
+//            "/discounts",
+//            "/discounts/**",
+//            "/documents",
+//            "/documents/**",
+//            "/enrolled_courses",
+//            "/enrolled_courses/**",
+//            "/favorites",
+//            "/favorites/**",
+//            "/generaldocuments",
+//            "/generaldocuments/**",
+//            "/learningresult",
+//            "/learningresult/**",
+//            "/lessons",
+//            "/lessons/**",
+//            "/notifications",
+//            "/notifications/**",
+//            "/paymentdetail",
+//            "/paymentdetail/**",
+//            "/paymentmethod",
+//            "/paymentmethod/**",
+//            "/payments",
+//            "/payments/**",
+//            "/questions",
+//            "/questions/**",
+//            "/rankings",
+//            "/rankings/**",
+//            "/reviews",
+//            "/reviews/**",
+//            "/test_questions",
+//            "/test_questions/**",
+//            "/tests",
+//            "/tests/**",
+//            "/testresults",
+//            "/testresults/**",
+//            "/testuseranswers",
+//            "/testuseranswers/**",
+//            "/user_notifications",
+//            "/user_notifications/**",
+//            "/user_vipsubscriptions",
+//            "/user_vipsubscriptions/**",
+//            "/videos",
+//            "/videos/**",
+//            "/vipsubscriptions",
+//            "/vipsubscriptions/**",
+//            "/api/general_documents/generaldocuments-update/**",
+//            "/api/blogs/update-branch/**",
+//            "/api/courses/update-course/**",
+//            "/api/tests/**",
+//            "/update-branch/**",
+//            "/api/account/admin/**",
+//            "/api/account/delete/**",
+//            "/api/account/active/**",
+//            "/api/lessons/updateLessonWithVideoOrDocument",
+//            "/api/questions/update/**",
+//            "/api/tests/delete/**",
+//            "/api/tests/active/**",
+//            "/api/lessons/delete/**",
+//            "/api/lessons/active/**",
+//            "/api/courses/delete/**",
+//            "/api/courses/active/**"
+//    };
 
 }
