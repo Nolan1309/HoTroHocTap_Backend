@@ -42,7 +42,7 @@ public class NotificationScheduler {
     /**
      * Gửi thông báo tự động mỗi ngày vào lúc 8:00 sáng
      */
-    @Scheduled(cron = "0 0 8 * * ?")
+    @Scheduled(cron = "0 0 7 * * ?")
     public void sendDailyNotifications() {
         List<AccountSendNotification_User> userIds = enrolledCourseService.getActiveEnrolledUsers();
 
