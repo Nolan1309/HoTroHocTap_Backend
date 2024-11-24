@@ -190,7 +190,7 @@ public class Endpoint {
             "/api/discounts/detail/**",
             "/api/notifications/getall",
             "/api/courses/courses/discounts",
-
+            "/api/courses/courses/ofaccount",
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -270,13 +270,12 @@ public class Endpoint {
             "/api/questions/upload",
             "/api/tests/add",
             "/add-branch",
-
             "/api/account/admin/add",
 //            "/api/videos/uploadVideo",
             "/api/lessons/updateLessonWithVideo",
-
             "/api/questions/add",
-            "/api/course-discounts/add-discount/**"
+            "/api/course-discounts/add-discount/**",
+            "/api/test-questions/add-questions/**",
 
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
@@ -446,6 +445,7 @@ public class Endpoint {
             "/api/discounts/hide/**",
             "/api/notifications/show/**",
             "/api/notifications/hide/**",
+            "/api/course-discounts/reset-price",
     };
 
 
@@ -516,7 +516,6 @@ public class Endpoint {
             "/api/lessons/getall",
             "/api/comments/getall",
             "/api/courses/getallresult",
-            "/api/courses/courses/ofaccount"
     };
     public static final String[] STAFF_POST_ENDPOINT = {
             "/accounts",

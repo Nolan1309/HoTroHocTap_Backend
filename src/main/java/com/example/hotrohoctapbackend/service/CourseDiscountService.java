@@ -1,6 +1,5 @@
 package com.example.hotrohoctapbackend.service;
 
-import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseDiscountUpdate;
 import com.example.hotrohoctapbackend.dao.CourseRepository;
 import com.example.hotrohoctapbackend.dao.Course_DiscountRepository;
 import com.example.hotrohoctapbackend.dao.DiscountRepository;
@@ -101,8 +100,46 @@ public class CourseDiscountService {
 
         return responseBuilder.toString();
     }
+    public String resetPriceToCost(List<Integer> courseIds) {
+        // Kiểm tra nếu danh sách khóa học rỗng
+        if (courseIds == null || courseIds.isEmpty()) {
+            throw new IllegalArgumentException("Danh sách ID khóa học không được để trống.");
+        }
 
+        StringBuilder responseBuilder = new StringBuilder("Kết quả cập nhật giá:\n");
 
+        // 1. Lặp qua danh sách khóa học
+        for (Integer courseId : courseIds) {
+            try {
+                // Lấy thông tin khóa học
+                Optional<Course> optionalCourse = courseRepository.findById(courseId);
+                if (optionalCourse.isEmpty()) {
+                    responseBuilder.append("Khóa học với ID ").append(courseId).append(" không tồn tại.\n");
+                    continue;
+                }
+                Course course = optionalCourse.get();
 
+                // Lấy chi phí gốc (cost) và kiểm tra hợp lệ
+                BigDecimal cost = course.getCost();
+                if (cost == null || cost.compareTo(BigDecimal.ZERO) <= 0) {
+                    responseBuilder.append("Khóa học với ID ").append(courseId)
+                            .append(" có chi phí gốc không hợp lệ.\n");
+                    continue;
+                }
+
+                // Cập nhật giá bằng với chi phí gốc
+                course.setPrice(cost);
+                courseRepository.save(course);
+
+                responseBuilder.append("Thành công cập nhật giá cho khóa học ID: ").append(courseId).append("\n");
+            } catch (Exception ex) {
+                // Ghi lại lỗi với từng khóa học
+                responseBuilder.append("Lỗi không mong muốn với khóa học ID: ").append(courseId)
+                        .append(" - ").append(ex.getMessage()).append("\n");
+            }
+        }
+
+        return responseBuilder.toString();
+    }
 
 }

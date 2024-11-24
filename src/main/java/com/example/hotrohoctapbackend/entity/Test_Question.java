@@ -13,8 +13,6 @@ public class Test_Question {
     @Column(name = "id")
     private Integer id;
 
-
-
     @ManyToOne
     @JoinColumn(name = "test_id")
     private Test test;

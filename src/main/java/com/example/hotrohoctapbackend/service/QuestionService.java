@@ -169,8 +169,9 @@ public class QuestionService {
         }
     }
 
-    public List<Question> getQuestionsByTestIdAdmin(Integer testId) {
-        return questionRepository.findQuestionsByTestIdAdmin(testId);
+    public Page<Question> getQuestionsByTestIdAdmin(Integer testId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // Create a Pageable object
+        return questionRepository.findQuestionsByTestIdAdmin(testId, pageable);
     }
 
     public AdminQuestionGetDTO getQuestionDetailsByIdAdmin(int id) {
