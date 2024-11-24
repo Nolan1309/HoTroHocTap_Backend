@@ -7,6 +7,7 @@ import com.example.hotrohoctapbackend.DTO.*;
 import com.example.hotrohoctapbackend.dao.CategoryRepository;
 import com.example.hotrohoctapbackend.dao.GeneralDocumentRepository;
 import com.example.hotrohoctapbackend.entity.Category;
+import com.example.hotrohoctapbackend.entity.Comment;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
 import com.example.hotrohoctapbackend.util.ByteArrayMultipartFile;
 import com.example.hotrohoctapbackend.util.FirebaseStorageService;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -144,33 +146,27 @@ public class GeneralDocumentsService {
     }
 
     //Man
-    public List<GeneralDocumentDTO> getDocumentsWithCategories() {
-        List<Object[]> results = generalDocumentRepository.findDocumentsWithCategories();
+    public Page<GeneralDocumentDTO> getDocumentsWithCategories(Pageable pageable) {
+        Page<Object[]> resultsPage = generalDocumentRepository.findDocumentsWithCategories(pageable);
 
-        List<GeneralDocumentDTO> documentWithCategoriesList = new ArrayList<>();
-        for (Object[] row : results) {
-            Integer documentId = (Integer) row[0];
-            String documentTitle = (String) row[1];
-            String documentDescription = (String) row[2];
-            String documentUrl = (String) row[3];
-            String categoryLevel1 = (String) row[4];
-            String categoryLevel2 = (String) row[5];
-            String categoryLevel3 = (String) row[6];
+        // Map the content of the Page<Object[]> to a list of GeneralDocumentDTO
+        List<GeneralDocumentDTO> documentWithCategoriesList = resultsPage.getContent().stream()
+                .map(row -> new GeneralDocumentDTO(
+                        (Integer) row[0],   // documentId
+                        (String) row[1],    // documentTitle
+                        (String) row[2],    // documentDescription
+                        (String) row[3],    // documentUrl
+                        (Boolean) row[4],   // deleted
+                        (String) row[5],    // categoryLevel1
+                        (String) row[6],    // categoryLevel2
+                        (String) row[7]     // categoryLevel3
+                ))
+                .collect(Collectors.toList());
 
-            GeneralDocumentDTO dto = new GeneralDocumentDTO(
-                    documentId,
-                    documentTitle,
-                    documentDescription,
-                    documentUrl,
-                    categoryLevel1,
-                    categoryLevel2,
-                    categoryLevel3
-            );
-            documentWithCategoriesList.add(dto);
-        }
-
-        return documentWithCategoriesList;
+        // Return the mapped result as a Page
+        return new PageImpl<>(documentWithCategoriesList, pageable, resultsPage.getTotalElements());
     }
+
 
     public GeneralDocument saveDocument(MultipartFile file, String title, String description, int idCategory, MultipartFile thumbnail) throws Exception {
         GeneralDocument generalDocument = firebaseStorageService.uploadFile(file, title, description, idCategory);
@@ -179,7 +175,8 @@ public class GeneralDocumentsService {
     }
 
     public GeneralDocument updateGeneralDocument(int id, UpdateDocumentRequest updateRequest) {
-        Optional<GeneralDocument> existingDocumentOpt = Optional.ofNullable(generalDocumentRepository.findById(id));
+//        Optional<GeneralDocument> existingDocumentOpt = Optional.ofNullable(generalDocumentRepository.findById(id));
+        Optional<GeneralDocument> existingDocumentOpt = generalDocumentRepository.findById(id);
         if (existingDocumentOpt.isPresent()) {
             GeneralDocument existingDocument = existingDocumentOpt.get();
 
@@ -223,6 +220,35 @@ public class GeneralDocumentsService {
 
         return Optional.of(documentDetails);
     }
+    public GeneralDocument hideGeneralDocumentAdmin(int documentID) {
+        // Tìm tài khoản theo ID
+        Optional<GeneralDocument> accountOpt = generalDocumentRepository.findById(documentID);
 
+        if (accountOpt.isPresent()) {
+            GeneralDocument account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(true);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return generalDocumentRepository.save(account);
+        } else {
+            throw new RuntimeException("Test not found with id: " + documentID);
+        }
+    }
+
+    public GeneralDocument showGeneralDocumentAdmin(int documentID) {
+        // Tìm tài khoản theo ID
+        Optional<GeneralDocument> accountOpt = generalDocumentRepository.findById(documentID);
+
+        if (accountOpt.isPresent()) {
+            GeneralDocument account = accountOpt.get();
+            account.setDeleted(false);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return generalDocumentRepository.save(account);
+        } else {
+            throw new RuntimeException("Account not found with id: " + documentID);
+        }
+    }
 
 }

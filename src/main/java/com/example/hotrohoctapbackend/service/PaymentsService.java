@@ -6,6 +6,8 @@ import com.example.hotrohoctapbackend.dao.PaymentRepository;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Payment;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -48,18 +50,18 @@ public class PaymentsService {
         this.paymentRepository = paymentRepository;
     }
 
-    public List<AdminPaymentDTO> getPayment() {
-        List<Object[]> rawResults = paymentRepository.findPayment();
+    public Page<AdminPaymentDTO> getPaymentAdmin(Pageable pageable) {
+        // Lấy kết quả từ repository
+        Page<Object[]> rawResults = paymentRepository.findPayment(pageable);
 
-        return rawResults.stream().map(result ->
-                new AdminPaymentDTO(
-                        (Integer) result[0],                   // payment_id
-                        (String) result[1],                 // buyer_name
-                        (BigDecimal) result[2],             // total_payment
-                        (Date) result[3],                   // payment_date
-                        (String) result[4]                  // payment_method
-                )
-        ).collect(Collectors.toList());
+        // Chuyển đổi dữ liệu từ Object[] thành AdminPaymentDTO và trả về Page<AdminPaymentDTO>
+        return rawResults.map(result -> new AdminPaymentDTO(
+                (Integer) result[0],                   // payment_id
+                (String) result[1],                    // buyer_name
+                (BigDecimal) result[2],                // total_payment
+                (Date) result[3],                      // payment_date
+                (String) result[4]                     // payment_method
+        ));
     }
 
 }

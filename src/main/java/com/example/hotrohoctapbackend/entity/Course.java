@@ -38,7 +38,9 @@ public class Course {
 
     @Column(name = "author")
     private String author;
-
+    @ManyToOne
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
     @Column(name = "duration")
     private String duration;
 

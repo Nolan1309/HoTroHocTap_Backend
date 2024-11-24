@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminLessonGetDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.LessonDTOVideo_Admin;
 import com.example.hotrohoctapbackend.DTO.LessonDTO2;
 import com.example.hotrohoctapbackend.dao.CourseRepository;
@@ -10,6 +11,9 @@ import com.example.hotrohoctapbackend.dao.ChapterRepository;
 import com.example.hotrohoctapbackend.dao.LessonRepository;
 import com.example.hotrohoctapbackend.entity.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -149,5 +153,20 @@ public class LessonService {
         } else {
             throw new RuntimeException("Account not found with id: " + testID);
         }
+    }
+    public Page<AdminLessonGetDTO> getLessonWithCourseAndChapter(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Object[]> dataPage = lessonRepository.findLessonCourseChapterData(pageable);
+        Page<AdminLessonGetDTO> resultPage = dataPage.map(row -> {
+            AdminLessonGetDTO dto = new AdminLessonGetDTO();
+            dto.setId((Integer) row[0]);
+            dto.setLessonTitle((String) row[1]);
+            dto.setCourseName((String) row[2]);
+            dto.setChapterName((String) row[3]);
+            dto.setDeleted((Boolean) row[4]);
+            return dto;
+        });
+
+        return resultPage;
     }
 }

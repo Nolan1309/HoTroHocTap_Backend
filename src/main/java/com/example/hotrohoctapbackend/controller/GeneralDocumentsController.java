@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.*;
+import com.example.hotrohoctapbackend.entity.Comment;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
 import com.example.hotrohoctapbackend.service.GeneralDocumentsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,8 +94,11 @@ public class GeneralDocumentsController {
 
     ///MAN
     @GetMapping("/documents-with-categories")
-    public List<GeneralDocumentDTO> getDocumentsWithCategories() {
-        return generalDocumentsService.getDocumentsWithCategories();
+    public Page<GeneralDocumentDTO> getDocumentsWithCategories(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return generalDocumentsService.getDocumentsWithCategories(pageable);
     }
 
     //    @PostMapping("/upload")
@@ -151,5 +155,22 @@ public class GeneralDocumentsController {
         }
     }
 
-
+    @PutMapping("/hide/{id}")
+    public ResponseEntity<?> hideGeneralDocumentAdmin(@PathVariable int id) {
+        try {
+            GeneralDocument hidedGeneralDocument = generalDocumentsService.hideGeneralDocumentAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+    @PutMapping("/show/{id}")
+    public ResponseEntity<?> showGeneralDocumentAdmin(@PathVariable int id) {
+        try {
+            GeneralDocument showGeneralDocument = generalDocumentsService.showGeneralDocumentAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
 }

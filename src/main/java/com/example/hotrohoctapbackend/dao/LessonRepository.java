@@ -1,6 +1,8 @@
 package com.example.hotrohoctapbackend.dao;
 
 import com.example.hotrohoctapbackend.entity.Lesson;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,7 +38,21 @@ public interface LessonRepository extends JpaRepository<Lesson,Integer> {
             "WHERE l.id = :lessonId",  // Thêm điều kiện WHERE
             nativeQuery = true)
     List<Object[]> findLessonVideoTestDataByLessonId(@Param("lessonId") int lessonId);
-
+    @Query(value = "SELECT " +
+            "l.id AS lesson_id, " +
+            "l.lesson_title AS lesson_title, " +
+            "c.courses_title AS course_name, " +
+            "ch.chapter_title AS chapter_name," +
+            "l.is_deleted AS deleted "+
+            "FROM lessons l " +
+            "LEFT JOIN courses c ON l.course_id = c.id " +
+            "LEFT JOIN chapters ch ON l.chapter_id = ch.id",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM lessons l " +
+                    "LEFT JOIN courses c ON l.course_id = c.id " +
+                    "LEFT JOIN chapters ch ON l.chapter_id = ch.id",
+            nativeQuery = true)
+    Page<Object[]> findLessonCourseChapterData(Pageable pageable);
 
 
 }

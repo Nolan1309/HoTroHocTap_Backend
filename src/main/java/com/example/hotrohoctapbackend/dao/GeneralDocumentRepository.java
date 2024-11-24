@@ -160,15 +160,14 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
     Page<Object> GetAll(Pageable pageable);
 
 
-    //Man
-    public GeneralDocument findById(int id);
 
     @Query(value = """
         SELECT 
             gd.id AS document_id,
             gd.title AS document_title, 
             gd.description AS document_description, 
-            gd.url AS document_url, 
+            gd.url AS document_url,
+            gd.is_deleted AS deleted,
             c1.name AS category_level_1, 
             c2.name AS category_level_2, 
             c3.name AS category_level_3
@@ -177,8 +176,18 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
         LEFT JOIN categories c3 ON gd.id_category = c3.id_category
         LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
         LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
-        """, nativeQuery = true)
-    List<Object[]> findDocumentsWithCategories();
+        """,
+            countQuery = """
+        SELECT 
+            COUNT(*)
+        FROM 
+            general_documents gd 
+        LEFT JOIN categories c3 ON gd.id_category = c3.id_category
+        LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
+        LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
+        """,
+            nativeQuery = true)
+    Page<Object[]> findDocumentsWithCategories(Pageable pageable);
 
     @Query(value = "SELECT \n" +
             "    g.id AS id,\n" +
