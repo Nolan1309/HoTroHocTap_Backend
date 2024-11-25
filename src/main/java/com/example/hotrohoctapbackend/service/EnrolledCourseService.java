@@ -2,6 +2,7 @@ package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.CountCourseDTO;
 import com.example.hotrohoctapbackend.DTO.User.AccountSendNotification_User;
+import com.example.hotrohoctapbackend.dao.AccountRepository;
 import com.example.hotrohoctapbackend.dao.Enrolled_CoursesRepository;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Course;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +20,9 @@ import java.util.stream.Collectors;
 public class EnrolledCourseService {
     @Autowired
     private Enrolled_CoursesRepository enrolledCoursesRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     public String enrollInCourse(Integer accountId, Integer courseId) {
 
@@ -90,6 +95,18 @@ public class EnrolledCourseService {
         return results.stream()
                 .map(r -> new AccountSendNotification_User((Integer) r[0], (String) r[1], (String) r[2]))
                 .collect(Collectors.toList());
+    }
+
+    public List<AccountSendNotification_User> getAllAccount() {
+        List<Account> results = accountRepository.findAll();
+        List<AccountSendNotification_User> allUser = new ArrayList<>();
+
+        for (Account account : results) {
+            AccountSendNotification_User accountSendNotificationUser = new AccountSendNotification_User(account.getId(), account.getUsername(), account.getEmail());
+
+            allUser.add(accountSendNotificationUser);
+        }
+        return allUser;
     }
 
 }

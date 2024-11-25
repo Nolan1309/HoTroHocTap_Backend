@@ -70,7 +70,10 @@ public class NotificationController {
 
         if (request.getUserId() == null) {
             UserNotificationDTO_User user = new UserNotificationDTO_User(notification, false);
-            List<AccountSendNotification_User> userIds = enrolledCourseService.getActiveEnrolledUsers();
+//            List<AccountSendNotification_User> userIds = enrolledCourseService.getActiveEnrolledUsers();
+
+            List<AccountSendNotification_User> userIds = enrolledCourseService.getAllAccount();
+
             for (AccountSendNotification_User userId : userIds) {
                 Account account = accountRepository.findById(userId.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
                 User_Notification userNotification = new User_Notification();
