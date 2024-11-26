@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminDicountDetailDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminDiscounAddDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminDiscountGetDTO;
 import com.example.hotrohoctapbackend.dao.DiscountRepository;
 import com.example.hotrohoctapbackend.entity.Comment;
@@ -32,7 +33,6 @@ public class DiscountService {
                 (Boolean) row[4]                             // is_deleted
         ));
     }
-
     public AdminDicountDetailDTO getDiscountById(Integer id) {
         List<Object[]> discountDataList = discountRepository.findDiscountById(id);
         if (discountDataList != null && !discountDataList.isEmpty()) {
@@ -65,7 +65,6 @@ public class DiscountService {
             throw new RuntimeException("Test not found with id: " + discountID);
         }
     }
-
     public Discount showDiscountAdmin(int discountID) {
         // Tìm tài khoản theo ID
         Optional<Discount> accountOpt = discountRepository.findById(discountID);
@@ -80,4 +79,55 @@ public class DiscountService {
             throw new RuntimeException("Account not found with id: " + discountID);
         }
     }
+    public Discount addDiscountAdmin(AdminDiscounAddDTO adminDiscounAddDTO) {
+        // Validate discount details if necessary
+        BigDecimal discountValue = adminDiscounAddDTO.getDiscount_value();
+
+        if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Discount value must be greater than zero");
+        }
+
+        if (adminDiscounAddDTO.getStart_date().isAfter(adminDiscounAddDTO.getEnd_date())) {
+            throw new IllegalArgumentException("Start date must be before end date");
+        }
+
+        // Create a new Discount entity using DTO
+        Discount discount = new Discount();
+        discount.setTitle(adminDiscounAddDTO.getTitle());
+        discount.setDescription(adminDiscounAddDTO.getDescription());
+        discount.setDiscount_value(adminDiscounAddDTO.getDiscount_value());
+        discount.setStart_date(adminDiscounAddDTO.getStart_date());
+        discount.setEnd_date(adminDiscounAddDTO.getEnd_date());
+        discount.setCreated_at(LocalDateTime.now());
+        discount.setUpdated_at(LocalDateTime.now());
+        discount.setDeleted(false);
+        // Save the discount to the repository
+        return discountRepository.save(discount);
+    }
+    public Discount updateDiscountAdmin(Integer discountId, AdminDiscounAddDTO adminDiscountAddDTO) {
+        // Validate discount details if necessary
+        if (adminDiscountAddDTO.getDiscount_value().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Discount value must be greater than zero");
+        }
+
+        if (adminDiscountAddDTO.getStart_date().isAfter(adminDiscountAddDTO.getEnd_date())) {
+            throw new IllegalArgumentException("Start date must be before end date");
+        }
+
+        // Find the existing discount by ID
+        Discount discount = discountRepository.findById(discountId)
+                .orElseThrow(() -> new IllegalArgumentException("Discount with ID " + discountId + " not found"));
+
+        // Update the fields with the new data from the DTO
+        discount.setTitle(adminDiscountAddDTO.getTitle());
+        discount.setDescription(adminDiscountAddDTO.getDescription());
+        discount.setDiscount_value(adminDiscountAddDTO.getDiscount_value());
+        discount.setStart_date(adminDiscountAddDTO.getStart_date());
+        discount.setEnd_date(adminDiscountAddDTO.getEnd_date());
+        discount.setUpdated_at(LocalDateTime.now()); // Update the timestamp when modified
+
+        // Save the updated discount to the repository
+        return discountRepository.save(discount);
+    }
+
 }

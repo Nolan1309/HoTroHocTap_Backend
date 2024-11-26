@@ -1,10 +1,18 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminBlogAddDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminBlogDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminBlogGetOneDTO;
 import com.example.hotrohoctapbackend.DTO.BlogDTO;
+import com.example.hotrohoctapbackend.dao.AccountRepository;
+import com.example.hotrohoctapbackend.dao.BlogCategoryRepository;
 import com.example.hotrohoctapbackend.dao.BlogRepository;
+import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Blog;
+import com.example.hotrohoctapbackend.entity.BlogCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,13 +22,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BlogService {
 
     @Autowired
     private BlogRepository blogRepository;
+    @Autowired
+    private BlogCategoryRepository blogCategoryRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
     public List<Blog> getBlogsByNewest() {
         return blogRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 3));
     }
@@ -92,6 +105,34 @@ public class BlogService {
         }
         return null;
     }
+    public Optional<AdminBlogGetOneDTO> getBlogByIdAdmin(Integer id) {
+        // Lấy danh sách kết quả trả về từ câu truy vấn
+        List<Object[]> blogData = blogRepository.findBlogByIdAdmin(id);
+
+        // Kiểm tra nếu danh sách có kết quả trả về
+        if (!blogData.isEmpty()) {
+            // Lấy kết quả đầu tiên (vì chỉ có một blog)
+            Object[] data = blogData.get(0); // data[0] là title, data[1] là content, v.v.
+
+            // Chuyển đổi Object[] thành DTO
+            AdminBlogGetOneDTO blogDTO = new AdminBlogGetOneDTO(
+                    (String) data[0],  // title
+                    (String) data[1],  // content
+                    (String) data[2],  // image
+                    (Boolean) data[3], // status
+                    (Integer) data[4]  // cat_blog_id
+            );
+
+            // Trả về Optional chứa DTO
+            return Optional.of(blogDTO);
+        } else {
+            // Nếu không có dữ liệu, trả về Optional.empty
+            return Optional.empty();
+        }
+    }
+
+
+
 
     public List<BlogDTO> getAllBlogDTOs() {
         List<Object[]> results = blogRepository.findAllBlogsAsObjectArray();
@@ -109,6 +150,73 @@ public class BlogService {
 
         return blogDTOs;
     }
+    public Page<AdminBlogDTO> getPaginatedBlogDetails(int page, int size) {
+        // Create Pageable object (page number starts from 0, size is the number of records per page)
+        Pageable pageable = PageRequest.of(page, size);
 
+        // Fetch the paginated results
+        Page<Object[]> resultPage = blogRepository.findBlogAdmin(pageable);
 
+        // Map the results to AdminBlogDTO
+        List<AdminBlogDTO> blogDTOList = resultPage.getContent().stream().map(record -> new AdminBlogDTO(
+                (Integer) record[0],     // id
+                (String) record[1],      // title
+                (String) record[2],      // fullname
+                (String) record[3],      // categoryName
+                (Boolean) record[4],     // status
+                (Boolean) record[5]      // isDeleted
+        )).collect(Collectors.toList());
+        // Return as a Page of AdminBlogDTO
+        return new PageImpl<>(blogDTOList, pageable, resultPage.getTotalElements());
+    }
+    public Blog addBlogAdmin(AdminBlogAddDTO blogAddDTO) {
+        // Validate category ID
+        BlogCategory category = blogCategoryRepository.findById(blogAddDTO.getCat_id())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + blogAddDTO.getCat_id()));
+
+        // Validate author name
+        Account author = accountRepository.findById(blogAddDTO.getAuthor_id())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid author name: " + blogAddDTO.getAuthor_id()));
+
+        // Create a new Blog entity
+        Blog blog = new Blog();
+        blog.setTitle(blogAddDTO.getTitle());
+        blog.setContent(blogAddDTO.getContent());
+        blog.setStatus(blogAddDTO.getStatus());
+        blog.setImage(blogAddDTO.getImage());
+        blog.setCreatedAt(LocalDateTime.now());
+        blog.setUpdatedAt(LocalDateTime.now());
+        blog.setCategory(category);
+        blog.setAuthor(author);
+
+        // Save the blog to the repository
+        return blogRepository.save(blog);
+    }
+    public Blog updateBlogAdmin(int blogId, AdminBlogAddDTO blogAddDTO) {
+        // Validate category ID
+        BlogCategory category = blogCategoryRepository.findById(blogAddDTO.getCat_id())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid category ID: " + blogAddDTO.getCat_id()));
+
+        // Validate author ID
+        Account author = accountRepository.findById(blogAddDTO.getAuthor_id())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid author ID: " + blogAddDTO.getAuthor_id()));
+
+        // Find the existing blog by ID
+        Blog blog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new IllegalArgumentException("Blog not found with ID: " + blogId));
+
+        // Update the fields
+        blog.setTitle(blogAddDTO.getTitle());
+        blog.setContent(blogAddDTO.getContent());
+        blog.setStatus(blogAddDTO.getStatus());
+        blog.setImage(blogAddDTO.getImage());
+        blog.setUpdatedAt(LocalDateTime.now()); // Update the timestamp for last modified
+
+        // Update the category and author (if necessary)
+        blog.setCategory(category);
+        blog.setAuthor(author);
+
+        // Save the updated blog to the repository
+        return blogRepository.save(blog);
+    }
 }

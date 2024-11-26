@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminDicountDetailDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminDiscounAddDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminDiscountGetDTO;
 import com.example.hotrohoctapbackend.entity.Comment;
 import com.example.hotrohoctapbackend.entity.Discount;
@@ -51,4 +52,23 @@ public class DiscountController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
         }
     }
+    @PostMapping("/add")
+    public ResponseEntity<Discount> addDiscount(@RequestBody AdminDiscounAddDTO adminDiscountAddDTO) {
+        try {
+            Discount discount = discountService.addDiscountAdmin(adminDiscountAddDTO);
+            return ResponseEntity.ok(discount);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null); // Handle validation errors
+        }
+    }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Discount> updateDiscount(@PathVariable Integer id, @RequestBody AdminDiscounAddDTO adminDiscountAddDTO) {
+        try {
+            Discount updatedDiscount = discountService.updateDiscountAdmin(id, adminDiscountAddDTO);
+            return ResponseEntity.ok(updatedDiscount);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null); // Return an error response if validation fails
+        }
+    }
+
 }

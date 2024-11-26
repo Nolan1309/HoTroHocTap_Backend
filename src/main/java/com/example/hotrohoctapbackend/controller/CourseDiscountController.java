@@ -33,4 +33,17 @@ public class CourseDiscountController {
                     .body("Đã xảy ra lỗi trong quá trình thêm khuyến mãi: " + e.getMessage());
         }
     }
+    @PutMapping("/reset-price")
+    public ResponseEntity<String> resetPriceToCost(@RequestParam List<Integer> courseIds) {
+        try {
+            String response = courseDiscountService.resetPriceToCost(courseIds);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Đã xảy ra lỗi trong quá trình cập nhật giá: " + e.getMessage());
+        }
+    }
+
 }

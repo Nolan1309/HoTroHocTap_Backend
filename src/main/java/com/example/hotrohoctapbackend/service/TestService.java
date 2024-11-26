@@ -2,6 +2,7 @@ package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestUpdateDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminUpdateTestToLesson;
 import com.example.hotrohoctapbackend.DTO.User.TestDTO_User;
 import com.example.hotrohoctapbackend.dao.ChapterRepository;
 import com.example.hotrohoctapbackend.dao.CourseRepository;
@@ -142,7 +143,20 @@ public class TestService {
         // Lưu lại
         return testRepository.save(test);
     }
+    @Transactional
+    public Test updateTestToLesson(int id, AdminUpdateTestToLesson updateDTO) {
+        // Lấy Test từ database
+        Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
 
+        if (updateDTO.getLessonId() != null) {
+            Lesson lesson = lessonRepository.findById(updateDTO.getLessonId())
+                    .orElseThrow(() -> new RuntimeException("Chapter not found"));
+            test.setLesson(lesson);
+        }
+
+        // Lưu lại
+        return testRepository.save(test);
+    }
     public AdminTestUpdateDTO getTestByIdAdmin(int id) {
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
 

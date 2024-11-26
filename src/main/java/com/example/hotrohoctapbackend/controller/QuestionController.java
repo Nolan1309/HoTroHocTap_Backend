@@ -74,9 +74,14 @@ public class QuestionController {
         // Trả về các câu hỏi với phân trang
         return questionService.getAllQuestionsAdmin(page, size);
     }
+
     @GetMapping("/tests/questions/{testId}")
-    public List<Question> getQuestionsByTestIdAdmin(@PathVariable Integer testId) {
-        return questionService.getQuestionsByTestIdAdmin(testId);
+    public Page<Question> getQuestionsByTestIdAdmin(
+            @PathVariable Integer testId,
+            @RequestParam(defaultValue = "0") int page, // Default page is 0
+            @RequestParam(defaultValue = "10") int size // Default size is 10
+    ) {
+        return questionService.getQuestionsByTestIdAdmin(testId, page, size);
     }
     @GetMapping("detail/{id}")
     public ResponseEntity<AdminQuestionGetDTO> getQuestionDetailsById(@PathVariable int id) {

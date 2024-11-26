@@ -69,4 +69,14 @@ public interface BlogRepository extends JpaRepository<Blog,Integer> {
             "JOIN blog_categories bc ON b.cat_blog_id = bc.id",
             nativeQuery = true)
     List<Object[]> findAllBlogsAsObjectArray();
+    @Query(value = "SELECT b.id AS id, b.title AS title, a.fullname AS fullname, " +
+            "c.name AS category_name, b.status AS status, b.is_deleted AS is_deleted " +
+            "FROM blogs b " +
+            "JOIN account a ON b.author_id = a.id " +
+            "JOIN blog_categories c ON b.cat_blog_id = c.id",
+            countQuery = "SELECT COUNT(b.id) FROM blogs b",
+            nativeQuery = true)
+    Page<Object[]> findBlogAdmin(Pageable pageable);
+    @Query(value = "SELECT b.title, b.content, b.image, b.status, b.cat_blog_id FROM blogs b WHERE b.id = :id", nativeQuery = true)
+    List<Object[]> findBlogByIdAdmin(@Param("id") Integer id);
 }
