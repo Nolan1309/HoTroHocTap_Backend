@@ -198,6 +198,11 @@ public class Endpoint {
             "/api/blogs/admingetall",
             "/api/blogs/admin/detail/**",
 
+
+            "/api/settings",
+            "/api/settings/**",
+            "/api/settings/type/**"
+
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -277,16 +282,21 @@ public class Endpoint {
             "/api/questions/upload",
             "/api/tests/add",
             "/add-branch",
+
             "/api/account/admin/add",
 //            "/api/videos/uploadVideo",
             "/api/lessons/updateLessonWithVideo",
+
             "/api/questions/add",
+            "/api/notifications/send",
+            "/api/notifications/notify",
             "/api/course-discounts/add-discount/**",
+
             "/api/test-questions/add-questions/**",
             "/api/discounts/add",
             "/api/blogs/admin/add",
-
-
+            "/api/settings",
+            "/api/settings/**",
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",
@@ -356,7 +366,9 @@ public class Endpoint {
             "/vipsubscriptions",
             "/vipsubscriptions/**",
             "/api/questions",
-            "/api/videos/**"
+            "/api/videos/**",
+            "/api/settings",
+            "/api/settings/**",
     };
     public static final String[] ADMIN_PUT_ENDPOINS = {
             "/accounts",
@@ -459,6 +471,9 @@ public class Endpoint {
             "/api/course-discounts/reset-price",
             "/api/blogs/admin/update/**",
             "/api/tests/update-to-lesson/**",
+            "/api/settings",
+            "/api/settings/**",
+            "/api/settings/*/activate/*"
     };
 
 
