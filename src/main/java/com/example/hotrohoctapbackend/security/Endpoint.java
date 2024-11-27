@@ -194,7 +194,10 @@ public class Endpoint {
             "/api/discounts/detail/**",
             "/api/notifications/getall",
             "/api/courses/courses/discounts",
-            "/api/courses/courses/ofaccount"
+            "/api/courses/courses/ofaccount",
+            "/api/settings",
+            "/api/settings/**",
+            "/api/settings/type/**"
 
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
@@ -283,7 +286,9 @@ public class Endpoint {
             "/api/questions/add",
             "/api/notifications/send",
             "/api/notifications/notify",
-            "/api/course-discounts/add-discount/**"
+            "/api/course-discounts/add-discount/**",
+            "/api/settings",
+            "/api/settings/**",
 
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
@@ -354,7 +359,9 @@ public class Endpoint {
             "/vipsubscriptions",
             "/vipsubscriptions/**",
             "/api/questions",
-            "/api/videos/**"
+            "/api/videos/**",
+            "/api/settings",
+            "/api/settings/**",
     };
     public static final String[] ADMIN_PUT_ENDPOINS = {
             "/accounts",
@@ -453,6 +460,10 @@ public class Endpoint {
             "/api/discounts/hide/**",
             "/api/notifications/show/**",
             "/api/notifications/hide/**",
+            "/api/settings",
+            "/api/settings/**",
+            "/api/settings/*/activate/*"
+
     };
 
 

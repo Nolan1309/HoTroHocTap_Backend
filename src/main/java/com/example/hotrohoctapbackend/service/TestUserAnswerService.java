@@ -40,6 +40,11 @@ public class TestUserAnswerService {
     @Autowired
     private TestResultRepository testResultRepository;
 
+    @Autowired
+    private SettingService settingService;
+
+
+
     public Map<String, Object> saveTestUserAnswer(TestUserAnswerRequestDTO_User requestDTO) {
         ScoreResponseDTO_User scoreResponseDTOUser = calculateScore(requestDTO);
         TestResultDTO_User testResultDTOUser = new TestResultDTO_User();
@@ -55,7 +60,9 @@ public class TestUserAnswerService {
 
 
             testResultDTOUser.setScore(scoreResponseDTOUser.getScore());
-            if (scoreResponseDTOUser.getScore() >= 8.0) {
+            String scoreType = settingService.getScore("score");
+            Double scoreCheck = Double.parseDouble(scoreType);
+            if (scoreResponseDTOUser.getScore() >= scoreCheck) {
                 testResultDTOUser.setResult("Pass");
             } else testResultDTOUser.setResult("Fail");
             testResultDTOUser.setTotal_questions(scoreResponseDTOUser.getTotal());
