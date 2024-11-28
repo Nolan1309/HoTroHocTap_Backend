@@ -53,10 +53,10 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.DELETE, Endpoint.PUBLIC_DELETE_ENDPOINS).permitAll()
 
 
-                        .requestMatchers(HttpMethod.GET, Endpoint.ADMIN_GET_ENDPOINT).hasAnyAuthority("ADMIN","STAFF")
-                        .requestMatchers(HttpMethod.POST, Endpoint.ADMIN_POST_ENDPOINS).hasAnyAuthority("ADMIN","STAFF")
-                        .requestMatchers(HttpMethod.DELETE, Endpoint.ADMIN_DELETE_ENDPOINS).hasAnyAuthority("ADMIN","STAFF")
-                        .requestMatchers(HttpMethod.PUT, Endpoint.ADMIN_PUT_ENDPOINS).hasAnyAuthority("ADMIN","STAFF")
+                        .requestMatchers(HttpMethod.GET, Endpoint.ADMIN_GET_ENDPOINT).hasAnyAuthority("ADMIN","TEACHER")
+                        .requestMatchers(HttpMethod.POST, Endpoint.ADMIN_POST_ENDPOINS).hasAnyAuthority("ADMIN","TEACHER")
+                        .requestMatchers(HttpMethod.DELETE, Endpoint.ADMIN_DELETE_ENDPOINS).hasAnyAuthority("ADMIN","TEACHER")
+                        .requestMatchers(HttpMethod.PUT, Endpoint.ADMIN_PUT_ENDPOINS).hasAnyAuthority("ADMIN","TEACHER")
 
                         .requestMatchers(HttpMethod.GET, Endpoint.USER_GET_ENDPOINT).hasAuthority("USER")
                         .requestMatchers(HttpMethod.POST, Endpoint.USER_POST_ENDPOINT).hasAuthority("USER")

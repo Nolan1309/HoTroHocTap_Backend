@@ -51,7 +51,7 @@ public class TestResultService {
             throw new RuntimeException("Không tìm thấy Course với ID: " + testResultDTOUser.getCourseID());
         }
         TestResult testResult = new TestResult();
-        testResult.setId(testResultDTOUser.getTestID());
+//        testResult.setTest(testResultDTOUser.getTestID());
         Test test = new Test();
         test.setId(testResultDTOUser.getTestID());
         testResult.setTest(test);

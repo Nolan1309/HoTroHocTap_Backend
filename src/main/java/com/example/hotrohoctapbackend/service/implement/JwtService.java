@@ -46,7 +46,7 @@ public class JwtService {
                 if (role.getRoleName().equals("ADMIN")) {
                     isAdmin = true;
                 }
-                if (role.getRoleName().equals("STAFF")) {
+                if (role.getRoleName().equals("TEACHER")) {
                     isStaff = true;
                 }
                 if (role.getRoleName().equals("USER")) {
@@ -55,7 +55,7 @@ public class JwtService {
             }
         }
         claims.put("isAdmin", isAdmin);
-        claims.put("isStaff", isStaff);
+        claims.put("isTeacher", isStaff);
         claims.put("isUser", isUser);
 
 //        claims.put("isAdmin", true);
