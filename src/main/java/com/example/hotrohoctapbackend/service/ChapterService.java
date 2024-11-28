@@ -132,6 +132,17 @@ public class ChapterService {
         // Lưu chapter vào database
         return chapterRepository.save(chapter);
     }
+    public Chapter editChapter(Integer chapterId, ChapterDTO chapterDTO) {
+        // Tìm chapter theo ID
+        Chapter chapter = chapterRepository.findById(chapterId)
+                .orElseThrow(() -> new RuntimeException("Chapter not found with id: " + chapterId));
+
+        // Cập nhật thông tin chapter
+        chapter.setTitle(chapterDTO.getTitle());  // Cập nhật tên chapter
+        // Lưu chapter đã cập nhật vào database
+        return chapterRepository.save(chapter);
+    }
+
     public Chapter hideChapterAdmin(int chapterID) {
         // Tìm tài khoản theo ID
         Optional<Chapter> accountOpt = chapterRepository.findById(chapterID);

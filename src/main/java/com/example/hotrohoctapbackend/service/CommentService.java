@@ -155,7 +155,7 @@ public class CommentService {
 
         if (accountOpt.isPresent()) {
             Comment account = accountOpt.get();
-            account.setApproved(false);
+            account.setApproved(true);
             // Lưu thay đổi
             return commentRepository.save(account);
         } else {
@@ -169,7 +169,7 @@ public class CommentService {
 
         if (accountOpt.isPresent()) {
             Comment account = accountOpt.get();
-            account.setApproved(true);
+            account.setApproved(false);
             // Lưu thay đổi
             return commentRepository.save(account);
         } else {

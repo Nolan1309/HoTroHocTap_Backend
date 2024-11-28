@@ -66,7 +66,44 @@ public class AccountController {
     public AccountDTO_Proflie findAccountProfileById(@PathVariable Integer id) {
         return accountService.findByAccountProfile(id);
     }
+    @GetMapping("admin/profile/{id}")
+    public AccountDTO_Proflie findAccountProfileByIdAdmin(@PathVariable Integer id) {
+        return accountService.findByAccountProfile(id);
+    }
+    @PutMapping("admin/update/{id}")
+    public ResponseEntity<AccountDTO_Proflie> updateAccountAdmin(
+            @PathVariable int id,
+            @RequestParam("fullname") String fullname,
+            @RequestParam("email") String email,
+            @RequestParam("phone") String phone,
+            @RequestParam("gender") String gender,
+            @RequestParam("birthday") String birthday, // Có thể cần format nếu sử dụng LocalDate
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
+        // Xử lý ảnh (nếu có)
+        String base64Image = null;
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                String data = Base64.getEncoder().encodeToString(imageFile.getBytes());
+                base64Image = "data:image/jpeg;base64," + data;
+
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().build(); // Trả về lỗi nếu có vấn đề khi xử lý ảnh
+            }
+        }
+
+        // Cập nhật thông tin người dùng
+        UpdateAccountDTO updateAccountDTO = new UpdateAccountDTO();
+        updateAccountDTO.setFullname(fullname);
+        updateAccountDTO.setEmail(email);
+        updateAccountDTO.setPhone(phone);
+        updateAccountDTO.setGender(gender);
+        updateAccountDTO.setBirthday(LocalDateTime.parse(birthday)); // Chuyển birthday về LocalDate
+        updateAccountDTO.setImage(base64Image);
+
+        AccountDTO_Proflie updatedAccount = accountService.updateAccountUser(id, updateAccountDTO);
+        return ResponseEntity.ok(updatedAccount);
+    }
     @PutMapping("/update/{id}")
     public ResponseEntity<AccountDTO_Proflie> updateAccount(
             @PathVariable int id,
@@ -101,7 +138,6 @@ public class AccountController {
         AccountDTO_Proflie updatedAccount = accountService.updateAccountUser(id, updateAccountDTO);
         return ResponseEntity.ok(updatedAccount);
     }
-
 
     @Autowired
     private PasswordEncoder passwordEncoder;  // Mã hóa mật khẩu

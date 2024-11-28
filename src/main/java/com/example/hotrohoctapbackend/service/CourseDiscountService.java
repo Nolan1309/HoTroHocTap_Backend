@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,6 +89,8 @@ public class CourseDiscountService {
                 Course_Discount courseDiscount = new Course_Discount();
                 courseDiscount.setCourse(course);
                 courseDiscount.setDiscount(discount);
+                courseDiscount.setDeletedDate(LocalDateTime.now());
+                courseDiscount.setDeleted(false);
                 courseDiscount.setCheck(true);
                 courseDiscountRepository.save(courseDiscount);
 

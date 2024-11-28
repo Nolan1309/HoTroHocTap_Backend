@@ -13,10 +13,10 @@ public class Blog {
     @Column(name = "id")
     private int id;
 
-    @Column(name = "title", columnDefinition = "TEXT")
+    @Column(name = "title", columnDefinition = "LONGTEXT")
     private String title;
 
-    @Column(name = "content",columnDefinition = "TEXT")
+    @Column(name = "content",columnDefinition = "LONGTEXT")
     private String content;
 
     @Column(name = "status")

@@ -198,7 +198,7 @@ public class Endpoint {
             "/api/blogs/admingetall",
             "/api/blogs/admin/detail/**",
 
-
+            "/api/account/admin/profile/**",
             "/api/settings",
             "/api/settings/**",
             "/api/settings/type/**"
@@ -369,6 +369,7 @@ public class Endpoint {
             "/api/videos/**",
             "/api/settings",
             "/api/settings/**",
+            "/api/account/admin/profile/**",
     };
     public static final String[] ADMIN_PUT_ENDPOINS = {
             "/accounts",
@@ -473,7 +474,8 @@ public class Endpoint {
             "/api/tests/update-to-lesson/**",
             "/api/settings",
             "/api/settings/**",
-            "/api/settings/*/activate/*"
+            "/api/settings/*/activate/*",
+            "/api/chapters/edit/**",
     };
 
 

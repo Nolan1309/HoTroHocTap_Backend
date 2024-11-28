@@ -218,22 +218,29 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
                     "LEFT JOIN course_categories cat ON c.course_category_id = cat.id",
             nativeQuery = true)
     Page<Object[]> findCourseWithCategory(Pageable pageable);
-    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.status, c.is_deleted " +
+    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.status, c.is_deleted, " +
+            "cat.name AS category_name " + // Thêm trường category_name
             "FROM courses c " +
             "JOIN account a ON c.account_id = a.id " +
+            "LEFT JOIN course_categories cat ON c.course_category_id = cat.id " + // Thêm LEFT JOIN với bảng course_categories
             "WHERE c.account_id = :accountId",
             countQuery = "SELECT COUNT(*) " +
                     "FROM courses c " +
                     "JOIN account a ON c.account_id = a.id " +
+                    "LEFT JOIN course_categories cat ON c.course_category_id = cat.id " + // Cập nhật countQuery tương tự
                     "WHERE c.account_id = :accountId",
             nativeQuery = true)
     Page<Object[]> findCoursesByAccountIdAdmin(@Param("accountId") int accountId, Pageable pageable);
-    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.status, c.is_deleted " +
+
+    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.status, c.is_deleted, " +
+            "cat.name AS category_name " + // Thêm category_name vào SELECT
             "FROM courses c " +
-            "JOIN account a ON c.account_id = a.id",
+            "JOIN account a ON c.account_id = a.id " +
+            "LEFT JOIN course_categories cat ON c.course_category_id = cat.id", // Thêm LEFT JOIN với bảng course_categories
             countQuery = "SELECT COUNT(*) " +
                     "FROM courses c " +
-                    "JOIN account a ON c.account_id = a.id",
+                    "JOIN account a ON c.account_id = a.id " +
+                    "LEFT JOIN course_categories cat ON c.course_category_id = cat.id", // Thêm LEFT JOIN vào countQuery
             nativeQuery = true)
     Page<Object[]> findAllCoursesResult(Pageable pageable);
     @Query(value = "SELECT c.id, c.courses_title, c.duration, c.price, c.cost " +

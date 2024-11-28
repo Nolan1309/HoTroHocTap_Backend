@@ -130,10 +130,6 @@ public class BlogService {
             return Optional.empty();
         }
     }
-
-
-
-
     public List<BlogDTO> getAllBlogDTOs() {
         List<Object[]> results = blogRepository.findAllBlogsAsObjectArray();
         List<BlogDTO> blogDTOs = new ArrayList<>();
@@ -206,8 +202,8 @@ public class BlogService {
                 .orElseThrow(() -> new IllegalArgumentException("Blog not found with ID: " + blogId));
 
         // Update the fields
-        blog.setTitle(blogAddDTO.getTitle());
         blog.setContent(blogAddDTO.getContent());
+        blog.setTitle(blogAddDTO.getTitle());
         blog.setStatus(blogAddDTO.getStatus());
         blog.setImage(blogAddDTO.getImage());
         blog.setUpdatedAt(LocalDateTime.now()); // Update the timestamp for last modified

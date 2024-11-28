@@ -15,7 +15,6 @@ public class Course_Discount {
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
-
     @ManyToOne
     @JoinColumn(name = "discount_id")
     private Discount discount;

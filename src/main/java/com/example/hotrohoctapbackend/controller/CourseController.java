@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminAddCourseDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseGetDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseOfDiscount;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseResultDTO;
@@ -103,20 +104,16 @@ public class CourseController {
 
     //Admin
     @PostMapping("/add-course")
-    public ResponseEntity<Course> addCourse(@RequestBody CourseDTO courseDTO) {
-        try {
-            Course newCourse = courseService.addCourse(courseDTO);
-            return ResponseEntity.ok(newCourse);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
+    public ResponseEntity<Course> addCourse(@RequestBody AdminAddCourseDTO courseDTO) {
+        Course createdCourse = courseService.addCourse(courseDTO);
+        return new ResponseEntity<>(createdCourse, HttpStatus.CREATED);
     }
     @PutMapping("/update-course/{courseId}")
     public ResponseEntity<Course> updateCourse(
             @PathVariable Integer courseId,
-            @RequestBody CourseDTO courseDTO) {
+            @RequestBody AdminAddCourseDTO courseDTO) {
         try {
-            Course updatedCourse = courseService.updateCourse(courseId, courseDTO);
+            Course updatedCourse = courseService.editCourse(courseId, courseDTO);
             return ResponseEntity.ok(updatedCourse);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -171,6 +168,4 @@ public class CourseController {
             @RequestParam(defaultValue = "10") int size) {
         return courseService.getCoursesWithDiscounts(page, size);
     }
-
-
 }

@@ -84,14 +84,35 @@ public class QuestionService {
 
             Question question = new Question();
 
-            question.setContent(getCellValue(row.getCell(0)));
-            question.setInstruction(getCellValue(row.getCell(1)));
-            question.setOptionA(getCellValue(row.getCell(2)));
-            question.setOptionB(getCellValue(row.getCell(3)));
-            question.setOptionC(getCellValue(row.getCell(4)));
-            question.setOptionD(getCellValue(row.getCell(5)));
-            question.setResult(getCellValue(row.getCell(6)));
+            // Set thông tin câu hỏi từ file Excel
+            question.setContent(getCellValue(row.getCell(0))); // Content
+            question.setInstruction(getCellValue(row.getCell(1))); // Instruction
+            question.setOptionA(getCellValue(row.getCell(2))); // Option A
+            question.setOptionB(getCellValue(row.getCell(3))); // Option B
+            question.setOptionC(getCellValue(row.getCell(4))); // Option C
+            question.setOptionD(getCellValue(row.getCell(5))); // Option D
+            String resultCheck = getCellValue(row.getCell(6)); // Result check (A, B, C, D)
 
+            // Xử lý kết quả câu hỏi dựa vào Result Check
+            if ("A".equals(resultCheck)) {
+                question.setResult(question.getOptionA()); // Set đáp án đúng (Option A)
+                question.setResult_check(resultCheck); // Set Result check là A
+            } else if ("B".equals(resultCheck)) {
+                question.setResult(question.getOptionB()); // Set đáp án đúng (Option B)
+                question.setResult_check(resultCheck); // Set Result check là B
+            } else if ("C".equals(resultCheck)) {
+                question.setResult(question.getOptionC()); // Set đáp án đúng (Option C)
+                question.setResult_check(resultCheck); // Set Result check là C
+            } else if ("D".equals(resultCheck)) {
+                question.setResult(question.getOptionD()); // Set đáp án đúng (Option D)
+                question.setResult_check(resultCheck); // Set Result check là D
+            }
+
+            // Set thêm thông tin tạo và cập nhật
+            question.setCreatedAt(new Date());
+            question.setUpdatedAt(new Date());
+
+            // Thêm câu hỏi vào danh sách
             questionList.add(question);
         }
 
@@ -101,8 +122,13 @@ public class QuestionService {
         questionRepository.saveAll(questionList);
     }
 
+
+
     // Phương thức hỗ trợ để lấy giá trị của cell
     private String getCellValue(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
         switch (cell.getCellType()) {
             case STRING:
                 return cell.getStringCellValue();
@@ -115,6 +141,7 @@ public class QuestionService {
         }
     }
 
+
     public void deleteQuestions(List<Integer> ids) {
         questionRepository.deleteQuestionsByIds(ids);
     }
@@ -124,14 +151,16 @@ public class QuestionService {
     }
 
     public byte[] exportQuestionsToExcel() {
-        List<Question> questions = getAllQuestions();
+        List<Question> questions = getAllQuestions(); // Lấy tất cả câu hỏi từ database
 
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Questions");
-            Row headerRow = sheet.createRow(0);
-            String[] headers = {"ID", "Content", "Instruction", "Option A", "Option B", "Option C", "Option D", "Result", "Created At", "Updated At"};
 
             // Tạo dòng tiêu đề
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"Content", "Instruction", "Option A", "Option B", "Option C", "Option D", "Result Check"};
+
+            // Ghi tiêu đề vào từng cột
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -142,20 +171,21 @@ public class QuestionService {
                 cell.setCellStyle(style);
             }
 
-            // Ghi dữ liệu vào từng dòng
+            // Ghi dữ liệu câu hỏi vào các dòng
             int rowNum = 1;
             for (Question question : questions) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(question.getId());
-                row.createCell(1).setCellValue(question.getContent());
-                row.createCell(2).setCellValue(question.getInstruction());
-                row.createCell(3).setCellValue(question.getOptionA());
-                row.createCell(4).setCellValue(question.getOptionB());
-                row.createCell(5).setCellValue(question.getOptionC());
-                row.createCell(6).setCellValue(question.getOptionD());
-                row.createCell(7).setCellValue(question.getResult());
-                row.createCell(8).setCellValue(question.getCreatedAt().toString());
-                row.createCell(9).setCellValue(question.getUpdatedAt().toString());
+
+                row.createCell(0).setCellValue(question.getContent()); // Content
+                row.createCell(1).setCellValue(question.getInstruction()); // Instruction
+                row.createCell(2).setCellValue(question.getOptionA()); // Option A
+                row.createCell(3).setCellValue(question.getOptionB()); // Option B
+                row.createCell(4).setCellValue(question.getOptionC()); // Option C
+                row.createCell(5).setCellValue(question.getOptionD()); // Option D
+
+                // Cột Result Check (A, B, C, D)
+                String resultCheck = question.getResult_check(); // Lấy giá trị của result_check
+                row.createCell(6).setCellValue(resultCheck); // Result Check
             }
 
             // Ghi Workbook vào byte array
@@ -168,6 +198,8 @@ public class QuestionService {
             throw new RuntimeException("Có lỗi xảy ra khi xuất dữ liệu ra file Excel");
         }
     }
+
+
 
     public Page<Question> getQuestionsByTestIdAdmin(Integer testId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size); // Create a Pageable object

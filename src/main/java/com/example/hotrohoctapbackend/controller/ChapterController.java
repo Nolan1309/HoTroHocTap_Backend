@@ -32,7 +32,19 @@ public class ChapterController {
         Chapter newChapter = chapterService.addChapter(chapterDTO);
         return ResponseEntity.ok(newChapter);
     }
-
+    @PutMapping("edit/{chapterId}")
+    public ResponseEntity<Chapter> editChapter(
+            @PathVariable Integer chapterId,            // Lấy chapterId từ URL
+            @RequestBody ChapterDTO chapterDTO) {    // Lấy thông tin chapter mới từ request body
+        try {
+            // Gọi service để chỉnh sửa chapter
+            Chapter updatedChapter = chapterService.editChapter(chapterId, chapterDTO);
+            return ResponseEntity.ok(updatedChapter);  // Trả về chapter đã được cập nhật
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);  // Trả về lỗi 404 nếu không tìm thấy chapter hoặc course
+        }
+    }
     //ADmin get
     @GetMapping("/admin-all")
     public List<ChapterDTOAdmin> getChaptersAllAdmin() {

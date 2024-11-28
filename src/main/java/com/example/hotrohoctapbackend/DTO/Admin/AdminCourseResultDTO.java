@@ -9,14 +9,18 @@ public class AdminCourseResultDTO {
     private BigDecimal price;
     private boolean status;
     private boolean deleted;
+    private String categoryName; // Thêm trường categoryName
+
     // Constructors
-    public AdminCourseResultDTO(int id, String courseTitle, String duration, BigDecimal  price, boolean status,boolean deleted) {
+    public AdminCourseResultDTO(int id, String courseTitle, String duration, BigDecimal price,
+                                boolean status, boolean deleted, String categoryName) {
         this.id = id;
         this.courseTitle = courseTitle;
         this.duration = duration;
         this.price = price;
         this.status = status;
         this.deleted = deleted;
+        this.categoryName = categoryName; // Gán giá trị categoryName
     }
 
     // Getters and Setters
@@ -48,7 +52,7 @@ public class AdminCourseResultDTO {
         return price;
     }
 
-    public void setPrice(BigDecimal  price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -59,6 +63,7 @@ public class AdminCourseResultDTO {
     public void setStatus(boolean status) {
         this.status = status;
     }
+
     public boolean isDeleted() {
         return deleted;
     }
@@ -66,5 +71,12 @@ public class AdminCourseResultDTO {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
-}
 
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+}
