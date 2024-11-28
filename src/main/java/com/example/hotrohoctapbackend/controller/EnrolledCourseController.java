@@ -3,9 +3,11 @@ package com.example.hotrohoctapbackend.controller;
 import com.example.hotrohoctapbackend.DTO.CountCourseDTO;
 import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
+import com.example.hotrohoctapbackend.dao.User_NotificationRepository;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Enrolled_Courses;
 import com.example.hotrohoctapbackend.entity.Notification;
+import com.example.hotrohoctapbackend.entity.User_Notification;
 import com.example.hotrohoctapbackend.service.EnrolledCourseService;
 import com.example.hotrohoctapbackend.service.NotificationService;
 import com.example.hotrohoctapbackend.service.services.EmailService;
@@ -39,7 +41,8 @@ public class EnrolledCourseController {
 
     @Autowired
     private NotificationService notificationService;
-
+    @Autowired
+    private User_NotificationRepository userNotificationRepository;
     @GetMapping("/check-enrollment")
     public String checkUserEnrollment(@RequestParam Long userId, @RequestParam Long courseId) {
         boolean isEnrolled = enrolledCourseService.isUserEnrolled(userId, courseId);
@@ -65,10 +68,22 @@ public class EnrolledCourseController {
 
             Notification notification = notificationService.createNotification(
                     title, getMessage, DangKyKhoaHoc);
-            UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
 
-            emailService.sendNotificationEmail(account.orElseThrow().getEmail(), title, getMessage);
+            Account account2 = accountRepository.findById(account.get().getId()).orElseThrow(() -> new RuntimeException("User not found"));
+            User_Notification userNotification = new User_Notification();
+            userNotification.setAccount(account2);
+            userNotification.setNotification(notification);
+            userNotification.setRead_status(false);
+            userNotificationRepository.save(userNotification);
+
+            UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
             messagingTemplate.convertAndSendToUser(String.valueOf(account.get().getId()), "/queue/notifications", notificationDTOUser);
+            try {
+                emailService.sendNotificationEmail(account.orElseThrow().getEmail(), title, getMessage);
+            } catch (Exception e) {
+                System.err.println("Error sending email: " + e.getMessage());
+            }
+
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error");

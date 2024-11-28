@@ -121,6 +121,9 @@ public class CourseService {
             if (data[13] instanceof Integer) {
                 courseDetailDTO.setCourse_category_id((Integer) data[13]);
             }
+            if (data[14] instanceof Integer) {
+                courseDetailDTO.setAccountId((Integer) data[14]);
+            }
 
             return courseDetailDTO;
         }

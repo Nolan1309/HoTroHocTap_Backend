@@ -181,4 +181,9 @@ public class GeneralDocumentsController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
         }
     }
+    @PutMapping("/{id}/increment-view")
+    public ResponseEntity<GeneralDocument> incrementViewCount(@PathVariable int id) {
+        GeneralDocument updatedDocument = generalDocumentsService.incrementViewCount(id);
+        return ResponseEntity.ok(updatedDocument);
+    }
 }

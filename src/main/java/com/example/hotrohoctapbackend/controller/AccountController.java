@@ -165,9 +165,14 @@ public class AccountController {
             userNotification.setRead_status(false);
             userNotificationRepository.save(userNotification);
 
-            emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
-//            messagingTemplate.convertAndSend("/topic/" + DoiMatKhau, notification);
+
             messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
+
+            try {
+                emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
+            } catch (Exception e) {
+                System.err.println("Error sending email: " + e.getMessage());
+            }
             return ResponseEntity.ok("Đổi mật khẩu thành công.");
         }
 
@@ -198,9 +203,19 @@ public class AccountController {
         userNotification.setRead_status(false);
         userNotificationRepository.save(userNotification);
 
-        emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
+
+//        emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
+
+
+        try {
+            emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
+        } catch (Exception e) {
+            System.err.println("Error sending email: " + e.getMessage());
+        }
 //        messagingTemplate.convertAndSend("/topic/" + DoiMatKhau, notification);
         messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
+
+
         return ResponseEntity.ok("Đổi mật khẩu thành công.");
     }
 

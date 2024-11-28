@@ -187,6 +187,7 @@ public class AccountService {
             successResponse.put("accountID", String.valueOf(account.getId()));
             successResponse.put("email", account.getEmail());
             successResponse.put("fullname", account.getFullname());
+            successResponse.put("phone", account.getPhone());
             return ResponseEntity.ok(successResponse);
         } else {
             Map<String, String> successResponse = new HashMap<>();

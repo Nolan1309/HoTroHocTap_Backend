@@ -22,7 +22,7 @@ public class Blog {
     @Column(name = "status")
     private Boolean status;
 
-    @Column(name = "image", columnDefinition = "TEXT")
+    @Column(name = "image", columnDefinition = "LONGTEXT")
     private String image;
 
 

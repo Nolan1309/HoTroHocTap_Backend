@@ -21,7 +21,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
 //            @Param("userId") Long userId,
 //            @Param("topics") List<String> topics
 //    );
-    @Query(value = "SELECT noti.*, us.read_status as checked " +
+    @Query(value = "SELECT noti.id, noti.created_at, noti.title, noti.updated_at, noti.deleted_date, noti.is_deleted, noti.topic, noti.message, us.read_status as checked " +
             "FROM notifications noti " +
             "INNER JOIN user_notifications us " +
             "ON noti.id = us.notification_id " +

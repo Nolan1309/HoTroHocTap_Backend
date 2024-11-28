@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.Admin.SettingDTO;
 import com.example.hotrohoctapbackend.entity.SettingScheduler;
 import com.example.hotrohoctapbackend.scheduler.NotificationScheduler;
 import com.example.hotrohoctapbackend.service.SettingService;
@@ -38,7 +39,7 @@ public class SettingSchedulerController {
     }
 
     @PostMapping
-    public ResponseEntity<SettingScheduler> createSetting(@RequestBody SettingScheduler setting) {
+    public ResponseEntity<SettingScheduler> createSetting(@RequestBody SettingDTO setting) {
         return ResponseEntity.ok(service.saveSetting(setting));
     }
 

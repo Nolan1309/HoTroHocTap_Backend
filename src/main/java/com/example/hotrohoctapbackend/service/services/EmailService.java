@@ -31,7 +31,6 @@ public class EmailService {
         message.setFrom(from);
         mailSender.send(message);
     }
-
     public void sendNotificationEmailDangKy(String toEmail, String title , String messageNo) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
@@ -40,8 +39,6 @@ public class EmailService {
         message.setFrom(from);
         mailSender.send(message);
     }
-
-
     public void sendOrderConfirmationEmail(String toEmail, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);

@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Map;
+import java.util.Optional;
 
 
 import static com.example.hotrohoctapbackend.util.topic.DangKyTaiKhoan;
@@ -92,7 +93,7 @@ public class UserController {
                 userNotification.setRead_status(false);
                 userNotificationRepository.save(userNotification);
 
-                emailService.sendNotificationEmailDangKy(email, title, getMessage);
+//                emailService.sendNotificationEmailDangKy(email, title, getMessage);
 //                messagingTemplate.convertAndSend("/topic/" + DangKyTaiKhoan, notification);
                 messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()),  "/queue/notifications", notificationDTOUser);
             }
@@ -164,6 +165,21 @@ public class UserController {
                 return;
             }
 
+            Notification notification = notificationService.createNotification(
+                    "Đăng ký tài khoản", "Tài khoản "+account.getFullname()+ " đăng ký thành công !", DangKyTaiKhoan);
+
+//            Optional<Account> account = accountRepository.findById(request.getUserId().intValue());
+
+            UserNotificationDTO_User user = new UserNotificationDTO_User(notification, false);
+
+            User_Notification userNotification = new User_Notification();
+            userNotification.setAccount(account);
+            userNotification.setNotification(notification);
+            userNotification.setRead_status(false);
+            userNotificationRepository.save(userNotification);
+
+
+            messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", user);
             // Tạo JWT và Refresh Token
             final String jwt = jwtService.generateToken(account.getEmail());
             String refreshToken = refreshTokenService.createOrUpdateRefreshToken(account.getId()).getToken();
