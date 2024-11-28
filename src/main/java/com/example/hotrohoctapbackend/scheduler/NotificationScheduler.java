@@ -99,7 +99,12 @@ public class NotificationScheduler {
             userNotification.setRead_status(false);
             userNotificationRepository.save(userNotification);
 
-            emailService.sendNotificationEmail(userId.getEmail(), title, message);
+            try {
+                emailService.sendNotificationEmail(userId.getEmail(), title, message);
+            } catch (Exception e) {
+                System.err.println("Error sending email: " + e.getMessage());
+            }
+
         }
         messagingTemplate.convertAndSend("/topic/" + NhacNhoHocBai, user);
     }

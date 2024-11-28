@@ -16,13 +16,13 @@ public class Blog {
     @Column(name = "title", columnDefinition = "TEXT")
     private String title;
 
-    @Column(name = "content",columnDefinition = "TEXT")
+    @Column(name = "content",columnDefinition = "LONGTEXT")
     private String content;
 
     @Column(name = "status")
     private Boolean status;
 
-    @Column(name = "image", columnDefinition = "TEXT")
+    @Column(name = "image", columnDefinition = "LONGTEXT")
     private String image;
 
 

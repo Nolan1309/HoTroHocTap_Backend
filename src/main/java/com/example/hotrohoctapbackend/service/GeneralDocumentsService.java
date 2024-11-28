@@ -47,7 +47,7 @@ public class GeneralDocumentsService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @Cacheable(value = "documentlist", key = "#pageable.pageNumber")
+//    @Cacheable(value = "documentlist", key = "#pageable.pageNumber")
     public Page<Object[]> getDocuments(Pageable pageable) {
         return generalDocumentRepository.findDocumentsAll(pageable);
     }
@@ -92,7 +92,7 @@ public class GeneralDocumentsService {
         return generalDocumentRepository.findTop100Documents();
     }
 
-    @Cacheable(value = "all", key = "#pageable.pageNumber")
+//    @Cacheable(value = "all", key = "#pageable.pageNumber")
     public Page<Object> getAll(Pageable pageable) {
         return generalDocumentRepository.GetAll(pageable);
     }
@@ -101,7 +101,7 @@ public class GeneralDocumentsService {
         return generalDocumentRepository.getDocumentByID(id);
     }
 
-    @Cacheable(value = "documentbycategory", key = "#categoryId + '-' + #pageable.pageNumber")
+//    @Cacheable(value = "documentbycategory", key = "#categoryId + '-' + #pageable.pageNumber")
     public Page<Object[]> getDocumentsByCategory(Long categoryId, Pageable pageable) {
         return generalDocumentRepository.findDocumentsByCategory(categoryId, pageable);
     }
@@ -265,5 +265,11 @@ public class GeneralDocumentsService {
         } else {
             throw new RuntimeException("Account not found with id: " + documentID);
         }
+    }
+    public GeneralDocument incrementViewCount(int documentId) {
+        GeneralDocument document = generalDocumentRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Document not found with id: " + documentId));
+        document.setView(document.getView() + 1);
+        return generalDocumentRepository.save(document);
     }
 }

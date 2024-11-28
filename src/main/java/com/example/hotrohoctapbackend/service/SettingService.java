@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.Admin.SettingDTO;
 import com.example.hotrohoctapbackend.dao.SettingRepository;
 import com.example.hotrohoctapbackend.entity.SettingScheduler;
 import com.example.hotrohoctapbackend.scheduler.NotificationScheduler;
@@ -35,8 +36,13 @@ public class SettingService {
     }
 
     //save
-    public SettingScheduler saveSetting(SettingScheduler setting) {
-        return settingRepository.save(setting);
+    public SettingScheduler saveSetting(SettingDTO setting) {
+
+        SettingScheduler settingScheduler = new SettingScheduler();
+        settingScheduler.setCheck(setting.isCheck());
+        settingScheduler.setType(setting.getType());
+        settingScheduler.setName(setting.getName());
+        return settingRepository.save(settingScheduler);
     }
 
     public void updateSettingName(int id, String name) {

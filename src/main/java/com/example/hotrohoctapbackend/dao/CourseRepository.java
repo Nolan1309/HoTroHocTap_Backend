@@ -140,7 +140,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             nativeQuery = true)
     Page<Object[]> findAllCourses(Pageable pageable);
 
-    @Query(value = "SELECT id, author, cost, course_output, created_at, description, duration, image_url, language, price, status, courses_title, updated_at, course_category_id " +
+    @Query(value = "SELECT id, author, cost, course_output, created_at, description, duration, image_url, language, price, status, courses_title, updated_at, course_category_id, account_id " +
             "FROM courses WHERE id = :id", nativeQuery = true)
     List<Object[]> findCourseById(@Param("id") Integer id);
 

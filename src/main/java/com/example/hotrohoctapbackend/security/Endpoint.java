@@ -136,7 +136,7 @@ public class Endpoint {
             "/user_vipsubscriptions",
             "/user_vipsubscriptions/**",
             "/api/account/forgot-password",
-            "/api/account/reset-password"
+            "/api/account/reset-password",
 
 
     };
@@ -149,7 +149,7 @@ public class Endpoint {
 
             //Update mat khau , cap nhat sau
             "/accounts/**",
-
+            "/api/general_documents/*/increment-view"
     };
 
     public static final String[] PUBLIC_DELETE_ENDPOINS = {
