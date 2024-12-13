@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.User.QuestionDownloadDTO;
 import com.example.hotrohoctapbackend.DTO.User.TestResultDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.TestResultDTO_View_User;
 import com.example.hotrohoctapbackend.exception.ErrorResponse;
@@ -90,5 +91,46 @@ public class TestResultController {
             @RequestParam Long courseId) {
         List<Object[]> results = testResultService.countResultsGroupedByResultUser(accountId, courseId);
         return ResponseEntity.ok(results);
+    }
+
+    //ADMIN
+    @GetMapping("/average-scoreADMIN")
+    public ResponseEntity<Double> getAverageScoreAdmin(
+            @RequestParam Long accountId,
+            @RequestParam Long courseId) {
+        Double averageScore = testResultService.getAverageScoreUser(accountId, courseId);
+        return ResponseEntity.ok(averageScore);
+    }
+
+    @GetMapping("/pass-rateADMIN")
+    public ResponseEntity<Double> getPassRateADMIN(
+            @RequestParam Long accountId,
+            @RequestParam Long courseId) {
+        Double passRate = testResultService.getPassRateUser(accountId, courseId);
+        return ResponseEntity.ok(passRate);
+    }
+
+    @GetMapping("/result/detailADMIN")
+    public ResponseEntity<List<Object>> getTestResultsADMIN(
+            @RequestParam Long accountId,
+            @RequestParam Long courseId) {
+        List<Object> results = testResultService.getTestResultsUser(accountId, courseId);
+        return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/result-countADMIN")
+    public ResponseEntity<List<Object[]>> countResultsGroupedByResultADMIN(
+            @RequestParam Long accountId,
+            @RequestParam Long courseId) {
+        List<Object[]> results = testResultService.countResultsGroupedByResultUser(accountId, courseId);
+        return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/download-test")
+    public ResponseEntity<List<QuestionDownloadDTO>> getUserAnswers(
+            @RequestParam("accountId") Long accountId,
+            @RequestParam("testResultId") Long testResultId) {
+        List<QuestionDownloadDTO> userAnswers = testResultService.getUserAnswersByAccountAndTestResult(accountId, testResultId);
+        return ResponseEntity.ok(userAnswers);
     }
 }

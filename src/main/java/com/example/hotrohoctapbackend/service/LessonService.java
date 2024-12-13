@@ -43,13 +43,13 @@ public class LessonService {
         Lesson lesson = new Lesson();
         lesson.setTitle(lessonDTO2.getTitle());
         lesson.setChapter(chapter); // Gán chapter tìm được
-
+        lesson.setDuration(10);
         // Thiết lập CreatedAt và UpdatedAt
         LocalDateTime now = LocalDateTime.now();
         lesson.setCreatedAt(now);
         lesson.setUpdatedAt(now); // Khi tạo mới, CreatedAt và UpdatedAt sẽ giống nhau
 
-        lesson.setDuration(lessonDTO2.getDuration());
+//        lesson.setDuration(lessonDTO2.getDuration());
         Optional<Course> course = courseRepository.findById(lessonDTO2.getCourse_id());
 
 
@@ -169,4 +169,25 @@ public class LessonService {
 
         return resultPage;
     }
+    public List<AdminLessonGetDTO> getLessonWithCourseAndChapterList() {
+        // Lấy tất cả dữ liệu từ repository mà không phân trang
+        List<Object[]> dataList = lessonRepository.findLessonCourseChapterDataList();
+
+        // Ánh xạ dữ liệu từ Object[] sang AdminLessonGetDTO
+        List<AdminLessonGetDTO> resultList = new ArrayList<>();
+        for (Object[] row : dataList) {
+            AdminLessonGetDTO dto = new AdminLessonGetDTO();
+            dto.setId((Integer) row[0]);
+            dto.setLessonTitle((String) row[1]);
+            dto.setCourseName((String) row[2]);
+            dto.setChapterName((String) row[3]);
+            dto.setDeleted((Boolean) row[4]);
+            resultList.add(dto);
+        }
+
+        return resultList;
+    }
+
+
+
 }

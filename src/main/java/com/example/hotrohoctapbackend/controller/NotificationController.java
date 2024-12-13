@@ -56,6 +56,13 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
+    @GetMapping("/user/{userId}/detail/{notificationId}")
+    public ResponseEntity<List<UserNotificationDTO_User>> getUserNotificationDetail(
+            @PathVariable Long userId, @PathVariable Long notificationId) {
+        List<UserNotificationDTO_User> notification = notificationService.getUserNotificationsDetail(userId, notificationId);
+        return ResponseEntity.ok(notification);
+    }
+
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
@@ -122,6 +129,12 @@ public class NotificationController {
         return ResponseEntity.ok("Notification marked as read");
     }
 
+    @PutMapping("/mark-as-read-detail/{id}")
+    public ResponseEntity<?> markAsReadAndDetail(@PathVariable Integer id, @RequestBody Integer notificationId) {
+        notificationService.markAsRead(id, notificationId);
+        return ResponseEntity.ok("Notification marked as read");
+    }
+
     @GetMapping("/getall")
     public Page<AdminNotificationDTO> getNotifications(
             @RequestParam(defaultValue = "0") int page,
@@ -129,6 +142,7 @@ public class NotificationController {
         Pageable pageable = PageRequest.of(page, size);
         return notificationService.getNotifications(pageable);
     }
+
     @PutMapping("/hide/{id}")
     public ResponseEntity<?> hideNotificationAdmin(@PathVariable int id) {
         try {
@@ -138,6 +152,7 @@ public class NotificationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
         }
     }
+
     @PutMapping("/show/{id}")
     public ResponseEntity<?> showNotificationAdmin(@PathVariable int id) {
         try {

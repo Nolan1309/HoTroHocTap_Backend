@@ -26,7 +26,7 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "FROM general_documents gd " +
             "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id " +
             "GROUP BY gd.id, gd.title, gd.image, gd.url, gd.view, gd.created_at " +
-            "ORDER BY gd.created_at DESC LIMIT 3", nativeQuery = true)
+            "ORDER BY gd.created_at DESC", nativeQuery = true)
     public List<Object[]> findAllWithDownloadCountOrderedByDateDesc();
 
     //    Lay tai lieu co view giam dan
@@ -35,7 +35,7 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "FROM general_documents gd " +
             "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id " +
             "GROUP BY gd.id, gd.title, gd.image, gd.url, gd.view, gd.created_at " +
-            "ORDER BY gd.view DESC LIMIT 3", nativeQuery = true)
+            "ORDER BY gd.view DESC", nativeQuery = true)
     public List<Object[]> findAllWithDownloadCountOrderedByViewDesc();
 
     //  Lay tai lieu co download giam dan
@@ -44,7 +44,7 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "FROM general_documents gd " +
             "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id " +
             "GROUP BY gd.id, gd.title, gd.image, gd.url, gd.view, gd.created_at " +
-            "ORDER BY download_count DESC LIMIT 3", nativeQuery = true)
+            "ORDER BY download_count DESC", nativeQuery = true)
     public List<Object[]> findAllWithDownloadCountOrderedByDownloadCountDesc();
 
     @Query(value = "SELECT " +
@@ -54,7 +54,8 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "gd.url AS url, " +
             "gd.view AS view, " +
             "gd.created_at AS created_at, " +
-            "COUNT(gda.id) AS download_count " +
+            "COUNT(gda.id) AS download_count, " +
+            "gd.id_category " +
             "FROM general_documents gd " +
             "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id " +
             "GROUP BY gd.id, gd.title, gd.image, gd.url, gd.view, gd.created_at",
@@ -62,18 +63,22 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             nativeQuery = true)
     Page<Object[]> findDocumentsAll(Pageable pageable);
 
-    @Query(value = "SELECT " +
-            "gd.id AS documentId, " +
-            "gd.title AS documentTitle, " +
-            "gd.image AS image_url, " +
-            "gd.url AS url, " +
-            "gd.view AS view, " +
-            "gd.created_at AS created_at, " +
-            "COUNT(gda.id) AS download_count " +
-            "FROM general_documents gd " +
-            "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id " +
-            "GROUP BY gd.id, gd.title, gd.image, gd.url, gd.view, gd.created_at " +
-            "LIMIT 100",
+    @Query(value = "SELECT   \n" +
+            "    gd.id AS documentId, \n" +
+            "    gd.title AS documentTitle, \n" +
+            "    gd.image AS image_url, \n" +
+            "    gd.url AS url, \n" +
+            "    gd.view AS view, \n" +
+            "    gd.created_at AS created_at, \n" +
+            "    COALESCE(COUNT(gda.id), 0) AS download_count, \n" +
+            "    ca.name \n" +
+            "FROM general_documents gd\n" +
+            "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id \n" +
+            "INNER JOIN categories ca ON ca.id_category = gd.id_category\n" +
+            "GROUP BY \n" +
+            "    gd.id, gd.title, gd.image, gd.url, gd.view, gd.created_at, ca.name \n" +
+            "ORDER BY download_count DESC, gd.created_at DESC \n" +
+            "LIMIT 100;\n",
             nativeQuery = true)
     List<Object[]> findTop100Documents();
 
@@ -160,32 +165,32 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
     Page<Object> GetAll(Pageable pageable);
 
 
-
     @Query(value = """
-        SELECT 
-            gd.id AS document_id,
-            gd.title AS document_title, 
-            gd.description AS document_description, 
-            gd.url AS document_url,
-            gd.is_deleted AS deleted,
-            c1.name AS category_level_1, 
-            c2.name AS category_level_2, 
-            c3.name AS category_level_3
-        FROM 
-            general_documents gd 
-        LEFT JOIN categories c3 ON gd.id_category = c3.id_category
-        LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
-        LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
-        """,
+            SELECT 
+                gd.id AS document_id,
+                gd.title AS document_title, 
+                gd.description AS document_description, 
+                gd.url AS document_url,
+                gd.is_deleted AS deleted,
+                c1.name AS category_level_1, 
+                c2.name AS category_level_2, 
+                c3.name AS category_level_3,
+                gd.id_category
+            FROM 
+                general_documents gd 
+            LEFT JOIN categories c3 ON gd.id_category = c3.id_category
+            LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
+            LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
+            """,
             countQuery = """
-        SELECT 
-            COUNT(*)
-        FROM 
-            general_documents gd 
-        LEFT JOIN categories c3 ON gd.id_category = c3.id_category
-        LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
-        LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
-        """,
+                    SELECT 
+                        COUNT(*)
+                    FROM 
+                        general_documents gd 
+                    LEFT JOIN categories c3 ON gd.id_category = c3.id_category
+                    LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
+                    LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
+                    """,
             nativeQuery = true)
     Page<Object[]> findDocumentsWithCategories(Pageable pageable);
 
@@ -209,8 +214,9 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "WHERE \n" +
             "    g.id = :id;\n", nativeQuery = true)
     List<Object[]> findDocumentDetailsById(@Param("id") int id);
+
     // Native query để tìm kiếm theo title và category với phân trang
-    @Query(value = "SELECT gd.*, c.name AS category_name " +
+    @Query(value = "SELECT gd.id,gd.created_at, gd.description, gd.image, gd.title, gd.updated_at,gd.url, gd.view, gd.id_category , c.name AS category_name " +
             "FROM general_documents gd " +
             "LEFT JOIN categories c ON gd.id_category = c.id_category " +
             "WHERE gd.title LIKE %:keyword% " +
@@ -233,23 +239,23 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
 
 
     @Query(value = """
-        SELECT 
-            d.id AS documentId, 
-            d.title AS title, 
-            dc.date_download AS dateDownload, 
-            d.url AS url
-        FROM 
-            general_documents d
-        INNER JOIN 
-            general_document_acount dc 
-        ON 
-            d.id = dc.generaldocument_id
-        WHERE 
-            dc.account_id = :accountId
-        ORDER BY 
-            dc.date_download DESC
-        LIMIT :offset, :pageSize
-    """, nativeQuery = true)
+                SELECT 
+                    d.id AS documentId, 
+                    d.title AS title, 
+                    dc.date_download AS dateDownload, 
+                    d.url AS url
+                FROM 
+                    general_documents d
+                INNER JOIN 
+                    general_document_acount dc 
+                ON 
+                    d.id = dc.generaldocument_id
+                WHERE 
+                    dc.account_id = :accountId
+                ORDER BY 
+                    dc.date_download DESC
+                LIMIT :offset, :pageSize
+            """, nativeQuery = true)
     List<Object[]> findDocumentsByAccountIdUser(
             @Param("accountId") Long accountId,
             @Param("offset") int offset,
@@ -257,16 +263,16 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
     );
 
     @Query(value = """
-        SELECT COUNT(*)
-        FROM 
-            general_documents d
-        INNER JOIN 
-            general_document_acount dc 
-        ON 
-            d.id = dc.generaldocument_id
-        WHERE 
-            dc.account_id = :accountId
-    """, nativeQuery = true)
+                SELECT COUNT(*)
+                FROM 
+                    general_documents d
+                INNER JOIN 
+                    general_document_acount dc 
+                ON 
+                    d.id = dc.generaldocument_id
+                WHERE 
+                    dc.account_id = :accountId
+            """, nativeQuery = true)
     long countDocumentsByAccountIdUser(@Param("accountId") Long accountId);
 
 }

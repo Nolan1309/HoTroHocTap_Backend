@@ -28,6 +28,15 @@ public class VideoController {
             return ResponseEntity.notFound().build();
         }
     }
+    @GetMapping("/view-user/{id}")
+    public ResponseEntity<VideoDTO_User> getVideoByIdViewUser(@PathVariable int id) {
+        VideoDTO_User video = videoService.getVideoById(id);
+        if (video != null) {
+            return ResponseEntity.ok(video);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
     @GetMapping("/first-video/{courseId}")
     public ResponseEntity<VideoDTO_User> getFirstVideoByCourseId(@PathVariable int courseId) {
         VideoDTO_User videoDTO = videoService.getFirstVideoByCourseId(courseId);

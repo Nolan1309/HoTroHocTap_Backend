@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO_Version2;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestUpdateDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminUpdateTestToLesson;
 import com.example.hotrohoctapbackend.DTO.User.TestDTO_User;
@@ -11,11 +12,15 @@ import com.example.hotrohoctapbackend.dao.TestRepository;
 import com.example.hotrohoctapbackend.entity.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -75,18 +80,55 @@ public class TestService {
 
     @Transactional
     public Test addTest(@NotNull AdminTestUpdateDTO newTestDTO) {
-        // Khởi tạo một đối tượng Test mới
+//        // Khởi tạo một đối tượng Test mới
+//        Test test = new Test();
+//
+//        // Cập nhật các trường
+//        test.setTitle(newTestDTO.getTitle());
+//        test.setDescription(newTestDTO.getDescription());
+//        test.setTotalQuestion(newTestDTO.getTotalQuestion());
+//        test.setSummary(newTestDTO.getIsSummary());
+//        test.setCreatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+//        test.setLesson(null);
+//
+//
+//        if (newTestDTO.getChapterId() != null) {
+//            Chapter chapter = chapterRepository.findById(newTestDTO.getChapterId())
+//                    .orElseThrow(() -> new RuntimeException("Chapter not found"));
+//            test.setChapter(chapter);
+//        }
+//
+//        if (newTestDTO.getCourseId() != null) {
+//            Course course = courseRepository.findById(newTestDTO.getCourseId())
+//                    .orElseThrow(() -> new RuntimeException("Course not found"));
+//            test.setCourse(course);
+//        }
+//
+//        // Lưu lại Test mới
+//        return testRepository.save(test);
+        // Kiểm tra xem đã có bài kiểm tra với course_id, chapter_id và is_summary chưa
+        if (newTestDTO.getIsSummary()) {
+            boolean exists = testRepository.existsByCourseIdAndChapterIdAndIsSummary(newTestDTO.getCourseId(),
+                    newTestDTO.getChapterId());
+
+
+            if (exists) {
+                throw new RuntimeException("A test with the same course_id, chapter_id, and is_summary already exists.");
+            }
+        }
+
+
+        // Khởi tạo một đối tượng Test mới và cập nhật các trường từ DTO
         Test test = new Test();
 
-        // Cập nhật các trường
+        // Tiếp tục các bước xử lý khác...
+        // Cập nhật các trường của đối tượng test
         test.setTitle(newTestDTO.getTitle());
         test.setDescription(newTestDTO.getDescription());
         test.setTotalQuestion(newTestDTO.getTotalQuestion());
         test.setSummary(newTestDTO.getIsSummary());
         test.setCreatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
-        test.setLesson(null);
-
-
+        // Thêm các thông tin khác như chapter, course...
         if (newTestDTO.getChapterId() != null) {
             Chapter chapter = chapterRepository.findById(newTestDTO.getChapterId())
                     .orElseThrow(() -> new RuntimeException("Chapter not found"));
@@ -99,7 +141,7 @@ public class TestService {
             test.setCourse(course);
         }
 
-        // Lưu lại Test mới
+        // Lưu đối tượng test vào cơ sở dữ liệu
         return testRepository.save(test);
     }
 
@@ -143,20 +185,41 @@ public class TestService {
         // Lưu lại
         return testRepository.save(test);
     }
+
     @Transactional
     public Test updateTestToLesson(int id, AdminUpdateTestToLesson updateDTO) {
         // Lấy Test từ database
+        List<Test> testList = testRepository.findTestsByLessonId(updateDTO.getLessonId());
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
+        if (testList.size() > 1) {
+            for (Test test2 : testList) {
+                if (test.getId() == test2.getId()) {
+                    Lesson lesson = lessonRepository.findById(updateDTO.getLessonId())
+                            .orElseThrow(() -> new RuntimeException("Chapter not found"));
+                    test.setLesson(lesson);
 
-        if (updateDTO.getLessonId() != null) {
+                } else {
+                    test2.setLesson(null);
+                }
+            }
+        } else {
             Lesson lesson = lessonRepository.findById(updateDTO.getLessonId())
                     .orElseThrow(() -> new RuntimeException("Chapter not found"));
             test.setLesson(lesson);
+            for (Test test2 : testList) {
+                if (test2.getId() == test.getId()) {
+                    test2.setLesson(lesson);
+                    return testRepository.save(test2);
+                } else {
+                    test2.setLesson(null);
+                    return testRepository.save(test2);
+                }
+            }
         }
-
         // Lưu lại
         return testRepository.save(test);
     }
+
     public AdminTestUpdateDTO getTestByIdAdmin(int id) {
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
 
@@ -184,18 +247,45 @@ public class TestService {
         return testRepository.saveAndFlush(test);
     }
 
-    public List<AdminTestGetDTO> getAllTestSummariesAdmin() {
-        return testRepository.findAllTestSummaries().stream()
-                .map(result -> new AdminTestGetDTO(
-                        (Integer) result[0],                // id
-                        (String) result[1],                 // title
-                        (Integer) result[2],                // totalQuestion
-                        (Date) result[3],                    // createdAt
-                        (Boolean) result[4]                // createdAt
-                ))
-                .collect(Collectors.toList());
+    //    public List<AdminTestGetDTO> getAllTestSummariesAdmin() {
+//        return testRepository.findAllTestSummaries().stream()
+//                .map(result -> new AdminTestGetDTO(
+//                        (Integer) result[0],                // id
+//                        (String) result[1],                 // title
+//                        (Integer) result[2],                // totalQuestion
+//                        (Date) result[3],                    // createdAt
+//                        (Boolean) result[4]                // createdAt
+//                ))
+//                .collect(Collectors.toList());
+//    }
+    public Page<AdminTestGetDTO_Version2> getAllTestSummariesAdmin(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // Tạo Pageable từ page và size
+        Page<Object[]> testSummaries = testRepository.findAllTestSummaries(pageable); // Lấy dữ liệu phân trang
+
+        // Chuyển kết quả từ Page<Object[]> thành Page<AdminTestGetDTO>
+        return testSummaries.map(result -> new AdminTestGetDTO_Version2(
+                (Integer) result[0],                // id
+                (String) result[1],                 // title
+                (Integer) result[2],                // totalQuestion
+                (Date) result[3],                   // createdAt
+                (Boolean) result[4],                // isDeleted
+                (Boolean) result[5],
+                (Integer) result[6],
+                (Integer) result[7]
+        ));
     }
 
+    //    }
+    public List<AdminTestGetDTO> getAllTestSummariesAdminList() {
+        List<Object[]> testSummaries = testRepository.findAllTestSummariesList(); // Lấy dữ liệu phân trang
+        // You can add a constructor if needed
+        List<AdminTestGetDTO> adminTestGetDTOList = new ArrayList<>();
+        for (Object[] item : testSummaries) {
+            AdminTestGetDTO it2 = new AdminTestGetDTO((Integer) item[0], (String) item[1], (Integer) item[2], (Date) item[3], (Boolean) item[4]);
+            adminTestGetDTOList.add(it2);
+        }
+        return adminTestGetDTOList;
+    }
 
     public Test deleteTestAdmin(int testID) {
         // Tìm tài khoản theo ID
@@ -227,5 +317,9 @@ public class TestService {
         } else {
             throw new RuntimeException("Account not found with id: " + testID);
         }
+    }
+
+    public List<Test> getTestsByCourseAndChapter(Integer courseId, Integer chapterId) {
+        return testRepository.findTestsByCourseAndChapter(courseId, chapterId);
     }
 }

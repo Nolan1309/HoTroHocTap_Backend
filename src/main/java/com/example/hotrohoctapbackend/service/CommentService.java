@@ -10,6 +10,7 @@ import com.example.hotrohoctapbackend.entity.Comment;
 import com.example.hotrohoctapbackend.entity.Lesson;
 import com.example.hotrohoctapbackend.entity.Video;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -149,31 +150,29 @@ public class CommentService {
             throw new RuntimeException("Account not found with id: " + commentID);
         }
     }
+    @Transactional
     public Comment activeCommentAdmin(int commentID) {
-        // Tìm tài khoản theo ID
-        Optional<Comment> accountOpt = commentRepository.findById(commentID);
-
-        if (accountOpt.isPresent()) {
-            Comment account = accountOpt.get();
-            account.setApproved(true);
-            // Lưu thay đổi
-            return commentRepository.save(account);
+        Optional<Comment> commentOpt = commentRepository.findById(commentID);
+        if (commentOpt.isPresent()) {
+            Comment comment = commentOpt.get();
+            comment.setApproved(true);
+            return commentRepository.save(comment);
         } else {
-            throw new RuntimeException("Test not found with id: " + commentID);
+            throw new RuntimeException("Comment not found with id: " + commentID);
         }
     }
 
+
+    @Transactional
     public Comment unactiveCommentAdmin(int commentID) {
-        // Tìm tài khoản theo ID
-        Optional<Comment> accountOpt = commentRepository.findById(commentID);
-
-        if (accountOpt.isPresent()) {
-            Comment account = accountOpt.get();
-            account.setApproved(false);
-            // Lưu thay đổi
-            return commentRepository.save(account);
+        Optional<Comment> commentOpt = commentRepository.findById(commentID);
+        if (commentOpt.isPresent()) {
+            Comment comment = commentOpt.get();
+            comment.setApproved(false);
+            return commentRepository.save(comment);
         } else {
-            throw new RuntimeException("Account not found with id: " + commentID);
+            throw new RuntimeException("Comment not found with id: " + commentID);
         }
     }
+
 }

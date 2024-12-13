@@ -63,6 +63,35 @@ public class NotificationService {
         return notifications;
     }
 
+    public List<UserNotificationDTO_User> getUserNotificationsDetail(Long userId, Long notificationId) {
+
+        User_Notification userNotification = userNotificationRepository.findByAccountIdAndNotificationId(userId.intValue(), notificationId.intValue())
+                .orElseThrow(() -> new RuntimeException("Notification not found for this user"));
+        userNotification.setRead_status(true);
+        userNotificationRepository.save(userNotification);
+
+        List<Object[]> results = repository.findNotificationsByUserIdNativeAndNotificationId(userId,notificationId);
+
+        List<UserNotificationDTO_User> notifications = new ArrayList<>();
+
+        for (Object[] row : results) {
+            Notification notification = new Notification();
+            notification.setId((Integer) row[0]);
+            notification.setCreatedAt(((Timestamp) row[1]).toLocalDateTime());
+            notification.setTitle((String) row[2]);
+            notification.setUpdatedAt(((Timestamp) row[3]).toLocalDateTime());
+            notification.setDeletedDate(((Timestamp) row[4]).toLocalDateTime());
+            notification.setDeleted((Boolean) row[5]);
+            notification.setTopic((String) row[6]);
+            notification.setMessage((String) row[7]);
+            boolean readStatus = (Boolean) row[8];
+
+            notifications.add(new UserNotificationDTO_User(notification, readStatus));
+        }
+
+        return notifications;
+    }
+
     public void getNotificationsByUserId(Long userId) {
         List<User_Notification> userNotificationList = userNotificationRepository.findByUserId(userId);
         userNotificationList.forEach(notification -> notification.setRead_status(true));
@@ -76,10 +105,18 @@ public class NotificationService {
         userNotificationRepository.save(notification);
     }
 
+    public void markAsReadDetail(Integer accountId, Integer notificationId) {
+        User_Notification notification = userNotificationRepository.findByAccountIdAndNotificationId(accountId, notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification not found for this user"));
+        notification.setRead_status(true);
+        userNotificationRepository.save(notification);
+    }
+
     public void sendNotificationToUser(Long userId, String message) {
         String destination = "/user/" + userId + "/notifications";
         messagingTemplate.convertAndSend(destination, message);
     }
+
     @Autowired
     private NotificationRepository notificationRepository;
 
@@ -100,6 +137,7 @@ public class NotificationService {
         // Trả về Page với danh sách DTO
         return new PageImpl<>(notificationDTOs, pageable, notifications.getTotalElements());
     }
+
     public Notification hideNotificationAdmin(int notificationID) {
         // Tìm tài khoản theo ID
         Optional<Notification> accountOpt = notificationRepository.findById(notificationID);

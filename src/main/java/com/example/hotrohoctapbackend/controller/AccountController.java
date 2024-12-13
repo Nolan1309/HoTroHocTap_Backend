@@ -70,7 +70,7 @@ public class AccountController {
     public AccountDTO_Proflie findAccountProfileByIdAdmin(@PathVariable Integer id) {
         return accountService.findByAccountProfile(id);
     }
-    @PutMapping("admin/update/{id}")
+    @PutMapping("/admin/update/{id}")
     public ResponseEntity<AccountDTO_Proflie> updateAccountAdmin(
             @PathVariable int id,
             @RequestParam("fullname") String fullname,
@@ -175,6 +175,56 @@ public class AccountController {
             }
             return ResponseEntity.ok("Đổi mật khẩu thành công.");
         }
+
+        // Kiểm tra mật khẩu hiện tại có đúng không
+        if (!passwordEncoder.matches(passwordChangeRequest.getCurrentPassword(), account.getPassword())) {
+            return ResponseEntity.badRequest().body("Mật khẩu hiện tại không đúng.");
+        }
+
+        // Kiểm tra xem mật khẩu mới và xác nhận mật khẩu có khớp không
+        if (!passwordChangeRequest.getNewPassword().equals(passwordChangeRequest.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+        }
+
+        // Cập nhật mật khẩu mới
+        String encodedNewPassword = passwordEncoder.encode(passwordChangeRequest.getNewPassword());
+        account.setPassword(encodedNewPassword);
+        accountService.updatePassword(account);  // Cập nhật thông tin tài khoản
+
+        String title = "Thông báo đổi mật khẩu";
+        String getMessage = "Tài khoản " + account.getFullname() + " đổi mật khẩu thành công";
+
+        Notification notification = notificationService.createNotification(
+                title, getMessage, DoiMatKhau);
+        UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
+        User_Notification userNotification = new User_Notification();
+        userNotification.setAccount(account);
+        userNotification.setNotification(notification);
+        userNotification.setRead_status(false);
+        userNotificationRepository.save(userNotification);
+
+
+//        emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
+
+
+        try {
+            emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
+        } catch (Exception e) {
+            System.err.println("Error sending email: " + e.getMessage());
+        }
+//        messagingTemplate.convertAndSend("/topic/" + DoiMatKhau, notification);
+        messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
+
+
+        return ResponseEntity.ok("Đổi mật khẩu thành công.");
+    }
+
+    @PutMapping("/change-password-admin/{id}")
+    public ResponseEntity<String> changePasswordAdmin(
+            @PathVariable int id,
+            @RequestBody PasswordChangeRequest passwordChangeRequest) {
+
+        Account account = accountService.findAccountByID(id);  // Lấy tài khoản theo ID
 
         // Kiểm tra mật khẩu hiện tại có đúng không
         if (!passwordEncoder.matches(passwordChangeRequest.getCurrentPassword(), account.getPassword())) {

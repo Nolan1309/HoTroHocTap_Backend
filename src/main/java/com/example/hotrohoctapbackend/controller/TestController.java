@@ -1,7 +1,9 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO_Version2;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestUpdateDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminUpdateTestToLesson;
 import com.example.hotrohoctapbackend.DTO.User.QuestionDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.TestDTO_User;
 import com.example.hotrohoctapbackend.dao.ChapterRepository;
@@ -12,6 +14,7 @@ import com.example.hotrohoctapbackend.entity.*;
 import com.example.hotrohoctapbackend.service.QuestionService;
 import com.example.hotrohoctapbackend.service.RedisTestService;
 import com.example.hotrohoctapbackend.service.TestService;
+import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -80,11 +83,21 @@ public class TestController {
         return ResponseEntity.ok(responseDTO);
     }
 
+//    @GetMapping("/getall")
+//    public List<AdminTestGetDTO> getTestSummaries() {
+//        return testService.getAllTestSummariesAdmin();
+//    }
     @GetMapping("/getall")
-    public List<AdminTestGetDTO> getTestSummaries() {
-        return testService.getAllTestSummariesAdmin();
-    }
+    public Page<AdminTestGetDTO_Version2> getAllTestSummariesAdmin(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+    return testService.getAllTestSummariesAdmin(page, size);
+}
 
+    @GetMapping("/getall-list")
+    public List<AdminTestGetDTO> getAllTestSummariesAdmin(){
+        return testService.getAllTestSummariesAdminList();
+    }
     @PostMapping("/add")
     public ResponseEntity<Test> addTest(@RequestBody AdminTestUpdateDTO newTestDTO) {
         try {
@@ -155,6 +168,26 @@ public class TestController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
         }
+    }
+    @PutMapping("/update-to-lesson/{id}")
+    public ResponseEntity<Test> updateTestToLesson(@PathVariable("id") int id,
+                                                   @RequestBody AdminUpdateTestToLesson updateDTO) {
+        try {
+            // Gọi service để cập nhật Test
+            Test updatedTest = testService.updateTestToLesson(id, updateDTO);
+            return ResponseEntity.ok(updatedTest);  // Trả về Test đã được cập nhật
+        } catch (RuntimeException e) {
+            // Trường hợp không tìm thấy Test hoặc Lesson
+            return ResponseEntity.status(404).body(null);  // Trả về mã lỗi 404 nếu không tìm thấy
+        }
+    }
+
+    @RequestMapping(value = "/course/{courseId}/chapter/{chapterId}")
+    public ResponseEntity<List<Test>> getTestsByCourseAndChapter(
+            @PathVariable Integer courseId, @PathVariable Integer chapterId) {
+        // Logic để lấy dữ liệu từ database
+        List<Test> tests = testService.getTestsByCourseAndChapter(courseId, chapterId);
+        return tests.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(tests);
     }
 
 }

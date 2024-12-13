@@ -74,6 +74,12 @@ public class QuestionController {
         // Trả về các câu hỏi với phân trang
         return questionService.getAllQuestionsAdmin(page, size);
     }
+    @GetMapping("/all-list")
+    public List<AdminQuestionGetDTO> getAllQuestionsList() {
+        // Trả về các câu hỏi với phân trang
+        return questionService.getAllQuestionsAdminList();
+    }
+
 
     @GetMapping("/tests/questions/{testId}")
     public Page<Question> getQuestionsByTestIdAdmin(

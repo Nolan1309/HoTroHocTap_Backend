@@ -39,6 +39,19 @@ public class CourseDTO {
         this.averageRating = averageRating;
         this.type = type;
     }
+    public CourseDTO(Integer id, Integer id_danhmuc, String title, String imageUrl, BigDecimal price, BigDecimal cost, Long numberOfStudents, Long totalLessons, BigDecimal averageRating,String type,Boolean status) {
+        this.id = id;
+        this.id_danhmuc = id_danhmuc;
+        this.title = title;
+        this.imageUrl = imageUrl;
+        this.price = price;
+        this.cost = cost;
+        this.numberOfStudents = numberOfStudents;
+        this.totalLessons = totalLessons;
+        this.averageRating = averageRating;
+        this.type = type;
+        this.status = status;
+    }
     public CourseDTO(Integer id, Integer id_danhmuc, String imageUrl, BigDecimal price, BigDecimal cost,
                      String title, Long numberOfStudents, Long totalLessons, BigDecimal averageRating,
                      String author, String course_output, Date created_at, Date updated_at, String description,

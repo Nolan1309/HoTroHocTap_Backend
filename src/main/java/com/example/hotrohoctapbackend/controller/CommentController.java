@@ -103,5 +103,4 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
         }
     }
-
 }

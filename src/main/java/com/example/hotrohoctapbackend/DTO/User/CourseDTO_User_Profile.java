@@ -13,13 +13,15 @@ public class CourseDTO_User_Profile {
     private String image;
     private String title;
     private LocalDateTime enrollment_date;
+    private Boolean status;
 
-    public CourseDTO_User_Profile(int id, String duration, String image, String title, LocalDateTime  enrollment_date) {
+    public CourseDTO_User_Profile(int id, String duration, String image, String title, LocalDateTime  enrollment_date, Boolean status) {
         this.id = id;
         this.duration = duration;
         this.image = image;
         this.title = title;
         this.enrollment_date = enrollment_date;
+        this.status = status;
     }
 
     public int getId() {

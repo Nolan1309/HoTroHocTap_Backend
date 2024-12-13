@@ -4,6 +4,7 @@ import com.convertapi.client.ConversionResult;
 import com.convertapi.client.ConvertApi;
 import com.convertapi.client.Param;
 import com.example.hotrohoctapbackend.DTO.*;
+import com.example.hotrohoctapbackend.DTO.Admin.GeneralDocumentDTO_Version2;
 import com.example.hotrohoctapbackend.DTO.User.GeneralDocumentDTO_User;
 import com.example.hotrohoctapbackend.dao.CategoryRepository;
 import com.example.hotrohoctapbackend.dao.GeneralDocumentRepository;
@@ -87,7 +88,7 @@ public class GeneralDocumentsService {
         return listDocument;
     }
 
-    @Cacheable(value = "search", key = "'documentsData_100'")
+//    @Cacheable(value = "search", key = "'documentsData_100'")
     public List<Object[]> getDocumentsData_100() {
         return generalDocumentRepository.findTop100Documents();
     }
@@ -146,12 +147,12 @@ public class GeneralDocumentsService {
     }
 
     //Man
-    public Page<GeneralDocumentDTO> getDocumentsWithCategories(Pageable pageable) {
+    public Page<GeneralDocumentDTO_Version2> getDocumentsWithCategories(Pageable pageable) {
         Page<Object[]> resultsPage = generalDocumentRepository.findDocumentsWithCategories(pageable);
 
         // Map the content of the Page<Object[]> to a list of GeneralDocumentDTO
-        List<GeneralDocumentDTO> documentWithCategoriesList = resultsPage.getContent().stream()
-                .map(row -> new GeneralDocumentDTO(
+        List<GeneralDocumentDTO_Version2> documentWithCategoriesList = resultsPage.getContent().stream()
+                .map(row -> new GeneralDocumentDTO_Version2(
                         (Integer) row[0],   // documentId
                         (String) row[1],    // documentTitle
                         (String) row[2],    // documentDescription
@@ -159,7 +160,8 @@ public class GeneralDocumentsService {
                         (Boolean) row[4],   // deleted
                         (String) row[5],    // categoryLevel1
                         (String) row[6],    // categoryLevel2
-                        (String) row[7]     // categoryLevel3
+                        (String) row[7],     // categoryLevel3
+                        (Integer)row[8]
                 ))
                 .collect(Collectors.toList());
 

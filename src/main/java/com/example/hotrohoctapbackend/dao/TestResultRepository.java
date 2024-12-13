@@ -13,7 +13,7 @@ import java.util.List;
 @RepositoryRestResource(path = "testresults")
 public interface TestResultRepository extends JpaRepository<TestResult,Integer> {
     @Query(value = """
-        SELECT r.*, t.title 
+        SELECT r.test_result_id,r.completed_at,r.correct_answers, r.incorrect_answers, r.result, r.score,  r.total_questions, r.account_id, r.test_id, r.course_id,   r.deleted_date, r.is_deleted ,r.is_chapter_test, t.title 
         FROM test_results r 
         INNER JOIN tests t ON t.id = r.test_id 
         WHERE r.is_deleted = false 
@@ -95,5 +95,24 @@ public interface TestResultRepository extends JpaRepository<TestResult,Integer> 
     List<Object[]> countResultsGroupedByResultUser(
             @Param("accountId") Long accountId,
             @Param("courseId") Long courseId
+    );
+
+    @Query(value = """
+        SELECT 
+            q.id AS id,
+            q.content AS question,
+            q.option_a AS optionA,
+            q.option_b AS optionB,
+            q.option_c AS optionC,
+            q.option_d AS optionD,
+            q.result_check AS correctAnswer,
+            ua.result AS userAnswer
+        FROM user_answers ua
+        INNER JOIN questions q ON ua.question_id = q.id
+        WHERE ua.account_id = :accountId AND ua.test_result_id = :testResultId
+    """, nativeQuery = true)
+    List<Object[]> findUserAnswersByAccountAndTestResult(
+            @Param("accountId") Long accountId,
+            @Param("testResultId") Long testResultId
     );
 }

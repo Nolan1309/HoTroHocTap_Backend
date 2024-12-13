@@ -39,8 +39,8 @@ public class CourseReviewService {
                 convertToLocalDateTime(obj[4]), // updated_at
                 (Integer) obj[5],  // account_id
                 (Integer) obj[6],
-                (String) obj[9],
-                (String) obj[10]
+                (String) obj[7],
+                (String) obj[8]
         )).collect(Collectors.toList());
     }
 

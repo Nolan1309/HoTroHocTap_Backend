@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminPaymentDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.DashboardReportDto;
 import com.example.hotrohoctapbackend.DTO.PaymentResponseDTO;
 import com.example.hotrohoctapbackend.DTO.User.PaymentDetailDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.PaymentSummaryDTO_User;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -52,6 +54,7 @@ public class PaymentsService {
         dto.setAccount_id(payment.get().getAccount().getId());
         return dto;
     }
+
     public PaymentsService(PaymentRepository paymentRepository) {
         this.paymentRepository = paymentRepository;
     }
@@ -69,6 +72,7 @@ public class PaymentsService {
                 )
         );
     }
+
     public Page<PaymentSummaryDTO_User> getPaymentSummariesByAccountId(Long accountId, int page, int size) {
         int offset = page * size;
         List<Object[]> results = paymentRepository.findPaymentSummariesByAccountIdUser(accountId, offset, size);
@@ -87,6 +91,7 @@ public class PaymentsService {
 
         return new PageImpl<>(paymentSummaries, PageRequest.of(page, size), totalElements);
     }
+
     public List<PaymentDetailDTO_User> getPaymentDetailsById_User(Integer paymentId) {
         return paymentRepository.findPaymentDetailsByPaymentIdUser(paymentId).stream()
                 .map(result -> new PaymentDetailDTO_User(
@@ -106,5 +111,29 @@ public class PaymentsService {
                         (Integer) result[12]       // courseDuration
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public DashboardReportDto getDashboardReport() {
+        String currentDate = LocalDate.now().toString(); // Lấy ngày hiện tại
+        List<Object[]> result = paymentRepository.getDashboardReport(currentDate);
+
+        if (!result.isEmpty()) {
+            Object[] row = result.get(0);
+
+            return new DashboardReportDto(
+                    ((Number) row[0]).doubleValue(),
+                    ((Number) row[1]).intValue(),
+                    ((Number) row[2]).intValue(),
+                    ((Number) row[3]).intValue(),
+                    ((Number) row[4]).intValue(),
+                    ((Number) row[5]).intValue()
+            );
+        }
+
+        return new DashboardReportDto(0, 0, 0, 0, 0, 0);
+    }
+
+    public List<Object[]> getMonthlySalesData(int year) {
+        return paymentRepository.getMonthlySalesData(year);
     }
 }

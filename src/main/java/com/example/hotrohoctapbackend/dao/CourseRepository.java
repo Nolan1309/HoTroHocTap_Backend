@@ -10,11 +10,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 @RepositoryRestResource(path = "courses")
-public interface CourseRepository extends JpaRepository<Course,Integer> {
+public interface CourseRepository extends JpaRepository<Course, Integer> {
     @Query(value = "SELECT \n" +
             "    c.id AS course_id, \n" +
             "    c.course_category_id, \n" +
@@ -23,6 +24,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "    c.cost, \n" +
             "    c.courses_title AS course_title, \n" +
             "    c.type, \n" +
+            "    c.status, \n" +
             "    COUNT(DISTINCT ec.account_id) AS number_of_students, \n" +
             "    COUNT(DISTINCT l.id) AS total_lessons, \n" +
             "    COALESCE(AVG(cr.rating), 0) AS average_rating \n" +
@@ -37,7 +39,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             "LEFT JOIN\n" +
             "    course_reviews cr ON c.id = cr.course_id \n" +
             "GROUP BY \n" +
-            "    c.id, c.course_category_id, c.image_url, c.price, c.cost, c.courses_title, c.type \n" +
+            "    c.id, c.course_category_id, c.image_url, c.price, c.cost, c.courses_title, c.type, c.status \n" +
             "ORDER BY \n" +
             "    number_of_students DESC \n" +
             "LIMIT 6;\n",
@@ -154,7 +156,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
     @Query("SELECT c.type FROM Course c WHERE c.id = :id")
     String findCourseTypeById(@Param("id") int id);
 
-    @Query(value = "SELECT c.id, c.duration, c.image_url, c.courses_title, e.enrollment_date " +
+    @Query(value = "SELECT c.id, c.duration, c.image_url, c.courses_title, e.enrollment_date, c.status  " +
             "FROM enrolled_courses e " +
             "JOIN courses c ON e.course_id = c.id " +
             "WHERE e.account_id = :accountId",
@@ -162,7 +164,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             nativeQuery = true)
     Page<Object[]> findCoursesByAccountId(@Param("accountId") Integer accountId, Pageable pageable);
 
-//    @Query(value = """
+    //    @Query(value = """
 //            SELECT
 //                c.id,
 //                ch.id AS chapter_id,
@@ -218,7 +220,8 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
                     "LEFT JOIN course_categories cat ON c.course_category_id = cat.id",
             nativeQuery = true)
     Page<Object[]> findCourseWithCategory(Pageable pageable);
-    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.status, c.is_deleted, " +
+
+    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.cost , c.status, c.is_deleted, " +
             "cat.name AS category_name " + // Thêm trường category_name
             "FROM courses c " +
             "JOIN account a ON c.account_id = a.id " +
@@ -232,7 +235,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
             nativeQuery = true)
     Page<Object[]> findCoursesByAccountIdAdmin(@Param("accountId") int accountId, Pageable pageable);
 
-    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.status, c.is_deleted, " +
+    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.cost, c.status, c.is_deleted, " +
             "cat.name AS category_name " + // Thêm category_name vào SELECT
             "FROM courses c " +
             "JOIN account a ON c.account_id = a.id " +
@@ -243,6 +246,7 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
                     "LEFT JOIN course_categories cat ON c.course_category_id = cat.id", // Thêm LEFT JOIN vào countQuery
             nativeQuery = true)
     Page<Object[]> findAllCoursesResult(Pageable pageable);
+
     @Query(value = "SELECT c.id, c.courses_title, c.duration, c.price, c.cost " +
             "FROM courses c " +
             "WHERE c.is_deleted = 0 ",
@@ -251,4 +255,98 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
                     "WHERE c.is_deleted = 0 ",
             nativeQuery = true)
     Page<Object[]> getCourseofDiscount(Pageable pageable);
+
+    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.cost, c.status, c.is_deleted, " +
+            "cat.name AS category_name " + // Thêm category_name vào SELECT
+            "FROM courses c " +
+            "JOIN account a ON c.account_id = a.id " +
+            "LEFT JOIN course_categories cat ON c.course_category_id = cat.id", // Thêm LEFT JOIN với bảng course_categories
+            nativeQuery = true)
+    List<Object[]> findAllCoursesResultList();
+
+    @Query(value = "SELECT c.id, c.courses_title AS course_title, c.duration, c.price, c.status, c.is_deleted, " +
+            "cat.name AS category_name " +  // Thêm trường category_name
+            "FROM courses c " +
+            "JOIN account a ON c.account_id = a.id " +
+            "LEFT JOIN course_categories cat ON c.course_category_id = cat.id " +  // LEFT JOIN với bảng course_categories
+            "WHERE c.account_id = :accountId",
+            nativeQuery = true)
+    List<Object[]> findCoursesByAccountIdListAdmin(@Param("accountId") int accountId);
+
+    @Query(value = """
+                SELECT 
+                    c.id AS chapterId,
+                    c.chapter_title AS chapterTitle,
+                    COUNT(l.id) AS lessonCount
+                FROM chapters c
+                LEFT JOIN lessons l ON c.id = l.chapter_id
+                WHERE c.course_id = :courseId
+                GROUP BY c.id
+                ORDER BY c.id
+            """, nativeQuery = true)
+    List<Object[]> findChaptersByCourseId(@Param("courseId") Long courseId);
+
+    @Query(value = """
+                SELECT 
+                    v.id AS videoId,
+                    v.video_title AS videoTitle,
+                    v.duration AS videoDuration,
+                    v.isviewtest as viewTest 
+                FROM videos v
+                LEFT JOIN lessons l ON v.lesson_id = l.id
+                WHERE l.chapter_id = :chapterId
+                ORDER BY v.id
+            """, nativeQuery = true)
+    List<Object[]> findVideosByChapterId(@Param("chapterId") Integer chapterId);
+
+    @Query(value = """
+                SELECT 
+                    c.courses_title AS courseName,
+                    COUNT(ec.account_id) AS students,
+                    SUM(pd.price) AS revenue,
+                    c.status AS status,
+                    a.fullname AS authorName
+                FROM courses c
+                LEFT JOIN enrolled_courses ec ON c.id = ec.course_id
+                LEFT JOIN payments_detail pd ON c.id = pd.course_id
+                LEFT JOIN account a ON c.account_id = a.id
+                WHERE c.is_deleted = 0
+                GROUP BY c.id
+                ORDER BY revenue DESC
+            """, nativeQuery = true)
+    List<Object[]> getCourseReport();
+
+    @Query(value = "SELECT l.course_id, " +
+            "COUNT(DISTINCT l.id) AS total_lessons, " +
+            "COUNT(DISTINCT v.id) AS total_videos, " +
+            "COUNT(DISTINCT t.id) AS total_tests " +
+            "FROM lessons l " +
+            "LEFT JOIN videos v ON l.id = v.lesson_id " +
+            "LEFT JOIN tests t ON l.id = t.lesson_id AND t.is_summary = 0 " +
+            "WHERE l.course_id = :courseId " +
+            "GROUP BY l.course_id " +
+            "HAVING total_lessons = total_videos AND total_lessons = total_tests", nativeQuery = true)
+    List<Object[]> checkCourseCompleteness(@Param("courseId") Long courseId);
+
+    @Query(value = "SELECT status FROM courses WHERE id = :courseId", nativeQuery = true)
+    Optional<Boolean> findStatusByCourseId(@Param("courseId") Long courseId);
+
+    @Query(value = "SELECT cat.id, cat.name AS category_name " +
+            "FROM courses c " +
+            "JOIN course_categories cat ON c.course_category_id = cat.id " +
+            "WHERE c.is_deleted = 0 AND cat.is_deleted = 0 AND c.id = :courseId " +
+            "LIMIT 1", nativeQuery = true)
+    List<Object[]> findCategoryByCourseId(@Param("courseId") Integer courseId);
+
+    @Query(value = "SELECT d.discount_value " +
+            "FROM course_discounts cd " +
+            "JOIN discounts d ON cd.discount_id = d.id " +
+            "JOIN courses c ON cd.course_id = c.id " +
+            "WHERE cd.course_id = :courseId " +
+            "AND cd.is_deleted = false " +
+            "AND d.is_deleted = false " +
+            "AND CURRENT_DATE BETWEEN d.start_date AND d.end_date " +
+            "AND cd.is_check = true " +
+            "LIMIT 1", nativeQuery = true)
+    Double getDiscountForCourse(@Param("courseId") Integer courseId);
 }

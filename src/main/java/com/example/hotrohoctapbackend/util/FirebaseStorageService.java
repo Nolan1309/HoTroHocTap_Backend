@@ -123,6 +123,38 @@ public class FirebaseStorageService {
         return document;
     }
 
+    public String uploadFileURL(MultipartFile file) throws IOException {
+
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            throw new IllegalArgumentException("File type is unknown");
+        }
+
+        if (contentType.equals("application/pdf")) {
+            System.out.println("Day la PDF nha");
+        } else if (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
+            System.out.println("Day la DOCX nha");
+        } else {
+            throw new IllegalArgumentException("Unsupported file type");
+        }
+
+        String imageName = generateFileName(file.getOriginalFilename());
+        String folderName = "document/";
+        String fullFileName = folderName + imageName;
+
+        // Set metadata and create blob info
+        Map<String, String> map = new HashMap<>();
+        map.put("firebaseStorageDownloadTokens", imageName);
+        BlobId blobId = BlobId.of(BUCKET_NAME, fullFileName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setMetadata(map)
+                .setContentType(file.getContentType())
+                .build();
+        storage.create(blobInfo, file.getInputStream());
+        String fileUrl = getDownloadUrl(blobInfo);
+        return fileUrl;
+    }
+
     public String uploadFileImage(MultipartFile thumbnail) throws IOException {
         String imageName = generateFileName(thumbnail.getOriginalFilename());
         String folderName = "image/imageDocument/";

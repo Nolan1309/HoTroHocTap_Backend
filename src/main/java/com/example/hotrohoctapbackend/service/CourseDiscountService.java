@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class CourseDiscountService {
 
     @Autowired
     private DiscountRepository discountRepository;
+
     public String addDiscountToCourses(Integer discountId, List<Integer> courseIds) {
         // Kiểm tra nếu danh sách khóa học rỗng
         if (courseIds == null || courseIds.isEmpty()) {
@@ -50,7 +52,8 @@ public class CourseDiscountService {
         // 2. Lặp qua danh sách khóa học
         for (Integer courseId : courseIds) {
             try {
-                // Lấy thông tin khóa học
+
+                Integer exist = courseDiscountRepository.existsByCourseAndDiscountAndNotDeleted(courseId, discountId);
                 Optional<Course> optionalCourse = courseRepository.findById(courseId);
                 if (optionalCourse.isEmpty()) {
                     responseBuilder.append("Khóa học với ID ").append(courseId).append(" không tồn tại.\n");
@@ -84,17 +87,26 @@ public class CourseDiscountService {
                 // Cập nhật giá mới
                 course.setPrice(newPrice);
                 courseRepository.save(course);
+                if (exist > 0) {
+                    Optional<Course_Discount> optionalCourseDiscount = courseDiscountRepository.findByCourseIdAndDiscountId(courseId, discountId);
+                    if (optionalCourseDiscount.isPresent()) {
+                        optionalCourseDiscount.get().setCheck(true);
+                        courseDiscountRepository.save(optionalCourseDiscount.get());
+                    }
+                } else {
+                    // Lưu vào bảng course_discounts
+                    Course_Discount courseDiscount = new Course_Discount();
+                    courseDiscount.setCourse(course);
+                    courseDiscount.setDiscount(discount);
+                    courseDiscount.setDeletedDate(LocalDateTime.now());
+                    courseDiscount.setDeleted(false);
+                    courseDiscount.setCheck(true);
+                    courseDiscountRepository.save(courseDiscount);
 
-                // Lưu vào bảng course_discounts
-                Course_Discount courseDiscount = new Course_Discount();
-                courseDiscount.setCourse(course);
-                courseDiscount.setDiscount(discount);
-                courseDiscount.setDeletedDate(LocalDateTime.now());
-                courseDiscount.setDeleted(false);
-                courseDiscount.setCheck(true);
-                courseDiscountRepository.save(courseDiscount);
+                    responseBuilder.append("Thành công thêm khuyến mãi cho khóa học ID: ").append(courseId).append("\n");
+                }
+                // Lấy thông tin khóa học
 
-                responseBuilder.append("Thành công thêm khuyến mãi cho khóa học ID: ").append(courseId).append("\n");
             } catch (Exception ex) {
                 // Ghi lại lỗi với từng khóa học
                 responseBuilder.append("Lỗi không mong muốn với khóa học ID: ").append(courseId)
@@ -104,6 +116,7 @@ public class CourseDiscountService {
 
         return responseBuilder.toString();
     }
+
     public String resetPriceToCost(List<Integer> courseIds) {
         // Kiểm tra nếu danh sách khóa học rỗng
         if (courseIds == null || courseIds.isEmpty()) {
@@ -134,7 +147,25 @@ public class CourseDiscountService {
                 // Cập nhật giá bằng với chi phí gốc
                 course.setPrice(cost);
                 courseRepository.save(course);
+                List<Object[]> results = courseDiscountRepository.findCourseDiscountsByCourseId(courseId);
+                for (Object[] row : results) {
+                    Integer id = (Integer) row[0];
+                    Object obj = row[1];  // Lấy đối tượng từ mảng row
+                    LocalDateTime deletedDate = null;
 
+                    if (obj instanceof Timestamp) {
+                        Timestamp timestamp = (Timestamp) obj;
+                        deletedDate = timestamp.toLocalDateTime();  // Chuyển đổi từ Timestamp sang LocalDateTime
+                    }
+
+                    boolean isDeleted = (boolean) row[2];
+                    Integer courseIdD = (Integer) row[3];
+                    Integer discountId = (Integer) row[4];
+                    boolean isCheck = (boolean) row[5];
+                    if (isCheck) {
+                        courseDiscountRepository.updateIsCheckToFalse(id);
+                    }
+                }
                 responseBuilder.append("Thành công cập nhật giá cho khóa học ID: ").append(courseId).append("\n");
             } catch (Exception ex) {
                 // Ghi lại lỗi với từng khóa học
@@ -145,5 +176,6 @@ public class CourseDiscountService {
 
         return responseBuilder.toString();
     }
+
 
 }
