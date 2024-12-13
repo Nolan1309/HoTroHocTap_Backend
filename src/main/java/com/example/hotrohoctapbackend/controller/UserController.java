@@ -70,6 +70,9 @@ public class UserController {
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/dang-ky")
     public ResponseEntity<Map<String, String>> dandkyTaiKhoan(@RequestBody AccountDTO user) {
+
+
+
         ResponseEntity<Map<String, String>> response = accountService.dangkyAccount(user);
 
         Map<String, String> responseBody = response.getBody();

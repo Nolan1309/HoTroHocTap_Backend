@@ -2,10 +2,13 @@ package com.example.hotrohoctapbackend.controller;
 
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminPaymentDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.DashboardReportDto;
 import com.example.hotrohoctapbackend.DTO.PaymentResponseDTO;
+import com.example.hotrohoctapbackend.DTO.User.CourseDetailDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.PaymentDetailDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.PaymentSummaryDTO_User;
 import com.example.hotrohoctapbackend.entity.Payment;
+import com.example.hotrohoctapbackend.service.PaymentDetailService;
 import com.example.hotrohoctapbackend.service.PaymentsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +28,9 @@ public class PaymentController {
 
     @Autowired
     private PaymentsService paymentService;
+
+    @Autowired
+    private PaymentDetailService paymentDetailService;
 
     @PostMapping("/add")
     public ResponseEntity<PaymentResponseDTO> createPayment(@RequestBody PaymentResponseDTO payment) {
@@ -71,5 +77,19 @@ public class PaymentController {
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         return paymentService.getPaymentAdmin(pageable);
+    }
+    @GetMapping("/course-detail/{paymentId}")
+    public ResponseEntity<List<CourseDetailDTO_User>> getCourseDetails(@PathVariable Integer paymentId) {
+        List<CourseDetailDTO_User> courseDetails = paymentDetailService.getCourseDetailsByPaymentId(paymentId);
+        return ResponseEntity.ok(courseDetails);
+    }
+
+    @GetMapping("/dashboard")
+    public DashboardReportDto getDashboardReport() {
+        return paymentService.getDashboardReport();
+    }
+    @GetMapping("/monthly-sales")
+    public List<Object[]> getMonthlySalesData(@RequestParam int year) {
+        return paymentService.getMonthlySalesData(year);
     }
 }

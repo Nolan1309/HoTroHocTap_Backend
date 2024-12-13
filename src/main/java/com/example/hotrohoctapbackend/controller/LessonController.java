@@ -189,4 +189,13 @@ public class LessonController {
         Page<AdminLessonGetDTO> lessons = lessonService.getLessonWithCourseAndChapter(page, size);
         return ResponseEntity.ok(lessons);
     }
+//    @GetMapping("/getall/list")
+//    public ResponseEntity<List<AdminLessonGetDTO>> getLessonsChapterLest(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size) {
+//        List<AdminLessonGetDTO> lessons = lessonService.getLessonWithCourseAndChapterList();
+//        return ResponseEntity.ok(lessons);
+//    }
+
+
 }

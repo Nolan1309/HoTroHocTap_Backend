@@ -6,14 +6,24 @@ import lombok.Data;
 public class LessonDTO {
     private int id;
     private String title;
+    private Boolean deleted;
 
     // Constructors
     public LessonDTO() {
     }
 
-    public LessonDTO(int id, String title) {
+    public LessonDTO(int id, String title, Boolean deleted) {
         this.id = id;
         this.title = title;
+        this.deleted = deleted;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 
     // Getters và Setters

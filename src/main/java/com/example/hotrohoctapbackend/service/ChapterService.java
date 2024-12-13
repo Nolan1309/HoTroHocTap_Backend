@@ -54,6 +54,7 @@ public class ChapterService {
                 LessonDTO lessonDTO1 = new LessonDTO();
                 lessonDTO1.setId(lessonDTO.getId());
                 lessonDTO1.setTitle(lessonDTO.getTitle());
+                lessonDTO1.setDeleted(lessonDTO.isDeleted());
                 lessonDTOS.add(lessonDTO1);
             }
 

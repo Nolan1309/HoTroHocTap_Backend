@@ -1,4 +1,5 @@
 package com.example.hotrohoctapbackend.dao;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.example.hotrohoctapbackend.entity.Lesson;
@@ -8,10 +9,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.List;
+import java.util.Optional;
 
 @RepositoryRestResource(path = "lessons")
-public interface LessonRepository extends JpaRepository<Lesson,Integer> {
-    @Query(value = "SELECT * FROM lessons WHERE chapter_id = :chapterId", nativeQuery = true)
+public interface LessonRepository extends JpaRepository<Lesson, Integer> {
+    //    @Query(value = "SELECT * FROM lessons WHERE chapter_id = :chapterId", nativeQuery = true)
+    @Query(value = "SELECT l.id, l.created_at, l.duration, l.lesson_title, l.updated_at, l.chapter_id, l.course_id, l.deleted_date, l.is_deleted FROM lessons l WHERE l.chapter_id = :chapterId", nativeQuery = true)
     List<Lesson> findLessonsByChapterId(@Param("chapterId") Integer chapterId);
 
     List<Lesson> findByChapter_IdAndCourse_Id(int chapterId, int courseId);
@@ -46,7 +49,7 @@ public interface LessonRepository extends JpaRepository<Lesson,Integer> {
             "l.lesson_title AS lesson_title, " +
             "c.courses_title AS course_name, " +
             "ch.chapter_title AS chapter_name," +
-            "l.is_deleted AS deleted "+
+            "l.is_deleted AS deleted " +
             "FROM lessons l " +
             "LEFT JOIN courses c ON l.course_id = c.id " +
             "LEFT JOIN chapters ch ON l.chapter_id = ch.id",
@@ -57,5 +60,19 @@ public interface LessonRepository extends JpaRepository<Lesson,Integer> {
             nativeQuery = true)
     Page<Object[]> findLessonCourseChapterData(Pageable pageable);
 
+    @Query(value = "SELECT " +
+            "l.id AS lesson_id, " +
+            "l.lesson_title AS lesson_title, " +
+            "c.courses_title AS course_name, " +
+            "ch.chapter_title AS chapter_name, " +
+            "l.is_deleted AS deleted " +
+            "FROM lessons l " +
+            "LEFT JOIN courses c ON l.course_id = c.id " +
+            "LEFT JOIN chapters ch ON l.chapter_id = ch.id",
+            nativeQuery = true)
+    List<Object[]> findLessonCourseChapterDataList();
 
+
+    @Query(value = "SELECT l.id FROM lessons l WHERE l.chapter_id = :chapterId AND l.is_deleted = false ORDER BY l.id ASC LIMIT 1", nativeQuery = true)
+    Optional<Integer> findFirstLessonIdByChapterId(@Param("chapterId") Integer chapterId);
 }

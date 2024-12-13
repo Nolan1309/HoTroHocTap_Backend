@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseEnrolledDTO;
 import com.example.hotrohoctapbackend.DTO.CountCourseDTO;
 import com.example.hotrohoctapbackend.DTO.User.AccountSendNotification_User;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
@@ -9,11 +10,14 @@ import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Enrolled_Courses;
 import com.example.hotrohoctapbackend.entity.RoleUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -108,5 +112,43 @@ public class EnrolledCourseService {
         }
         return allUser;
     }
+    public Page<AdminCourseEnrolledDTO> getAccountsByCourseId(int courseId, Pageable pageable) {
+        // Truy vấn dữ liệu từ repository
+        Page<Object[]> results = enrolledCoursesRepository.findAccountsByCourseIdAndStatus(courseId, pageable);
 
+        // Ánh xạ từ Object[] sang AccountDTO
+        Page<AdminCourseEnrolledDTO> accountDTOs = results.map(result -> new AdminCourseEnrolledDTO(
+                (Integer) result[0],  // account_id
+                (String) result[1],   // email
+                (String) result[2],   // phone
+                (String) result[3]    // gender
+        ));
+
+        return accountDTOs;
+    }
+    public String getStatusByAccountAndCourse(Integer accountId, Integer courseId) {
+        Optional<Enrolled_Courses> enrolledCourse = enrolledCoursesRepository
+                .findByAccount_IdAndCourse_Id(accountId, courseId);
+
+        return enrolledCourse.map(Enrolled_Courses::getStatus).orElse("Không tìm thấy thông tin");
+    }
+
+    public String updateStatus(Integer accountId, Integer courseId) {
+        Optional<Enrolled_Courses> enrolledCourse = enrolledCoursesRepository
+                .findByAccount_IdAndCourse_Id(accountId, courseId);
+
+        Enrolled_Courses enrolledCourseEntity = enrolledCourse
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khóa học với ID " + courseId + " cho tài khoản " + accountId));
+
+        enrolledCourseEntity.setStatus("Studying");
+        enrolledCoursesRepository.save(enrolledCourseEntity);
+        return "Success";
+    }
+    public List<String> getEnrolledAccounts(Long accountId) {
+        return enrolledCoursesRepository.findEnrolledAccountsByCourseOwner(accountId);
+    }
+
+    public List<String> getCourseAuthors(Long accountId) {
+        return enrolledCoursesRepository.findCourseAuthorsByAccountId(accountId);
+    }
 }

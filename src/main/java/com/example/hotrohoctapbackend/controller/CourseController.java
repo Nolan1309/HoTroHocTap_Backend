@@ -1,13 +1,12 @@
 package com.example.hotrohoctapbackend.controller;
 
-import com.example.hotrohoctapbackend.DTO.Admin.AdminAddCourseDTO;
-import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseGetDTO;
-import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseOfDiscount;
-import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseResultDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.*;
 import com.example.hotrohoctapbackend.DTO.CourseDTO;
+import com.example.hotrohoctapbackend.DTO.User.ChapterDTOUserView;
 import com.example.hotrohoctapbackend.DTO.User.CourseDTO_User_Profile;
 import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
 import com.example.hotrohoctapbackend.DTO.User.CourseInfoDetailDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.LessonDTOUserView;
 import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Lesson;
 import com.example.hotrohoctapbackend.service.CourseService;
@@ -95,6 +94,15 @@ public class CourseController {
         return courseService.getCoursesByAccountId(accountId, page, size);
     }
 
+    @GetMapping("/accountADMIN/enrolled/{accountId}")
+    public Page<CourseDTO_User_Profile> getEnrolledCoursesADMIN(
+            @PathVariable("accountId") Integer accountId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+
+        return courseService.getCoursesByAccountId(accountId, page, size);
+    }
+
     //Section vao hoc
     @GetMapping("/take-course/{courseId}")
     public ResponseEntity<CourseInfoDetailDTO_User> getCourseDetails(@PathVariable Integer courseId) {
@@ -108,6 +116,7 @@ public class CourseController {
         Course createdCourse = courseService.addCourse(courseDTO);
         return new ResponseEntity<>(createdCourse, HttpStatus.CREATED);
     }
+
     @PutMapping("/update-course/{courseId}")
     public ResponseEntity<Course> updateCourse(
             @PathVariable Integer courseId,
@@ -121,6 +130,7 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
     @GetMapping("/getall")
     public ResponseEntity<Page<AdminCourseGetDTO>> getCourses(
             @RequestParam(defaultValue = "0") int page,
@@ -128,6 +138,35 @@ public class CourseController {
         Page<AdminCourseGetDTO> courses = courseService.getCoursesWithCategoryAdmin(page, size);
         return ResponseEntity.ok(courses);
     }
+
+    @GetMapping("/getall-list")
+    public ResponseEntity<List<AdminCourseResultDTO>> getAllCoursesListAdmin() {
+        List<AdminCourseResultDTO> courses = courseService.getAllCoursesListAdmin();
+
+        // Kiểm tra nếu không có dữ liệu
+        if (courses.isEmpty()) {
+            return ResponseEntity.noContent().build();  // Trả về 204 No Content nếu danh sách trống
+        }
+
+        return ResponseEntity.ok(courses);  // Trả về danh sách khóa học với mã trạng thái 200 OK
+    }
+
+    @GetMapping("/courses/ofaccount/list/{accountId}")
+    public ResponseEntity<List<AdminCourseResultDTO>> getCoursesByAccountIdList(
+            @PathVariable("accountId") int accountId
+    ) {
+        // Gọi service để lấy dữ liệu khóa học mà không phân trang
+        List<AdminCourseResultDTO> courses = courseService.getCoursesByAccountListIdAdmin(accountId);
+
+        // Nếu không có khóa học nào, trả về mã lỗi 204 (No Content)
+        if (courses.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        // Trả về danh sách khóa học với mã trạng thái 200 (OK)
+        return ResponseEntity.ok(courses);
+    }
+
     @PutMapping("/delete/{id}")
     public ResponseEntity<?> deleteAccountAdmin(@PathVariable int id) {
         try {
@@ -147,6 +186,7 @@ public class CourseController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
         }
     }
+
     @GetMapping("/courses/ofaccount/{accountId}")
     public Page<AdminCourseResultDTO> getCoursesByAccountId(
             @PathVariable("accountId") int accountId,
@@ -155,6 +195,7 @@ public class CourseController {
     ) {
         return courseService.getCoursesByAccountIdAdmin(accountId, page, size);
     }
+
     @GetMapping("/getallresult")
     public Page<AdminCourseResultDTO> getAllCourses(
             @RequestParam(value = "page", defaultValue = "0") int page, // Giá trị mặc định là 0
@@ -162,10 +203,51 @@ public class CourseController {
     ) {
         return courseService.getAllCoursesAdmin(page, size);
     }
+
     @GetMapping("/courses/discounts")
     public Page<AdminCourseOfDiscount> getCoursesWithDiscounts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return courseService.getCoursesWithDiscounts(page, size);
+    }
+
+    @PutMapping("/status/{id}")
+    public ResponseEntity<?> statusAccountAdmin(@PathVariable int id) {
+        try {
+            Course deletedCourse = courseService.statusCourseAdmin(id);
+            return ResponseEntity.ok().body("Course with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
+        }
+    }
+
+    @PutMapping("/unstatus/{id}")
+    public ResponseEntity<?> unstatusCourseAdmin(@PathVariable int id) {
+        try {
+            Course deletedCourse = courseService.unstatusCourseAdmin(id);
+            return ResponseEntity.ok().body("Course with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
+        }
+    }
+
+    @GetMapping("/{courseId}/first-chapter-lesson")
+    public ResponseEntity<Map<String, Integer>> getFirstChapterAndLesson(@PathVariable Integer courseId) {
+        Map<String, Integer> result = courseService.getFirstChapterAndLesson(courseId);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{courseId}/lessons-view")
+    public List<ChapterDTOUserView> getChaptersWithVideos(@PathVariable Long courseId) {
+        return courseService.getChaptersByCourseIdView(courseId);
+    }
+
+    @GetMapping("/report-admin")
+    public List<CourseReportDTO> getCourseReport() {
+        return courseService.getCourseReport();
+    }
+    @GetMapping("/courses/{courseId}/check-completion")
+    public boolean checkCourseCompletion(@PathVariable Long courseId) {
+        return courseService.checkCourseCompleteness(courseId);
     }
 }

@@ -78,7 +78,8 @@ public interface ProgressRepository extends JpaRepository<Progress, Integer> {
                                             @Param("lessonId") int lessonId);
 
     // Lấy một dòng duy nhất cho bài kiểm tra chương
-    @Query(value = "SELECT * FROM progress WHERE course_id = :courseId AND account_id = :accountId AND lesson_id IS NULL AND chapter_id = :chapterId AND is_chapter_test = 1 LIMIT 1", nativeQuery = true)
+//    @Query(value = "SELECT * FROM progress WHERE course_id = :courseId AND account_id = :accountId AND lesson_id IS NULL AND chapter_id = :chapterId AND is_chapter_test = 1 LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT p.id, p.is_chapter_test, p.completed_at, p.test_completed, p.test_score, p.video_completed, p.account_id, p.chapter_id, p.course_id, p.lesson_id FROM progress p WHERE p.course_id = :courseId AND p.account_id = :accountId AND p.lesson_id IS NULL AND p.chapter_id = :chapterId AND p.is_chapter_test = 1 LIMIT 1", nativeQuery = true)
     Optional<Progress> findProgressByChapterTest(@Param("courseId") int courseId,
                                                  @Param("accountId") int accountId,
                                                  @Param("chapterId") int chapterId);

@@ -11,16 +11,22 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import java.util.List;
 
 @RepositoryRestResource(path = "comments")
-public interface CommentRepository extends JpaRepository<Comment,Integer> {
-    @Query(value = "SELECT * FROM comments c WHERE c.content_id IS NULL AND c.video_id = :videoId AND c.lesson_id = :lessonId AND c.is_deleted = false AND c.is_approved = true",
+public interface CommentRepository extends JpaRepository<Comment, Integer> {
+    //    @Query(value = "SELECT * FROM comments c WHERE c.content_id IS NULL AND c.video_id = :videoId AND c.lesson_id = :lessonId AND c.is_deleted = false AND c.is_approved = true",
+//            countQuery = "SELECT count(*) FROM comments c WHERE c.content_id IS NULL AND c.video_id = :videoId AND c.lesson_id = :lessonId AND c.is_deleted = false AND c.is_approved = true",
+//            nativeQuery = true)
+    @Query(value = "SELECT c.id, c.content, c.created_at, c.deleted_date, c.is_approved, c.is_deleted, c.updated_at, c.acc_id, c.content_id, c.video_id, c.lesson_id FROM comments c WHERE c.content_id IS NULL AND c.video_id = :videoId AND c.lesson_id = :lessonId AND c.is_deleted = false AND c.is_approved = true",
             countQuery = "SELECT count(*) FROM comments c WHERE c.content_id IS NULL AND c.video_id = :videoId AND c.lesson_id = :lessonId AND c.is_deleted = false AND c.is_approved = true",
             nativeQuery = true)
     Page<Comment> findRootCommentsByVideoAndLesson(@Param("videoId") int videoId, @Param("lessonId") int lessonId, Pageable pageable);
 
     // Tìm bình luận con theo parentId, videoId và lessonId
-    @Query(value = "SELECT * FROM comments c WHERE c.content_id = :parentId AND c.video_id = :videoId AND c.lesson_id = :lessonId AND c.is_deleted = false AND c.is_approved = true",
+//    @Query(value = "SELECT * FROM comments c WHERE c.content_id = :parentId AND c.video_id = :videoId AND c.lesson_id = :lessonId AND c.is_deleted = false AND c.is_approved = true",
+//            nativeQuery = true)
+    @Query(value = "SELECT c.id, c.content, c.created_at, c.deleted_date, c.is_approved, c.is_deleted, c.updated_at, c.acc_id, c.content_id, c.video_id, c.lesson_id FROM comments c WHERE c.content_id = :parentId AND c.video_id = :videoId AND c.lesson_id = :lessonId AND c.is_deleted = false AND c.is_approved = true",
             nativeQuery = true)
     List<Comment> findChildrenByParentIdAndVideoAndLesson(@Param("parentId") int parentId, @Param("videoId") int videoId, @Param("lessonId") int lessonId);
+
     @Query(value = """
             SELECT 
                 c.id AS id, 

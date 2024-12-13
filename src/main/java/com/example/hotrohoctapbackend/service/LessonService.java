@@ -169,4 +169,25 @@ public class LessonService {
 
         return resultPage;
     }
+    public List<AdminLessonGetDTO> getLessonWithCourseAndChapterList() {
+        // Lấy tất cả dữ liệu từ repository mà không phân trang
+        List<Object[]> dataList = lessonRepository.findLessonCourseChapterDataList();
+
+        // Ánh xạ dữ liệu từ Object[] sang AdminLessonGetDTO
+        List<AdminLessonGetDTO> resultList = new ArrayList<>();
+        for (Object[] row : dataList) {
+            AdminLessonGetDTO dto = new AdminLessonGetDTO();
+            dto.setId((Integer) row[0]);
+            dto.setLessonTitle((String) row[1]);
+            dto.setCourseName((String) row[2]);
+            dto.setChapterName((String) row[3]);
+            dto.setDeleted((Boolean) row[4]);
+            resultList.add(dto);
+        }
+
+        return resultList;
+    }
+
+
+
 }

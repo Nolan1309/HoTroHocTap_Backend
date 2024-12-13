@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.service;
 
+import com.example.hotrohoctapbackend.DTO.User.QuestionDownloadDTO;
 import com.example.hotrohoctapbackend.DTO.User.TestResultDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.TestResultDTO_View_User;
 import com.example.hotrohoctapbackend.convert.TestResultConverter;
@@ -17,8 +18,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -115,5 +118,24 @@ public class TestResultService {
 
     public List<Object[]> countResultsGroupedByResultUser(Long accountId, Long courseId) {
         return testResultRepository.countResultsGroupedByResultUser(accountId, courseId);
+    }
+
+    public List<QuestionDownloadDTO> getUserAnswersByAccountAndTestResult(Long accountId, Long testResultId) {
+        List<Object[]> results = testResultRepository.findUserAnswersByAccountAndTestResult(accountId, testResultId);
+        List<QuestionDownloadDTO> userAnswers = new ArrayList<>();
+
+        for (Object[] row : results) {
+            userAnswers.add(new QuestionDownloadDTO(
+                    (Integer)(row[0]), // id
+                    (String) row[1],                  // question
+                    (String) row[2],                  // optionA
+                    (String) row[3],                  // optionB
+                    (String) row[4],                  // optionC
+                    (String) row[5],                  // optionD
+                    (String) row[6],                  // correctAnswer
+                    (String) row[7]                   // userAnswer
+            ));
+        }
+        return userAnswers;
     }
 }

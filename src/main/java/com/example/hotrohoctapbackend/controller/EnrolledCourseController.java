@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseEnrolledDTO;
 import com.example.hotrohoctapbackend.DTO.CountCourseDTO;
 import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
@@ -12,11 +13,15 @@ import com.example.hotrohoctapbackend.service.EnrolledCourseService;
 import com.example.hotrohoctapbackend.service.NotificationService;
 import com.example.hotrohoctapbackend.service.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.example.hotrohoctapbackend.util.topic.DangKyKhoaHoc;
@@ -104,6 +109,38 @@ public class EnrolledCourseController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+    @GetMapping("/accounts/courses/{courseId}")
+    public Page<AdminCourseEnrolledDTO> getAccountsByCourse(@PathVariable int courseId,
+                                                            @RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return enrolledCourseService.getAccountsByCourseId(courseId, pageable);
+    }
+    @GetMapping("/status")
+    public String getStatus(@RequestParam Integer accountId, @RequestParam Integer courseId) {
+        return enrolledCourseService.getStatusByAccountAndCourse(accountId, courseId);
+    }
+//    @PostMapping("/update-status")
+//    public ResponseEntity<String> updateStatus(
+//            @RequestParam Integer accountId,
+//            @RequestParam Integer courseId) {
+//        try {
+//            String message = enrolledCourseService.updateStatus(accountId, courseId);
+//            return ResponseEntity.ok(message);
+//        } catch (IllegalArgumentException e) {
+//            return ResponseEntity.status(404).body(e.getMessage());
+//        }
+//    }
 
+
+    @GetMapping("/{accountId}/enrolled")
+    public ResponseEntity<List<String>> getEnrolledAccounts(@PathVariable Long accountId) {
+        List<String> enrolledAccounts = enrolledCourseService.getEnrolledAccounts(accountId);
+        return ResponseEntity.ok(enrolledAccounts); // Trả về danh sách account_id dưới dạng List<String>
+    }
+    @GetMapping("/api/course-authors/{accountId}")
+    public List<String> getCourseAuthors(@PathVariable Long accountId) {
+        return enrolledCourseService.getCourseAuthors(accountId);
+    }
 
 }

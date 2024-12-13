@@ -16,4 +16,17 @@ public interface PaymentDetailRepository extends JpaRepository<PaymentDetail,Int
             "JOIN courses c ON pd.course_id = c.id " +
             "WHERE pd.payment_id = :paymentId", nativeQuery = true)
     List<Object[]> findCoursePaymentDetailsByPaymentId(@Param("paymentId") Integer paymentId);
+
+    @Query(value = """
+        SELECT 
+            c.id AS courseId,
+            dt.course_title AS courseTitle,
+            c.image_url AS imageUrl,
+            dt.price AS price
+        FROM payments_detail dt
+        INNER JOIN payments p ON p.id = dt.payment_id
+        INNER JOIN courses c ON c.id = dt.course_id
+        WHERE p.id = :paymentId
+    """, nativeQuery = true)
+    List<Object[]> findCourseDetailsByPaymentId(@Param("paymentId") Integer paymentId);
 }

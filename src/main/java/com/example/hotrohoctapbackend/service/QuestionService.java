@@ -295,6 +295,31 @@ public class QuestionService {
         // Trả về Page<AdminQuestionGetDTO>
         return new PageImpl<>(dtoList, pageable, result.getTotalElements());
     }
+
+    public List<AdminQuestionGetDTO> getAllQuestionsAdminList() {
+
+        // Gọi repository để lấy dữ liệu phân trang
+        List<Object[]> result = questionRepository.getAllQuestionsList();
+
+        List<AdminQuestionGetDTO> dtoList = result.stream()
+                .map(row -> new AdminQuestionGetDTO(
+                        (Integer) row[0],  // questionId
+                        (String) row[1],   // content
+                        (String) row[2],   // optionA
+                        (String) row[3],   // optionB
+                        (String) row[4],   // optionC
+                        (String) row[5],   // optionD
+                        (String) row[6],   // result
+                        (String) row[7],   // instruction
+                        (String) row[8]    // resultCheck
+                ))
+                .collect(Collectors.toList());
+
+        // Trả về List<AdminQuestionGetDTO>
+        return dtoList;
+    }
+
+
     public Question deleteQuestionAdmin(int testID) {
         // Tìm tài khoản theo ID
         Optional<Question> accountOpt = questionRepository.findById(testID);

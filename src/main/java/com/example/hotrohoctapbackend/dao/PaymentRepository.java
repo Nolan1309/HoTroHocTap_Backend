@@ -79,4 +79,29 @@ public interface PaymentRepository extends JpaRepository<Payment,Integer> {
             countQuery = "SELECT COUNT(*) FROM payments p JOIN account a ON p.account_id = a.id",
             nativeQuery = true)
     Page<Object[]> findPaymentAdmin(Pageable pageable);
+
+    @Query(value = """
+        SELECT 
+            COALESCE(SUM(p.total_payment), 0) AS total_revenue_today,
+            (SELECT COUNT(*) FROM general_documents gd WHERE gd.is_deleted = 0) AS total_documents,
+            (SELECT COUNT(*) FROM courses c WHERE c.is_deleted = 0) AS total_courses,
+            (SELECT COUNT(*) FROM questions q WHERE q.is_deleted = 0) AS total_questions,
+            (SELECT COUNT(*) FROM account a WHERE a.is_deleted = 0 AND a.role_id = 2) AS total_users,
+            (SELECT COUNT(*) FROM account a WHERE a.is_deleted = 0 AND a.role_id = 3) AS total_teachers
+        FROM payments p
+        WHERE DATE(p.payment_date) = :paymentDate
+        """, nativeQuery = true)
+    List<Object[]> getDashboardReport(String paymentDate);
+
+    @Query(value = """
+        SELECT 
+            YEAR(payment_date) AS paymentYear,
+            CONCAT('T', MONTH(payment_date)) AS month,
+            SUM(total_payment) AS revenue
+        FROM payments
+        WHERE YEAR(payment_date) = :year
+        GROUP BY paymentYear, MONTH(payment_date)
+        ORDER BY MONTH(payment_date)
+    """, nativeQuery = true)
+    List<Object[]> getMonthlySalesData(int year);
 }

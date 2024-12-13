@@ -47,4 +47,8 @@ public interface QuestionRepository extends JpaRepository<Question,Integer> {
     @Query(value = "SELECT q.id AS questionId, q.content AS content, q.option_a AS optionA, q.option_b AS optionB, q.option_c AS optionC, q.option_d AS optionD, q.result AS result, q.instruction AS instruction, q.result_check AS resultCheck " +
             "FROM questions q", nativeQuery = true)
     Page<Object[]> getAllQuestions(Pageable pageable);
+
+    @Query(value = "SELECT q.id AS questionId, q.content AS content, q.option_a AS optionA, q.option_b AS optionB, q.option_c AS optionC, q.option_d AS optionD, q.result AS result, q.instruction AS instruction, q.result_check AS resultCheck " +
+            "FROM questions q", nativeQuery = true)
+    List<Object[]> getAllQuestionsList();
 }

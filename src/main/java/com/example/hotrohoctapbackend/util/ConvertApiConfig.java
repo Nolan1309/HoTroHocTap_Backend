@@ -9,6 +9,6 @@ public class ConvertApiConfig {
     @PostConstruct
     public void init() {
         // Đặt secret cho ConvertAPI
-        Config.setDefaultSecret("secret_u5Wttu3yjxTpDbPG");
+        Config.setDefaultSecret("secret_PSW1O3RmkJdvTxkA");
     }
 }

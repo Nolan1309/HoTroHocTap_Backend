@@ -270,10 +270,17 @@ public class AccountService {
     }
 
     public Account addAccountAdmin(AddAccountDTOAdmin accountDTOAdmin) {
-        // Tạo đối tượng Account mới
+        // 1. Kiểm tra xem email đã tồn tại hay chưa
+        Optional<Account> existingAccount = accountRepository.findByEmailOptional(accountDTOAdmin.getEmail());
+        if (existingAccount.isPresent()) {
+            // Bạn có thể ném ra một ngoại lệ tùy chỉnh hoặc sử dụng một ngoại lệ phù hợp
+            throw new IllegalArgumentException("Email đã được sử dụng. Vui lòng chọn email khác.");
+        }
+
+        // 2. Tạo đối tượng Account mới
         Account newAccount = new Account();
 
-        // Đặt các thuộc tính cho Account từ DTO
+        // 3. Đặt các thuộc tính cho Account từ DTO
         newAccount.setFullname(accountDTOAdmin.getFullname());
         newAccount.setEmail(accountDTOAdmin.getEmail());
         newAccount.setPhone(accountDTOAdmin.getPhone());
@@ -281,28 +288,30 @@ public class AccountService {
         newAccount.setBirthday(accountDTOAdmin.getBirthday());
         newAccount.setImage(accountDTOAdmin.getImage());
 
-        // Mặc định ban đầu cho trường createdAt và updatedAt là thời điểm hiện tại
+        // 4. Mặc định ban đầu cho trường createdAt và updatedAt là thời điểm hiện tại
         newAccount.setCreatedAt(LocalDateTime.now());
         newAccount.setUpdatedAt(LocalDateTime.now());
 
-        // Thiết lập role cho tài khoản mới
+        // 5. Thiết lập role cho tài khoản mới
         if (accountDTOAdmin.getRoleId() != null) {
             RoleUser role = roleUserRepository.findById(accountDTOAdmin.getRoleId())
-                    .orElseThrow(() -> new RuntimeException("Role not found with ID: " + accountDTOAdmin.getRoleId()));
+                    .orElseThrow(() -> new RuntimeException("Role không tồn tại với ID: " + accountDTOAdmin.getRoleId()));
             newAccount.setRole(role);
         }
 
-        // Thiết lập trạng thái ban đầu cho isDeleted và deletedDate
+        // 6. Thiết lập trạng thái ban đầu cho isDeleted và deletedDate
         newAccount.setDeleted(false);
-        newAccount.setDeletedDate(LocalDateTime.now());
+        // Nếu isDeleted là false, có lẽ deletedDate nên là null
+        newAccount.setDeletedDate(null);
 
-        // Mã hóa mật khẩu
+        // 7. Mã hóa mật khẩu
         String encodedPassword = passwordEncoder.encode(accountDTOAdmin.getPassword());
         newAccount.setPassword(encodedPassword);
 
-        // Lưu đối tượng Account mới vào cơ sở dữ liệu
+        // 8. Lưu đối tượng Account mới vào cơ sở dữ liệu
         return accountRepository.save(newAccount);
     }
+
 
     private UpdateAccountDTOAdmin convertToDTOAdmin(Account account) {
         UpdateAccountDTOAdmin dto = new UpdateAccountDTOAdmin();
