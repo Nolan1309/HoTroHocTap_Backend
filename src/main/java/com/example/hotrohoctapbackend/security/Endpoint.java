@@ -92,6 +92,7 @@ public class Endpoint {
             "/api/general_documents/all-general-document",
             "/api/general_documents/view_desc/top6",
             "/api/general_documents/category",
+            "/api/general_documents/category/**",
             "/api/general_documents/data",
             "/api/general_documents/search",
             "/api/general_documents/search-query",
@@ -101,9 +102,19 @@ public class Endpoint {
             "/categories/parent/**",
             "/cache",
             "/cache/evict",
+            "/ws/info",
+            "/ws",
+            //BLOG
+            "/api/blogs",
+            "/api/blogs/**",
+            "/api/blog-category",
+            "/api/blogs/category/**",
+            "/api/blogs/newest",
+            "/account/refresh-token",
 
-
-
+            "/account/oauth2/success",
+            "/api/courses/*/lessons-view",
+            "/api/videos/view-user/**"
     };
     public static final String[] PUBLIC_POST_ENDPOINS = {
             "/account/dang-ky",
@@ -125,7 +136,8 @@ public class Endpoint {
 
             "/user_vipsubscriptions",
             "/user_vipsubscriptions/**",
-            "/account/refresh-token"
+            "/api/account/forgot-password",
+            "/api/account/reset-password",
 
 
     };
@@ -138,7 +150,7 @@ public class Endpoint {
 
             //Update mat khau , cap nhat sau
             "/accounts/**",
-
+            "/api/general_documents/*/increment-view"
     };
 
     public static final String[] PUBLIC_DELETE_ENDPOINS = {
@@ -149,7 +161,7 @@ public class Endpoint {
             "/comments/**",
     };
 
-    public static final String[] ADMIN_GET_ENDPOINS = {
+    public static final String[] ADMIN_GET_ENDPOINT = {
             "/accounts",
             "/accounts/**",
             "/roles",
@@ -159,7 +171,59 @@ public class Endpoint {
             "/categories_parent_id",
             "/name-by-id",
             "/api/general_documents/documents-with-categories",
-            "/api/general_documents/generaldocuments-details/**"
+            "/api/general_documents/generaldocuments-details/**",
+            "/api/blogs/blogsall",
+            "/api/chapters/course/**",
+            "/api/payments/all",
+            "/api/payment-details/payment-details/**",
+            "/api/questions/export/excel",
+            "/api/questions/tests/questions/**",
+            "/api/tests/chitiet/**",
+
+            "/api/payment-details/**",
+            "/api/account/admin/**",
+            "/api/chapters/admin-all",
+            "/api/lessons/**",
+            "/api/questions/all",
+            "/api/questions/all-list",
+            "/api/tests/getall",
+            "/api/tests/getall-list",
+            "/api/payment-details/admin/**",
+            "/api/questions/detail/**",
+            "/api/lessons/getall",
+            "/api/comments/getall",
+            "/api/courses/getallresult",
+            "/api/discounts/getall",
+            "/api/discounts/detail/**",
+            "/api/notifications/getall",
+            "/api/courses/courses/discounts",
+            "/api/courses/courses/ofaccount",
+            "/api/blogs/admingetall",
+            "/api/blogs/admin/detail/**",
+
+            "/api/account/admin/profile/**",
+            "/api/settings",
+            "/api/settings/**",
+            "/api/settings/type/**" ,
+
+            "/api/test-results/average-scoreADMIN",
+            "/api/test-results/pass-rateADMIN",
+            "/api/test-results/result/detailADMIN",
+            "/api/test-results/result-countADMIN",
+            "/api/progress/calculateADMIN",
+            "/api/enrolled-course/accounts/courses/**",
+            "/api/courses/accountADMIN/enrolled/",
+            "/api/enrolled-course/*/enrolled",
+            "/api/backup/export",
+            "/api/courses/courses/ofaccount/list/**",
+            "/api/tests/course/*/chapter/*",
+            "/api/payments/dashboard",
+            "/api/payments/monthly-sales",
+            "/api/courses/report-admin",
+            "/api/courses/courses/*/check-completion",
+            "/api/courses/courses/status",
+            "/api/courses/courses/*/category"
+
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
             "/accounts",
@@ -231,7 +295,30 @@ public class Endpoint {
             "/api/general_documents/upload",
 
             "/api/convert-docx-to-pdf",
-            "/convert"
+            "/convert",
+            "/api/blogs/add-branch",
+            "/api/chapters/add",
+            "/api/courses/add-course",
+            "/api/lessons/add",
+            "/api/questions/upload",
+            "/api/tests/add",
+            "/add-branch",
+
+            "/api/account/admin/add",
+//            "/api/videos/uploadVideo",
+            "/api/lessons/updateLessonWithVideo",
+
+            "/api/questions/add",
+            "/api/notifications/send",
+            "/api/notifications/notify",
+            "/api/course-discounts/add-discount/**",
+
+            "/api/test-questions/add-questions/**",
+            "/api/discounts/add",
+            "/api/blogs/admin/add",
+            "/api/settings",
+            "/api/settings/**",
+            "/api/backup/restore"
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",
@@ -299,7 +386,12 @@ public class Endpoint {
             "/videos",
             "/videos/**",
             "/vipsubscriptions",
-            "/vipsubscriptions/**"
+            "/vipsubscriptions/**",
+            "/api/questions",
+            "/api/videos/**",
+            "/api/settings",
+            "/api/settings/**",
+            "/api/account/admin/profile/**",
     };
     public static final String[] ADMIN_PUT_ENDPOINS = {
             "/accounts",
@@ -368,26 +460,114 @@ public class Endpoint {
             "/videos/**",
             "/vipsubscriptions",
             "/vipsubscriptions/**",
-            "/api/general_documents/generaldocuments-update/**"
+            "/api/general_documents/generaldocuments-update/**",
+            "/api/blogs/update-branch/**",
+            "/api/courses/update-course/**",
+            "/api/tests/**",
+            "/update-branch/**",
+            "/api/account/admin/**",
+            "/api/account/delete/**",
+            "/api/account/active/**",
+            "/api/lessons/updateLessonWithVideoOrDocument",
+            "/api/questions/update/**",
+            "/api/tests/delete/**",
+            "/api/tests/active/**",
+            "/api/lessons/delete/**",
+            "/api/lessons/active/**",
+            "/api/courses/delete/**",
+            "/api/courses/active/**",
+            "/api/questions/delete/**",
+            "/api/questions/active/**",
+            "/api/comments/show/**",
+            "/api/comments/hide/**",
+            "/api/comments/active/**",
+            "/api/comments/unactive/**",
+            "/api/chapters/show/**",
+            "/api/chapters/hide/**",
+            "/api/general_documents/show/**",
+            "/api/general_documents/hide/**",
+            "/api/discounts/update/**",
+            "/api/discounts/show/**",
+            "/api/discounts/hide/**",
+            "/api/notifications/show/**",
+            "/api/notifications/hide/**",
+            "/api/course-discounts/reset-price",
+            "/api/blogs/admin/update/**",
+            "/api/tests/update-to-lesson/**",
+            "/api/settings",
+            "/api/settings/**",
+            "/api/settings/*/activate/*",
+            "/api/chapters/edit/**",
+            "/api/courses/status/**",
+            "/api/courses/unstatus/**",
+            "/api/account/change-password-admin/**",
+            "/api/account/admin/update/**",
     };
 
 
     public static final String[] USER_GET_ENDPOINT = {
             "/api/account/**",
+            "/api/account/profile/**",
             "/api/payment/vnpay/vn-pay",
             "/api/payments/**",
-            "/api/payment-details/**"
+            "/api/payment-details/**",
+            "/api/enrolled-course/count/**",
+            "/api/courses/account/enrolled/**",
+            "/api/courses/take-course/**",
+            "/api/progress/*/progress/*",
+            "/api/videos/**",
+            "/api/tests/**",
+            "/api/tests/*/questions",
+            "/api/videos/first-video/**",
+            "/api/questions/responsive-test/**",
+            "/api/comments/video/*/lesson/*",
+            "/api/comments/*/children/video/*/lesson/*",
+            "/api/test-results/view-user",
+            "/api/payments/summary",
+            "/api/payments/*/details",
+            "/api/general_documents/account/view-list",
+            "/api/progress/calculate",
+            "/api/test-results/average-score",
+            "/api/test-results/pass-rate",
+            "/api/test-results/result/detail",
+            "/api/test-results/result-count",
+            "/ws/info",
+            "/ws",
+            "/api/notifications/user/**",
+            "/api/notifications/user/*/detail/**",
+            "/api/enrolled-course/status",
+            "/api/courses/*/first-chapter-lesson",
+            "/api/enrolled-course/api/course-authors/**",
+            "/api/test-results/download-test",
+            "/api/payments/course-detail/**",
+            "/api/courses/courses/status-user"
     };
 
     public static final String[] USER_POST_ENDPOINT = {
             "/paymentmethod",
             "/api/payments/add",
             "/api/payment-details/add",
+            "/api/enrolled-course/enroll",
+            "/api/progress/add",
+            "/api/test-results/add",
+            "/api/user-answers/add",
+            "/api/user-answers/submit",
+            "/api/comments/submit",
+            "/api/document-account/download",
+            "/api/progress/check-pass",
+            "/api/reviews/course",
+//            "/api/enrolled-course/update-status"
 
     };
 
     public static final String[] USER_PUT_ENDPOINT = {
             "/paymentmethod",
+            "/api/account/update/**",
+            "/api/account/change-password/**",
+            "/api/comments/delete/**",
+            "/api/notifications/mark-all-as-read/**",
+            "/api/notifications/mark-as-read/**"
+
     };
     public static final String[] USER_DELETE_ENDPOINT = {
             "/paymentmethod",

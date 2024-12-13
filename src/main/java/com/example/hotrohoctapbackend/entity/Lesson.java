@@ -1,4 +1,5 @@
 package com.example.hotrohoctapbackend.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -27,39 +28,18 @@ public class Lesson {
 
     @ManyToOne
     @JoinColumn(name = "chapter_id")
+    @JsonIgnore
     private Chapter chapter;
 
-//    @OneToMany(mappedBy = "lesson",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Comment> commentList;
-//
-//    @OneToMany(mappedBy = "lesson",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Document> documentList;
-//
-//    @OneToMany(mappedBy = "lesson",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Test> lessonList;
-//
-//    @OneToMany(mappedBy = "lesson",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Video> videoList;
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    @JsonIgnore
+    private Course course;
 
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
 
 }

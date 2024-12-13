@@ -1,24 +1,44 @@
 package com.example.hotrohoctapbackend.service;
 
-import com.example.hotrohoctapbackend.DTO.CourseDTO;
-import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
-import com.example.hotrohoctapbackend.dao.CourseRepository;
-import com.example.hotrohoctapbackend.entity.Course;
+import com.example.hotrohoctapbackend.DTO.*;
+import com.example.hotrohoctapbackend.DTO.Admin.*;
+import com.example.hotrohoctapbackend.DTO.User.*;
+import com.example.hotrohoctapbackend.dao.*;
+import com.example.hotrohoctapbackend.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
     @Autowired
     private CourseRepository courseRepository;
 
+    @Autowired
+    private ChapterRepository chapterRepository;
+
+    @Autowired
+    private LessonRepository lessonRepository;
+
+    @Autowired
+    private TestRepository testRepository;
+
+    @Autowired
+    private VideoRepository videoRepository;
+    @Autowired
+    private CourseCategoryRepository courseCategoryRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
     // Lấy type của khóa học theo ID
     public String getCourseTypeById(int id) {
@@ -47,6 +67,7 @@ public class CourseService {
 
         return statistics;
     }
+
     public CourseDetailDTO getCourseDetailById(Integer id) {
         List<Object[]> result = courseRepository.findCourseById(id);
 
@@ -98,6 +119,9 @@ public class CourseService {
             if (data[13] instanceof Integer) {
                 courseDetailDTO.setCourse_category_id((Integer) data[13]);
             }
+            if (data[14] instanceof Integer) {
+                courseDetailDTO.setAccountId((Integer) data[14]);
+            }
 
             return courseDetailDTO;
         }
@@ -124,17 +148,21 @@ public class CourseService {
             BigDecimal price = (BigDecimal) row[3];
             BigDecimal cost = (BigDecimal) row[4];
             String title = (String) row[5];
-            Long numberOfStudents = (Long) row[6];
-            Long totalLessons = (Long) row[7];
+            String type = (String) row[6];
 
-            BigDecimal rate = (BigDecimal) row[8];
-            CourseDTO courseSummary = new CourseDTO(id, danhmucID, title, imageUrl, price, cost, numberOfStudents, totalLessons, rate);
+            Boolean status = (Boolean) row[7];
+
+            Long numberOfStudents = (Long) row[8];
+            Long totalLessons = (Long) row[9];
+
+            BigDecimal rate = (BigDecimal) row[10];
+
+            CourseDTO courseSummary = new CourseDTO(id, danhmucID, title, imageUrl, price, cost, numberOfStudents, totalLessons, rate, type, status);
             courseSummaries.add(courseSummary);
         }
 
         return courseSummaries;
     }
-
 
     public Page<CourseDTO> getCoursesByCategory(Integer courseCategoryId, Pageable pageable) {
         Page<Object[]> results = courseRepository.findByCourseCategoryId(courseCategoryId, pageable);
@@ -155,7 +183,8 @@ public class CourseService {
                 (String) row[13],
                 (String) row[14],
                 (String) row[15],
-                (Boolean) row[16]
+                (Boolean) row[16],
+                (String) row[17]
         ));
     }
 
@@ -181,10 +210,10 @@ public class CourseService {
                 (String) row[13], // description
                 (String) row[14], // duration
                 (String) row[15], // language
-                (Boolean) row[16] // status
+                (Boolean) row[16],// status
+                (String) row[17]
         ));
     }
-
 
     public Page<CourseDTO> getAllCourse(Pageable pageable) {
         Page<Object[]> results = courseRepository.findAllCourses(pageable);
@@ -205,8 +234,450 @@ public class CourseService {
                 (String) row[13],
                 (String) row[14],
                 (String) row[15],
-                (Boolean) row[16]
+                (Boolean) row[16],
+                (String) row[17]
         ));
     }
+
+    public Page<CourseDTO_User_Profile> getCoursesByAccountId(Integer accountId, int page, int size) {
+        Page<Object[]> results = courseRepository.findCoursesByAccountId(accountId, PageRequest.of(page, size));
+
+        return results.map(result -> new CourseDTO_User_Profile(
+                (Integer) result[0],     // id
+                (String) result[1],      // duration
+                (String) result[2],      // image_url
+                (String) result[3],      // title
+                ((Timestamp) result[4]).toLocalDateTime(), // enrollment_date
+                (Boolean) result[5]
+        ));
+    }
+
+    //Section Vao Hoc
+    public CourseInfoDetailDTO_User getCourseDetails(Integer courseId) {
+        List<Chapter> chapters = chapterRepository.findChaptersByCourseId(courseId);
+        List<CourseInfoDetailDTO_Chapter_User> chapterDTOs = new ArrayList<>();
+
+        for (Chapter chapter : chapters) {
+            List<Lesson> lessons = lessonRepository.findLessonsByChapterId(chapter.getId());
+            List<CourseInfoDetailDTO_Lesson_User> lessonDTOs = new ArrayList<>();
+
+            for (Lesson lesson : lessons) {
+                Video video = videoRepository.findVideoByLessonId(lesson.getId());
+                Test lessonTest = testRepository.findTestsByLessonId(lesson.getId()).isEmpty() ? null : testRepository.findTestsByLessonId(lesson.getId()).get(0);
+
+                CourseInfoDetailDTO_Video_User videoDTO = video != null ? new CourseInfoDetailDTO_Video_User(video.getId(), video.getTitle(), video.getUrl(), video.getDocumentShort(), video.getDocumentUrl()) : null;
+                CourseInfoDetailDTO_Test_User testDTO = lessonTest != null ? new CourseInfoDetailDTO_Test_User(lessonTest.getId(), lessonTest.getTitle(), "Test Bài") : null;
+
+                CourseInfoDetailDTO_Lesson_User lessonDTO = new CourseInfoDetailDTO_Lesson_User(lesson.getId(), lesson.getTitle(), lesson.getDuration(), videoDTO, testDTO);
+                lessonDTOs.add(lessonDTO);
+            }
+
+            Test chapterTest = testRepository.findChapterTestByChapterId(chapter.getId());
+            CourseInfoDetailDTO_Test_User chapterTestDTO = chapterTest != null ? new CourseInfoDetailDTO_Test_User(chapterTest.getId(), chapterTest.getTitle(), "Test Chương") : null;
+
+            CourseInfoDetailDTO_Chapter_User chapterDTO = new CourseInfoDetailDTO_Chapter_User(chapter.getId(), chapter.getTitle(), lessonDTOs, chapterTestDTO);
+            chapterDTOs.add(chapterDTO);
+        }
+
+        return new CourseInfoDetailDTO_User(courseId, "Course Title", chapterDTOs);
+    }
+
+
+    public Course addCourse(AdminAddCourseDTO courseDTO) {
+        // Tạo đối tượng Course từ DTO
+        Course newCourse = new Course();
+        newCourse.setTitle(courseDTO.getCoursesTitle());
+        newCourse.setDescription(courseDTO.getDescription());
+        newCourse.setImage_url(courseDTO.getImageUrl());
+        newCourse.setCourseOutput(courseDTO.getCourseOutput());
+        newCourse.setLanguage(courseDTO.getLanguage());
+        newCourse.setAuthor(courseDTO.getAuthor());
+        newCourse.setDuration(courseDTO.getDuration());
+        newCourse.setCost(courseDTO.getCost());
+        newCourse.setPrice(courseDTO.getPrice());
+        newCourse.setStatus(false);
+        newCourse.setType(courseDTO.getType());
+        newCourse.setCreatedAt(LocalDateTime.now());
+        newCourse.setUpdatedAt(LocalDateTime.now());
+        newCourse.setDeleted(false);
+
+        // Lấy thông tin CourseCategory và Account từ ID
+        CourseCategory courseCategory = courseCategoryRepository.findById(courseDTO.getCourseCategoryId())
+                .orElseThrow(() -> new RuntimeException("Course Category not found"));
+        Account account = accountRepository.findById(courseDTO.getAccountId())
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        newCourse.setCourseCategory(courseCategory);
+        newCourse.setAccount(account);
+
+        // Lưu khóa học vào database
+        return courseRepository.save(newCourse);
+    }
+    public Double checkDiscountForCourse(Integer courseId) {
+        Double discount = courseRepository.getDiscountForCourse(courseId);
+
+        if (discount != null) {
+            return discount;
+        } else {
+            return 0.0;
+        }
+    }
+
+
+    public Course editCourse(Integer courseId, AdminAddCourseDTO courseDTO) {
+        // Tìm khóa học cần chỉnh sửa từ ID
+        Course existingCourse = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        double phamtram = 100;
+        if(existingCourse.getType().equals("FEE")){
+            if(existingCourse.getCost() != existingCourse.getPrice()){
+                Double value = checkDiscountForCourse(courseId);
+                if(value != 0){
+                    phamtram = phamtram - value;
+                }
+            }
+        }
+        // Cập nhật thông tin của khóa học từ DTO
+        existingCourse.setTitle(courseDTO.getCoursesTitle());
+        existingCourse.setDescription(courseDTO.getDescription());
+        existingCourse.setImage_url(courseDTO.getImageUrl());
+        existingCourse.setCourseOutput(courseDTO.getCourseOutput());
+        existingCourse.setLanguage(courseDTO.getLanguage());
+        existingCourse.setAuthor(courseDTO.getAuthor());
+        existingCourse.setDuration(courseDTO.getDuration());
+        existingCourse.setCost(courseDTO.getCost());
+
+        BigDecimal price = courseDTO.getCost().multiply(BigDecimal.valueOf(phamtram / 100));
+        existingCourse.setPrice(price);
+
+
+        existingCourse.setType(courseDTO.getType());
+        existingCourse.setUpdatedAt(LocalDateTime.now());
+
+
+        if (courseDTO.getCourseCategoryId() != null) {
+            CourseCategory courseCategory = courseCategoryRepository.findById(courseDTO.getCourseCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Course Category not found"));
+            existingCourse.setCourseCategory(courseCategory);
+        }
+
+        if (courseDTO.getAccountId() != null) {
+            Account account = accountRepository.findById(courseDTO.getAccountId())
+                    .orElseThrow(() -> new RuntimeException("Account not found"));
+            existingCourse.setAccount(account);
+        }
+
+        // Lưu khóa học đã chỉnh sửa vào database
+        return courseRepository.save(existingCourse);
+    }
+
+    public Page<AdminCourseGetDTO> getCoursesWithCategoryAdmin(int page, int size) {
+        // Tạo đối tượng Pageable từ page và size
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Gọi repository để lấy dữ liệu phân trang
+        Page<Object[]> resultPage = courseRepository.findCourseWithCategory(pageable);
+
+        // Chuyển đổi từ Object[] sang DTO
+        List<AdminCourseGetDTO> dtoList = resultPage.getContent().stream()
+                .map(row -> {
+                    AdminCourseGetDTO dto = new AdminCourseGetDTO();
+                    dto.setId((Integer) row[0]);  // id
+                    dto.setCourseTitle((String) row[1]);  // courseTitle
+                    dto.setDuration((String) row[2]);  // duration
+                    dto.setLanguage((String) row[3]);  // language
+                    dto.setCategoryName((String) row[4]);  // categoryName
+                    dto.setDeleted((Boolean) row[5]);  // deleted
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        // Trả về Page<AdminCourseGetDTO>
+        return new PageImpl<>(dtoList, pageable, resultPage.getTotalElements());
+    }
+
+
+    public Course deleteCourseAdmin(int courseId) {
+        // Tìm tài khoản theo ID
+        Optional<Course> accountOpt = courseRepository.findById(courseId);
+
+        if (accountOpt.isPresent()) {
+            Course account = accountOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            account.setDeleted(true);
+            account.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return courseRepository.save(account);
+        } else {
+            throw new RuntimeException("Course not found with id: " + courseId);
+        }
+    }
+
+    public Course activeCourseAdmin(int courseId) {
+        // Tìm tài khoản theo ID
+        Optional<Course> lessonOpt = courseRepository.findById(courseId);
+
+        if (lessonOpt.isPresent()) {
+            Course lesson = lessonOpt.get();
+            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
+            lesson.setDeleted(false);
+            lesson.setDeletedDate(LocalDateTime.now());
+            // Lưu thay đổi
+            return courseRepository.save(lesson);
+        } else {
+            throw new RuntimeException("Course not found with id: " + courseId);
+        }
+    }
+
+    public Page<AdminCourseResultDTO> getCoursesByAccountIdAdmin(int accountId, int page, int size) {
+        // Tạo đối tượng Pageable để phân trang
+        Pageable pageable = PageRequest.of(page, size);
+        // Gọi repository để lấy dữ liệu dạng Page<Object[]>
+        Page<Object[]> dataPage = courseRepository.findCoursesByAccountIdAdmin(accountId, pageable);
+
+        // Map dữ liệu từ Object[] sang AdminCourseResultDTO
+        Page<AdminCourseResultDTO> resultPage = dataPage.map(row -> {
+            // Xử lý từng phần tử từ Object[]
+            Integer id = row[0] instanceof Integer idValue ? idValue : null; // id
+            String courseTitle = row[1] instanceof String titleValue ? titleValue : ""; // courseTitle
+            String duration = row[2] instanceof String durationValue ? durationValue : ""; // duration
+            BigDecimal price = row[3] instanceof BigDecimal priceValue ? priceValue : BigDecimal.ZERO;
+            BigDecimal cost = row[4] instanceof BigDecimal costValue ? costValue : BigDecimal.ZERO;// price
+            Boolean status = row[5] instanceof Boolean statusValue ? statusValue : false; // status
+            Boolean isDeleted = row[6] instanceof Boolean deletedValue ? deletedValue : false; // isDeleted
+            String categoryName = row[7] instanceof String categoryValue ? categoryValue : ""; // categoryName
+
+            // Tạo DTO từ các giá trị đã xử lý
+            return new AdminCourseResultDTO(id, courseTitle, duration, price, cost, status, isDeleted, categoryName);
+        });
+
+        // Trả về Page<AdminCourseResultDTO>
+        return resultPage;
+    }
+
+
+    public Page<AdminCourseResultDTO> getAllCoursesAdmin(int page, int size) {
+        // Tạo đối tượng Pageable để phân trang
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Gọi repository để lấy dữ liệu dạng Page<Object[]>
+        Page<Object[]> dataPage = courseRepository.findAllCoursesResult(pageable);
+
+        // Map dữ liệu từ Object[] sang AdminCourseResultDTO
+        return dataPage.map(row -> {
+            // Map các giá trị từ Object[] sang AdminCourseResultDTO
+            Integer id = (Integer) row[0];                         // id
+            String courseTitle = (String) row[1];                  // courseTitle
+            String duration = (String) row[2];                    // duration
+            BigDecimal price = (BigDecimal) row[3];
+            BigDecimal cost = (BigDecimal) row[4];   // price
+            Boolean status = (Boolean) row[5];                    // status
+            Boolean isDeleted = (Boolean) row[6];                 // isDeleted
+            String categoryName = (String) row[7];                // categoryName (từ SELECT)
+
+            // Tạo và trả về DTO
+            return new AdminCourseResultDTO(id, courseTitle, duration, price, cost, status, isDeleted, categoryName);
+        });
+    }
+
+    public Page<AdminCourseOfDiscount> getCoursesWithDiscounts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Fetch raw data
+        Page<Object[]> rawData = courseRepository.getCourseofDiscount(pageable);
+
+        // Map raw data to DTO
+        Page<AdminCourseOfDiscount> result = rawData.map(data -> {
+            Integer id = (Integer) data[0];
+            String coursesTitle = (String) data[1];
+            String duration = (String) data[2];
+            Double price = (data[3] != null) ? ((Number) data[3]).doubleValue() : null;
+            Double cost = (data[4] != null) ? ((Number) data[4]).doubleValue() : null;
+
+            return new AdminCourseOfDiscount(id, coursesTitle, duration, price, cost);
+        });
+
+        return result;
+    }
+
+    public Course statusCourseAdmin(int courseId) {
+        Optional<Course> accountOpt = courseRepository.findById(courseId);
+
+        if (accountOpt.isPresent()) {
+            Course account = accountOpt.get();
+            account.setStatus(true);
+            return courseRepository.save(account);
+        } else {
+            throw new RuntimeException("Course not found with id: " + courseId);
+        }
+    }
+
+    public Course unstatusCourseAdmin(int courseId) {
+        Optional<Course> lessonOpt = courseRepository.findById(courseId);
+
+        if (lessonOpt.isPresent()) {
+            Course lesson = lessonOpt.get();
+            lesson.setStatus(false);
+            return courseRepository.save(lesson);
+        } else {
+            throw new RuntimeException("Course not found with id: " + courseId);
+        }
+    }
+
+    public Map<String, Integer> getFirstChapterAndLesson(Integer courseId) {
+        // Lấy chapter đầu tiên
+        Optional<Integer> chapterId = chapterRepository.findFirstChapterIdByCourseId(courseId);
+        if (chapterId.isPresent()) {
+            // Lấy lesson đầu tiên của chương đó
+            Optional<Integer> lessonId = lessonRepository.findFirstLessonIdByChapterId(chapterId.get());
+            if (lessonId.isPresent()) {
+                Map<String, Integer> result = new HashMap<>();
+                result.put("chapterId", chapterId.get());
+                result.put("lessonId", lessonId.get());
+                return result;
+            } else {
+                throw new ResourceNotFoundException("No lessons found for the first chapter.");
+            }
+        } else {
+            throw new ResourceNotFoundException("No chapters found for the course.");
+        }
+    }
+
+    public List<AdminCourseResultDTO> getAllCoursesListAdmin() {
+        // Gọi repository để lấy dữ liệu dưới dạng List<Object[]>
+        List<Object[]> data = courseRepository.findAllCoursesResultList();
+
+        // Map dữ liệu từ Object[] sang AdminCourseResultDTO
+        return data.stream().map(row -> {
+            Integer id = (Integer) row[0];                     // id
+            String courseTitle = (String) row[1];              // courseTitle
+            String duration = (String) row[2];                 // duration
+            BigDecimal price = (BigDecimal) row[3];            // price
+            BigDecimal cost = (BigDecimal) row[4];              // price
+            Boolean status = (Boolean) row[5];                    // status
+            Boolean isDeleted = (Boolean) row[6];                 // isDeleted
+            String categoryName = (String) row[7];                // categoryName (từ SELECT)
+
+
+            // Tạo và trả về AdminCourseResultDTO
+            return new AdminCourseResultDTO(id, courseTitle, duration, price, cost, status, isDeleted, categoryName);
+        }).collect(Collectors.toList());  // Chuyển đổi sang List<AdminCourseResultDTO>
+    }
+
+
+    public List<AdminCourseResultDTO> getCoursesByAccountListIdAdmin(int accountId) {
+        // Gọi repository để lấy dữ liệu dạng List<Object[]>
+        List<Object[]> dataList = courseRepository.findCoursesByAccountIdListAdmin(accountId);
+
+        // Map dữ liệu từ Object[] sang AdminCourseResultDTO
+        List<AdminCourseResultDTO> resultList = new ArrayList<>();
+        for (Object[] row : dataList) {
+            Integer id = row[0] instanceof Integer ? (Integer) row[0] : null; // id
+            String courseTitle = row[1] instanceof String ? (String) row[1] : ""; // courseTitle
+            String duration = row[2] instanceof String ? (String) row[2] : ""; // duration
+            BigDecimal price = row[3] instanceof BigDecimal ? (BigDecimal) row[3] : BigDecimal.ZERO; // price
+            BigDecimal cost = row[4] instanceof BigDecimal ? (BigDecimal) row[4] : BigDecimal.ZERO; // price
+            Boolean status = row[5] instanceof Boolean ? (Boolean) row[5] : false; // status
+            Boolean isDeleted = row[6] instanceof Boolean ? (Boolean) row[6] : false; // isDeleted
+            String categoryName = row[7] instanceof String ? (String) row[7] : ""; // categoryName
+
+            // Tạo đối tượng AdminCourseResultDTO và thêm vào danh sách
+            AdminCourseResultDTO dto = new AdminCourseResultDTO(id, courseTitle, duration, price, cost, status, isDeleted, categoryName);
+            resultList.add(dto);
+        }
+        return resultList;
+    }
+
+    public List<ChapterDTOUserView> getChaptersByCourseIdView(Long courseId) {
+        List<Object[]> results = courseRepository.findChaptersByCourseId(courseId);
+        List<ChapterDTOUserView> chapterDTOUserViews = new ArrayList<>();
+        for (Object[] item : results) {
+            Integer chapterId = (Integer) item[0];
+            ChapterDTOUserView chapterDTOUserView = new ChapterDTOUserView(chapterId, (String) item[1], (Long) item[2]);
+
+            List<Object[]> listvideo = courseRepository.findVideosByChapterId(chapterId);
+            List<VideoDTOUserView> videoDTOUserViewList = new ArrayList<>();
+            for (Object[] video : listvideo) {
+                VideoDTOUserView viewVideo = new VideoDTOUserView((Integer) video[0], (String) video[1], (Integer) video[2], (Boolean) video[3]);
+                videoDTOUserViewList.add(viewVideo);
+            }
+            chapterDTOUserView.setVideoDTOUserViewList(videoDTOUserViewList);
+            chapterDTOUserViews.add(chapterDTOUserView);
+        }
+        return chapterDTOUserViews;
+    }
+
+
+    //    public List<LessonDTOUserView> getLessonsWithVideos(Long courseId) {
+//        List<Object[]> results = courseRepository.findLessonsAndVideosByCourseId(courseId);
+//        Map<Long, LessonDTOUserView> lessonMap = new HashMap<>();
+//
+//        for (Object[] row : results) {
+//            Long lessonId = ((Number) row[0]).longValue();
+//            String lessonTitle = (String) row[1];
+//            Integer lessonDuration = ((Number) row[2]).intValue();
+//            Long videoId = row[3] != null ? ((Number) row[3]).longValue() : null;
+//            String videoTitle = (String) row[4];
+//            Integer videoDuration = row[5] != null ? ((Number) row[5]).intValue() : null;
+//
+//            // Nếu bài học chưa tồn tại trong Map, tạo mới
+//            LessonDTOUserView lesson = lessonMap.computeIfAbsent(lessonId, id ->
+//                    new LessonDTOUserView(lessonId, lessonTitle, lessonDuration)
+//            );
+//
+//            // Thêm video vào bài học
+//            if (videoId != null) {
+//                lesson.getVideos().add(new VideoDTOUserView(videoId, videoTitle, videoDuration));
+//            }
+//        }
+//
+//        // Tính tổng số video và tổng thời lượng video cho từng bài học
+//        for (LessonDTOUserView lesson : lessonMap.values()) {
+//            lesson.setVideoCount(lesson.getVideos().size());
+//            lesson.setTotalVideoDuration(lesson.getVideos().stream()
+//                    .mapToInt(VideoDTOUserView::getVideoDuration)
+//                    .sum());
+//        }
+//
+//        return new ArrayList<>(lessonMap.values());
+//    }
+    public List<CourseReportDTO> getCourseReport() {
+        return courseRepository.getCourseReport().stream().map(row ->
+                new CourseReportDTO(
+                        (String) row[0],
+                        (Long) row[1],
+                        (BigDecimal) row[2],
+                        (Boolean) row[3],
+                        (String) row[4]
+                )
+        ).collect(Collectors.toList());
+    }
+
+    public boolean checkCourseCompleteness(Long courseId) {
+        List<Object[]> result = courseRepository.checkCourseCompleteness(courseId);
+
+        // Kiểm tra nếu có kết quả và nó thoả mãn điều kiện
+        return !result.isEmpty() && result.get(0)[1].equals(result.get(0)[2]) && result.get(0)[1].equals(result.get(0)[3]);
+    }
+
+    public Optional<Boolean> getCourseStatusById(Long courseId) {
+        return courseRepository.findStatusByCourseId(courseId);
+    }
+
+    public CourseCategoryDTO_ADMIN getCourseCategoryById(Integer courseId) {
+        List<Object[]> result = courseRepository.findCategoryByCourseId(courseId);
+        CourseCategoryDTO_ADMIN categoryDTO = new CourseCategoryDTO_ADMIN();
+        for (Object[] item : result) {
+            Integer categoryId = (Integer) item[0];  // Ép kiểu sang Long cho ID
+            String categoryName = (String) item[1];
+            categoryDTO.setCategoryId(categoryId);
+            categoryDTO.setCategoryName(categoryName);
+            break;
+        }
+
+
+        return categoryDTO;
+    }
+
 
 }

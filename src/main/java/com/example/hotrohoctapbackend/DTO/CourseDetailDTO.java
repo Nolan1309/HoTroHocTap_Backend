@@ -27,6 +27,7 @@ public class CourseDetailDTO {
     private String title;
     private LocalDateTime updatedAt;
     private int course_category_id;
+    private Integer accountId;
 
     public CourseDetailDTO() {
     }

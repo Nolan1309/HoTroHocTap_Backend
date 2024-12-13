@@ -24,13 +24,13 @@ public class Course {
     @JoinColumn(name = "course_category_id")
     private CourseCategory courseCategory;
 
-    @Column(name = "description",columnDefinition = "TEXT")
+    @Column(name = "description",columnDefinition = "LONGTEXT")
     private String description;
 
-    @Column(name = "image_url", columnDefinition = "TEXT")
+    @Column(name = "image_url", columnDefinition = "LONGTEXT")
     private String image_url;
 
-    @Column(name = "course_output",columnDefinition = "TEXT")
+    @Column(name = "course_output",columnDefinition = "LONGTEXT")
     private String courseOutput;
 
     @Column(name = "language")
@@ -38,7 +38,9 @@ public class Course {
 
     @Column(name = "author")
     private String author;
-
+    @ManyToOne
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
     @Column(name = "duration")
     private String duration;
 
@@ -60,59 +62,16 @@ public class Course {
     @Column(name="type")
     private String type;
 
-//    @OneToMany(mappedBy = "course",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Chapter> chapterList;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
 
-//    @OneToMany(mappedBy = "course",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Course_Discount> courseDiscountList;
-//
-//    @OneToMany(mappedBy = "course",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Enrolled_Courses> enrolledCoursesList;
-//
-//    @OneToMany(mappedBy = "course",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Favorites> favoritesList;
-//
-//    @OneToMany(mappedBy = "course",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<LearningResult> learningResultList;
-//
-//    @OneToMany(mappedBy = "course",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<PaymentDetail> paymentDetailList;
-//
-//    @OneToMany(mappedBy = "course",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Review> reviewList;
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
+
+    @PrePersist
+    protected void onCreate() {
+        if (deletedDate == null) {
+            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
+        }
+    }
 }

@@ -1,6 +1,9 @@
 package com.example.hotrohoctapbackend.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "test_answers")
@@ -12,7 +15,6 @@ public class Test_Question {
     private Integer id;
 
 
-
     @ManyToOne
     @JoinColumn(name = "test_id")
     private Test test;
@@ -20,4 +22,5 @@ public class Test_Question {
     @ManyToOne
     @JoinColumn(name = "question_id")
     private Question question;
+
 }

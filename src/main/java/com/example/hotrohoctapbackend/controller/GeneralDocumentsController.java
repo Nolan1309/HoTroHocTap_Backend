@@ -1,8 +1,11 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.*;
+import com.example.hotrohoctapbackend.DTO.Admin.GeneralDocumentDTO_Version2;
+import com.example.hotrohoctapbackend.DTO.User.GeneralDocumentDTO_User;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
 import com.example.hotrohoctapbackend.service.GeneralDocumentsService;
+import com.example.hotrohoctapbackend.util.FirebaseStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +26,9 @@ public class GeneralDocumentsController {
 
     @Autowired
     private GeneralDocumentsService generalDocumentsService;
+
+    @Autowired
+    private FirebaseStorageService firebaseStorageService;
 
     @GetMapping("/create_desc")
     public List<DocumentDTO> getAllDocumentsCreateDesc() {
@@ -60,6 +66,12 @@ public class GeneralDocumentsController {
         return generalDocumentsService.getDocumentsByCategory(id, pageable);
     }
 
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<DocumentRelateUserDTO>> getDocumentsByCategoryId(@PathVariable Long categoryId) {
+        List<DocumentRelateUserDTO> documents = generalDocumentsService.getDocumentsByCategoryId(categoryId);
+        return ResponseEntity.ok(documents);
+    }
+
     @GetMapping("/data")
     public List<Object[]> getDocumentsDataRange_100() {
         return generalDocumentsService.getDocumentsData_100();
@@ -69,6 +81,7 @@ public class GeneralDocumentsController {
     public Page<Object[]> getDocumentsSearch(@RequestParam String title, Pageable pageable) {
         return generalDocumentsService.getDocumentsWithTitle(title, pageable);
     }
+
     // API tìm kiếm với từ khóa và phân trang
     @GetMapping("/search-query")
     public Page<GeneralDocumentSearch> searchDocuments(
@@ -87,8 +100,11 @@ public class GeneralDocumentsController {
 
     ///MAN
     @GetMapping("/documents-with-categories")
-    public List<GeneralDocumentDTO> getDocumentsWithCategories() {
-        return generalDocumentsService.getDocumentsWithCategories();
+    public Page<GeneralDocumentDTO_Version2> getDocumentsWithCategories(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return generalDocumentsService.getDocumentsWithCategories(pageable);
     }
 
     //    @PostMapping("/upload")
@@ -122,15 +138,52 @@ public class GeneralDocumentsController {
         }
     }
 
+    //        @PutMapping("/generaldocuments-update/{id}")
+//        public ResponseEntity<GeneralDocument> updateGeneralDocument(
+//                @PathVariable("id") int id,
+//                @RequestBody UpdateDocumentRequest updateRequest) {
+//            GeneralDocument updatedDoc = generalDocumentsService.updateGeneralDocument(id, updateRequest);
+//            if (updatedDoc != null) {
+//                return ResponseEntity.ok(updatedDoc);
+//            } else {
+//                return ResponseEntity.notFound().build();
+//            }
+//        }
     @PutMapping("/generaldocuments-update/{id}")
     public ResponseEntity<GeneralDocument> updateGeneralDocument(
             @PathVariable("id") int id,
-            @RequestBody UpdateDocumentRequest updateRequest) {
-        GeneralDocument updatedDoc = generalDocumentsService.updateGeneralDocument(id, updateRequest);
-        if (updatedDoc != null) {
-            return ResponseEntity.ok(updatedDoc);
-        } else {
-            return ResponseEntity.notFound().build();
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("idCategory") int idCategory,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "url", required = false) String url,
+            @RequestParam("image_url") String imageUrl) {
+
+        try {
+            // Xử lý tệp (nếu có)
+            String fileUrl = null;
+            if (file != null && !file.isEmpty()) {
+                fileUrl = firebaseStorageService.uploadFileURL(file); // Giả sử có service để lưu tệp
+            }
+
+            // Tạo đối tượng yêu cầu cập nhật
+            UpdateDocumentRequest updateRequest = new UpdateDocumentRequest();
+            updateRequest.setTitle(title);
+            updateRequest.setDescription(description);
+            updateRequest.setIdCategory(idCategory);
+            updateRequest.setUrl(fileUrl != null ? fileUrl : url); // Nếu có tệp thì dùng URL tệp, nếu không dùng URL được gửi
+//            updateRequest.setImageUrl(imageUrl);
+
+            // Cập nhật tài liệu
+            GeneralDocument updatedDoc = generalDocumentsService.updateGeneralDocument(id, updateRequest);
+            if (updatedDoc != null) {
+                return ResponseEntity.ok(updatedDoc);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -145,5 +198,39 @@ public class GeneralDocumentsController {
         }
     }
 
+    @GetMapping("/account/view-list")
+    public ResponseEntity<Page<GeneralDocumentDTO_User>> getDocuments(
+            @RequestParam Long accountId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<GeneralDocumentDTO_User> documents = generalDocumentsService.getDocumentsByAccountIdUser(accountId, page, size);
+        return ResponseEntity.ok(documents);
+    }
 
+    @PutMapping("/hide/{id}")
+    public ResponseEntity<?> hideGeneralDocumentAdmin(@PathVariable int id) {
+        try {
+            GeneralDocument hidedGeneralDocument = generalDocumentsService.hideGeneralDocumentAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+
+    @PutMapping("/show/{id}")
+    public ResponseEntity<?> showGeneralDocumentAdmin(@PathVariable int id) {
+        try {
+            GeneralDocument showGeneralDocument = generalDocumentsService.showGeneralDocumentAdmin(id);
+            return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+
+    @PutMapping("/{id}/increment-view")
+    public ResponseEntity<GeneralDocument> incrementViewCount(@PathVariable int id) {
+        GeneralDocument updatedDocument = generalDocumentsService.incrementViewCount(id);
+        return ResponseEntity.ok(updatedDocument);
+    }
 }

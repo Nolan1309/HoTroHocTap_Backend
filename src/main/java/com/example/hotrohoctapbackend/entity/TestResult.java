@@ -21,8 +21,12 @@ public class TestResult {
     @JoinColumn(name = "account_id")
     private Account account;
 
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
     @Column(name = "score")
-    private int score;
+    private double score;
 
     @Column(name = "correct_answers")
     private int correct_answers;
@@ -39,4 +43,19 @@ public class TestResult {
     @Column(name = "result")
     private String result;
 
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
+
+    @Column(name = "is_chapter_test", columnDefinition = "BIT", nullable = false)
+    private boolean chapterTested;
+
+    @PrePersist
+    protected void onCreate() {
+        if (deletedDate == null) {
+            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
+        }
+    }
 }

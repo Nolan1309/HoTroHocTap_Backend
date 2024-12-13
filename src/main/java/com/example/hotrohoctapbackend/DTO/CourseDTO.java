@@ -25,8 +25,9 @@ public class CourseDTO {
     private String duration;
     private String language;
     private Boolean status;
+    private String type;
 
-    public CourseDTO(Integer id, Integer id_danhmuc, String title, String imageUrl, BigDecimal price, BigDecimal cost, Long numberOfStudents, Long totalLessons, BigDecimal averageRating) {
+    public CourseDTO(Integer id, Integer id_danhmuc, String title, String imageUrl, BigDecimal price, BigDecimal cost, Long numberOfStudents, Long totalLessons, BigDecimal averageRating,String type) {
         this.id = id;
         this.id_danhmuc = id_danhmuc;
         this.title = title;
@@ -36,11 +37,25 @@ public class CourseDTO {
         this.numberOfStudents = numberOfStudents;
         this.totalLessons = totalLessons;
         this.averageRating = averageRating;
+        this.type = type;
+    }
+    public CourseDTO(Integer id, Integer id_danhmuc, String title, String imageUrl, BigDecimal price, BigDecimal cost, Long numberOfStudents, Long totalLessons, BigDecimal averageRating,String type,Boolean status) {
+        this.id = id;
+        this.id_danhmuc = id_danhmuc;
+        this.title = title;
+        this.imageUrl = imageUrl;
+        this.price = price;
+        this.cost = cost;
+        this.numberOfStudents = numberOfStudents;
+        this.totalLessons = totalLessons;
+        this.averageRating = averageRating;
+        this.type = type;
+        this.status = status;
     }
     public CourseDTO(Integer id, Integer id_danhmuc, String imageUrl, BigDecimal price, BigDecimal cost,
                      String title, Long numberOfStudents, Long totalLessons, BigDecimal averageRating,
                      String author, String course_output, Date created_at, Date updated_at, String description,
-                     String duration, String language, Boolean status) {
+                     String duration, String language, Boolean status, String type) {
         this.id = id;
         this.id_danhmuc = id_danhmuc;
         this.imageUrl = imageUrl;
@@ -58,6 +73,15 @@ public class CourseDTO {
         this.duration = duration;
         this.language = language;
         this.status = status;
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getAuthor() {

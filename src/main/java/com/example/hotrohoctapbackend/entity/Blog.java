@@ -7,18 +7,24 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "blogs")
-
 public class Blog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
 
-    @Column(name = "title")
+    @Column(name = "title", columnDefinition = "LONGTEXT")
     private String title;
 
-    @Column(name = "content")
+    @Column(name = "content",columnDefinition = "LONGTEXT")
     private String content;
+
+    @Column(name = "status")
+    private Boolean status;
+
+    @Column(name = "image", columnDefinition = "LONGTEXT")
+    private String image;
+
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -33,4 +39,18 @@ public class Blog {
     @ManyToOne
     @JoinColumn(name = "author_id")
     private Account author;
+
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
+
+    @PrePersist
+    protected void onCreate() {
+        if (deletedDate == null) {
+            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
+        }
+    }
+
 }

@@ -1,7 +1,9 @@
 package com.example.hotrohoctapbackend.controller;
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminPaymentDetailDTO;
 import com.example.hotrohoctapbackend.DTO.PaymentDetailDTO;
 import com.example.hotrohoctapbackend.DTO.PaymentResponseDTO;
+import com.example.hotrohoctapbackend.DTO.User.CourseDetailDTO_User;
 import com.example.hotrohoctapbackend.entity.PaymentDetail;
 import com.example.hotrohoctapbackend.service.PaymentDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,4 +61,11 @@ public class PaymentDetailController {
             return new ResponseEntity<>(listdto, HttpStatus.OK);
         }
     }
+
+    @GetMapping("/admin/{paymentId}")
+    public List<AdminPaymentDetailDTO> getCoursePaymentDetailsByPaymentId(@PathVariable Integer paymentId) {
+        return paymentDetailService.getCoursePaymentDetailsByPaymentId(paymentId);
+    }
+
+
 }

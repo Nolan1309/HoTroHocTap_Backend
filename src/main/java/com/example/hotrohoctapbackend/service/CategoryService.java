@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CategoryService {
@@ -71,5 +72,45 @@ public class CategoryService {
         return courseSummaries;
     }
 
+    // Hàm cập nhật Category dựa vào CategoryDTO
+    public Category updateCategory(int id, CategoryDTO categoryDTO) {
+        Optional<Category> existingCategory = categoryRepository.findById(id);
+        if (existingCategory.isPresent()) {
+            Category category = existingCategory.get();
+            category.setName(categoryDTO.getName());
+            category.setLevel(categoryDTO.getLevel());
 
+            // Tìm Category cha dựa trên parentId từ CategoryDTO
+            if (categoryDTO.getParentId() != null) {
+                Category parentCategory = categoryRepository.findById(categoryDTO.getParentId().intValue())
+                        .orElseThrow(() -> new RuntimeException("Parent Category not found with id " + categoryDTO.getParentId()));
+                category.setCategory(parentCategory); // Đặt Category cha
+            } else {
+                category.setCategory(null); // Nếu parentId là null, đặt Category cha là null
+            }
+
+            return categoryRepository.save(category);
+        } else {
+            throw new RuntimeException("Category not found with id " + id);
+        }
+    }
+    // Hàm thêm mới Category dựa vào CategoryDTO
+    public Category insertCategory(CategoryDTO categoryDTO) {
+        // Tạo một đối tượng Category mới từ dữ liệu trong CategoryDTO
+        Category category = new Category();
+        category.setName(categoryDTO.getName());
+        category.setLevel(categoryDTO.getLevel());
+
+        // Tìm Category cha dựa trên parentId từ CategoryDTO, nếu có
+        if (categoryDTO.getParentId() != null) {
+            Category parentCategory = categoryRepository.findById(categoryDTO.getParentId().intValue())
+                    .orElseThrow(() -> new RuntimeException("Parent Category not found with id " + categoryDTO.getParentId()));
+            category.setCategory(parentCategory); // Đặt Category cha
+        } else {
+            category.setCategory(null); // Nếu parentId là null, đặt Category cha là null
+        }
+
+        // Lưu Category mới vào cơ sở dữ liệu và trả về kết quả
+        return categoryRepository.save(category);
+    }
 }

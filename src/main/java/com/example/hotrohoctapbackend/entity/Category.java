@@ -26,25 +26,16 @@ public class Category {
     @Column(name = "level")
     private int level;
 
-//    @OneToMany(mappedBy = "category",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Course> courseList;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
 
-//    @OneToMany(mappedBy = "category", fetch = FetchType.EAGER, cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Category> subCategories;
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
 
-//    @OneToMany(mappedBy = "category",
-//            fetch = FetchType.EAGER
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<GeneralDocument> generalDocumentList;
+    @PrePersist
+    protected void onCreate() {
+        if (deletedDate == null) {
+            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
+        }
+    }
 }

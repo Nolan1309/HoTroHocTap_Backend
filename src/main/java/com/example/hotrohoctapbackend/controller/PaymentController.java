@@ -1,22 +1,36 @@
 package com.example.hotrohoctapbackend.controller;
 
 
+import com.example.hotrohoctapbackend.DTO.Admin.AdminPaymentDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.DashboardReportDto;
 import com.example.hotrohoctapbackend.DTO.PaymentResponseDTO;
+import com.example.hotrohoctapbackend.DTO.User.CourseDetailDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.PaymentDetailDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.PaymentSummaryDTO_User;
 import com.example.hotrohoctapbackend.entity.Payment;
+import com.example.hotrohoctapbackend.service.PaymentDetailService;
 import com.example.hotrohoctapbackend.service.PaymentsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
 
     @Autowired
     private PaymentsService paymentService;
+
+    @Autowired
+    private PaymentDetailService paymentDetailService;
 
     @PostMapping("/add")
     public ResponseEntity<PaymentResponseDTO> createPayment(@RequestBody PaymentResponseDTO payment) {
@@ -42,5 +56,40 @@ public class PaymentController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Trả về mã 404 Not Found
         }
     }
+    @GetMapping("/summary")
+    public ResponseEntity<Page<PaymentSummaryDTO_User>> getPaymentSummariesUser(
+            @RequestParam Long accountId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<PaymentSummaryDTO_User> summaries = paymentService.getPaymentSummariesByAccountId(accountId, page, size);
+        return ResponseEntity.ok(summaries);
+    }
 
+    @GetMapping("/{paymentId}/details")
+    public ResponseEntity<List<PaymentDetailDTO_User>> getPaymentDetails(@PathVariable Integer paymentId) {
+        List<PaymentDetailDTO_User> paymentDetails = paymentService.getPaymentDetailsById_User(paymentId);
+        return ResponseEntity.ok(paymentDetails);
+    }
+    @GetMapping("/all")
+    public Page<AdminPaymentDTO> getPaymentsAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return paymentService.getPaymentAdmin(pageable);
+    }
+    @GetMapping("/course-detail/{paymentId}")
+    public ResponseEntity<List<CourseDetailDTO_User>> getCourseDetails(@PathVariable Integer paymentId) {
+        List<CourseDetailDTO_User> courseDetails = paymentDetailService.getCourseDetailsByPaymentId(paymentId);
+        return ResponseEntity.ok(courseDetails);
+    }
+
+    @GetMapping("/dashboard")
+    public DashboardReportDto getDashboardReport() {
+        return paymentService.getDashboardReport();
+    }
+    @GetMapping("/monthly-sales")
+    public List<Object[]> getMonthlySalesData(@RequestParam int year) {
+        return paymentService.getMonthlySalesData(year);
+    }
 }

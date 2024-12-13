@@ -24,11 +24,16 @@ public class CourseCategory {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-//    @OneToMany(mappedBy = "courseCategory",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<Course> courseList;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
+
+    @PrePersist
+    protected void onCreate() {
+        if (deletedDate == null) {
+            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
+        }
+    }
 }

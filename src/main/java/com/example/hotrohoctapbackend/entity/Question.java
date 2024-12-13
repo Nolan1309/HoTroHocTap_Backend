@@ -14,10 +14,6 @@ public class Question {
     @Column(name = "id")
     private int id;
 
-//    @ManyToOne
-//    @JoinColumn(name = "test_id", nullable = false)
-//    private Test test;
-
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
@@ -47,14 +43,19 @@ public class Question {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @OneToMany(mappedBy = "question")
-    private List<Test_Question> testQuestions;
+    @Column(name = "result_check")
+    private String result_check;
 
-//    @OneToMany(mappedBy = "question",
-//            fetch = FetchType.LAZY
-//            , cascade = {
-//            CascadeType.DETACH, CascadeType.MERGE,
-//            CascadeType.PERSIST, CascadeType.REFRESH
-//    })
-//    private List<TestUserAnswer> testUserAnswerList;
+    @Column(name = "deletedDate")
+    private LocalDateTime deletedDate;
+
+    @Column(name = "isDeleted")
+    private boolean isDeleted = false; // Đặt mặc định là false
+
+    @PrePersist
+    protected void onCreate() {
+        if (deletedDate == null) {
+            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
+        }
+    }
 }
