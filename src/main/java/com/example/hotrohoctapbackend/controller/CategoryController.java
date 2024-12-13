@@ -14,32 +14,34 @@ import java.util.List;
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/categories-all")
     public List<CategoryDTO> getAllCategory(){
         return categoryService.getAllCategory();
     }
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/categories")
     public List<CategoryDTO> getCategoriesByLevel(@RequestParam int level) {
         return categoryService.getCategoriesByLevel(level);
     }
 
     // Optional: Endpoints for other levels
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/categories/level1")
     public List<CategoryDTO> getLevel1Categories() {
         return categoryService.getCategoriesByLevel(1);
     }
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/categories/level2")
     public List<CategoryDTO> getLevel2Categories() {
         return categoryService.getCategoriesByLevel(2);
     }
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/categories/level3")
     public List<CategoryDTO> getLevel3Categories() {
         return categoryService.getCategoriesByLevel(3);
     }
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/categories/level")
     public List<Category> getCategories(@RequestParam int level, @RequestParam long parentId) {
         return categoryService.getCategoriesByLevelAndParentId(level, parentId);
@@ -53,19 +55,22 @@ public class CategoryController {
     }
 
     // API để lấy tất cả các danh mục con của một danh mục cha
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/categories/parent/{parentId}")
     public List<Category> getSubCategories(@PathVariable int parentId) {
         return categoryService.getSubCategories(parentId);
     }
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/categories_parent_id")
     public List<Category> getCategoriesByParentId(@RequestParam int id_category) {
         return categoryService.getCategoriesByParentId(id_category);
     }
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/name-by-id")
     public List<Category> getCategoryById(@RequestParam int id_category) {
         return categoryService.findCategoryNameByIdCategory(id_category);
     }
+    @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/update-branch/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable int id, @RequestBody CategoryDTO categoryDTO) {
         try {
@@ -76,6 +81,7 @@ public class CategoryController {
             return ResponseEntity.notFound().build();
         }
     }
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/add-branch")
     public ResponseEntity<Category> insertCategory(@RequestBody CategoryDTO categoryDTO) {
         try {
