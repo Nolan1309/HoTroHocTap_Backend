@@ -11,11 +11,15 @@ import com.example.hotrohoctapbackend.dao.TestRepository;
 import com.example.hotrohoctapbackend.entity.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -143,17 +147,32 @@ public class TestService {
         // Lưu lại
         return testRepository.save(test);
     }
+
     @Transactional
     public Test updateTestToLesson(int id, AdminUpdateTestToLesson updateDTO) {
         // Lấy Test từ database
+        List<Test> testList = testRepository.findTestsByLessonId(updateDTO.getLessonId());
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
+        if(testList.size() > 1){
+            for(Test test2 : testList){
+                if(test.getId() == test2.getId()){
+                    Lesson lesson = lessonRepository.findById(updateDTO.getLessonId())
+                            .orElseThrow(() -> new RuntimeException("Chapter not found"));
+                    test.setLesson(lesson);
 
-        if (updateDTO.getLessonId() != null) {
+                }else {
+                    test2.setLesson(null);
+                }
+            }
+        }else{
             Lesson lesson = lessonRepository.findById(updateDTO.getLessonId())
                     .orElseThrow(() -> new RuntimeException("Chapter not found"));
             test.setLesson(lesson);
+            for(Test test2 : testList){
+                test2.setLesson(null);
+                testRepository.save(test2);
+            }
         }
-
         // Lưu lại
         return testRepository.save(test);
     }
@@ -184,17 +203,31 @@ public class TestService {
         return testRepository.saveAndFlush(test);
     }
 
-    public List<AdminTestGetDTO> getAllTestSummariesAdmin() {
-        return testRepository.findAllTestSummaries().stream()
-                .map(result -> new AdminTestGetDTO(
-                        (Integer) result[0],                // id
-                        (String) result[1],                 // title
-                        (Integer) result[2],                // totalQuestion
-                        (Date) result[3],                    // createdAt
-                        (Boolean) result[4]                // createdAt
-                ))
-                .collect(Collectors.toList());
-    }
+//    public List<AdminTestGetDTO> getAllTestSummariesAdmin() {
+//        return testRepository.findAllTestSummaries().stream()
+//                .map(result -> new AdminTestGetDTO(
+//                        (Integer) result[0],                // id
+//                        (String) result[1],                 // title
+//                        (Integer) result[2],                // totalQuestion
+//                        (Date) result[3],                    // createdAt
+//                        (Boolean) result[4]                // createdAt
+//                ))
+//                .collect(Collectors.toList());
+//    }
+public Page<AdminTestGetDTO> getAllTestSummariesAdmin(int page, int size) {
+    Pageable pageable = PageRequest.of(page, size); // Tạo Pageable từ page và size
+    Page<Object[]> testSummaries = testRepository.findAllTestSummaries(pageable); // Lấy dữ liệu phân trang
+
+    // Chuyển kết quả từ Page<Object[]> thành Page<AdminTestGetDTO>
+    return testSummaries.map(result -> new AdminTestGetDTO(
+            (Integer) result[0],                // id
+            (String) result[1],                 // title
+            (Integer) result[2],                // totalQuestion
+            (Date) result[3],                   // createdAt
+            (Boolean) result[4]                 // isDeleted
+    ));
+}
+
 
 
     public Test deleteTestAdmin(int testID) {
@@ -227,5 +260,16 @@ public class TestService {
         } else {
             throw new RuntimeException("Account not found with id: " + testID);
         }
+    }
+
+    public List<AdminTestGetDTO> getAllTestSummariesAdminList() {
+        List<Object[]> testSummaries = testRepository.findAllTestSummariesList(); // Lấy dữ liệu phân trang
+        // You can add a constructor if needed
+        List<AdminTestGetDTO> adminTestGetDTOList = new ArrayList<>();
+        for (Object[] item : testSummaries) {
+            AdminTestGetDTO it2 = new AdminTestGetDTO((Integer) item[0], (String) item[1], (Integer) item[2], (Date) item[3], (Boolean) item[4]);
+            adminTestGetDTOList.add(it2);
+        }
+        return adminTestGetDTOList;
     }
 }

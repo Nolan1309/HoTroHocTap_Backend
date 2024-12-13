@@ -87,7 +87,7 @@ public class GeneralDocumentsService {
         return listDocument;
     }
 
-    @Cacheable(value = "search", key = "'documentsData_100'")
+//    @Cacheable(value = "search", key = "'documentsData_100'")
     public List<Object[]> getDocumentsData_100() {
         return generalDocumentRepository.findTop100Documents();
     }

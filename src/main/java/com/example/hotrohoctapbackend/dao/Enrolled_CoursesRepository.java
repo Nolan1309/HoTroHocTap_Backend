@@ -33,4 +33,18 @@ public interface Enrolled_CoursesRepository extends JpaRepository<Enrolled_Cours
             "WHERE (ec.status = 'Actived' OR ec.status = 'Studying') and a.is_deleted = 0 ",
             nativeQuery = true)
     List<Object[]> findActiveEnrolledUsers();
+    @Query(value = "SELECT a.id AS account_id, a.email, a.phone, a.gender " +
+            "FROM account a " +
+            "JOIN enrolled_courses ec ON a.id = ec.account_id " +
+            "JOIN courses c ON ec.course_id = c.id " +
+            "WHERE c.id = :courseId AND ec.status = 'Studying'",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM account a " +
+                    "JOIN enrolled_courses ec ON a.id = ec.account_id " +
+                    "JOIN courses c ON ec.course_id = c.id " +
+                    "WHERE c.id = :courseId AND ec.status = 'Studying'",
+            nativeQuery = true)
+    Page<Object[]> findAccountsByCourseIdAndStatus(@Param("courseId") int courseId, Pageable pageable);
+
+    Optional<Enrolled_Courses> findByAccount_IdAndCourse_Id(Integer accountId, Integer courseId);
 }

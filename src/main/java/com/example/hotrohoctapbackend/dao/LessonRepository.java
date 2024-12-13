@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.List;
+import java.util.Optional;
 
 @RepositoryRestResource(path = "lessons")
 public interface LessonRepository extends JpaRepository<Lesson,Integer> {
@@ -57,5 +58,19 @@ public interface LessonRepository extends JpaRepository<Lesson,Integer> {
             nativeQuery = true)
     Page<Object[]> findLessonCourseChapterData(Pageable pageable);
 
+    @Query(value = "SELECT " +
+            "l.id AS lesson_id, " +
+            "l.lesson_title AS lesson_title, " +
+            "c.courses_title AS course_name, " +
+            "ch.chapter_title AS chapter_name, " +
+            "l.is_deleted AS deleted " +
+            "FROM lessons l " +
+            "LEFT JOIN courses c ON l.course_id = c.id " +
+            "LEFT JOIN chapters ch ON l.chapter_id = ch.id",
+            nativeQuery = true)
+    List<Object[]> findLessonCourseChapterDataList();
 
+
+    @Query(value = "SELECT l.id FROM lessons l WHERE l.chapter_id = :chapterId AND l.is_deleted = false ORDER BY l.id ASC LIMIT 1", nativeQuery = true)
+    Optional<Integer> findFirstLessonIdByChapterId(@Param("chapterId") Integer chapterId);
 }

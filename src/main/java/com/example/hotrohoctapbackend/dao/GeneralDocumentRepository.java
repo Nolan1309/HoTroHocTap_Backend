@@ -210,7 +210,7 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "    g.id = :id;\n", nativeQuery = true)
     List<Object[]> findDocumentDetailsById(@Param("id") int id);
     // Native query để tìm kiếm theo title và category với phân trang
-    @Query(value = "SELECT gd.*, c.name AS category_name " +
+    @Query(value = "SELECT gd.id,gd.created_at, gd.description, gd.image, gd.title, gd.updated_at,gd.url, gd.view, gd.id_category , c.name AS category_name " +
             "FROM general_documents gd " +
             "LEFT JOIN categories c ON gd.id_category = c.id_category " +
             "WHERE gd.title LIKE %:keyword% " +

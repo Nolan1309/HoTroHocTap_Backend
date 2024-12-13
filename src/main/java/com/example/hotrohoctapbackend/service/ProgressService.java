@@ -311,4 +311,28 @@ public class ProgressService {
                 .map(progress -> progress.getTestScore() != null && progress.getTestScore() > 6)
                 .orElse(false);
     }
+    public Progress addProgress(Progress progress) {
+        return progressRepository.save(progress);
+    }
+    public Progress createProgress(int accountId, int courseId, int chapterId, int lessonId) {
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> new RuntimeException("Account not found"));
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new RuntimeException("Course not found"));
+        Chapter chapter = chapterRepository.findById(chapterId).orElseThrow(() -> new RuntimeException("Chapter not found"));
+        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new RuntimeException("Lesson not found"));
+
+        // Tạo một tiến trình mới
+        Progress progress = new Progress();
+        progress.setAccount(account);
+        progress.setCourse(course);
+        progress.setChapter(chapter);
+        progress.setLesson(lesson);
+        progress.setVideoCompleted(true);  // Mặc định chưa hoàn thành video
+        progress.setTestCompleted(true);   // Mặc định chưa hoàn thành bài kiểm tra
+        progress.setChapterTested(false);   // Mặc định chưa kiểm tra chương
+        progress.setCompletedAt(LocalDateTime.now());      // Chưa hoàn thành
+        progress.setTestScore(null);        // Chưa có điểm
+
+        // Lưu tiến trình vào cơ sở dữ liệu
+        return progressRepository.save(progress);
+    }
 }

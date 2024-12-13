@@ -2,6 +2,7 @@ package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestUpdateDTO;
+import com.example.hotrohoctapbackend.DTO.Admin.AdminUpdateTestToLesson;
 import com.example.hotrohoctapbackend.DTO.User.QuestionDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.TestDTO_User;
 import com.example.hotrohoctapbackend.dao.ChapterRepository;
@@ -12,6 +13,7 @@ import com.example.hotrohoctapbackend.entity.*;
 import com.example.hotrohoctapbackend.service.QuestionService;
 import com.example.hotrohoctapbackend.service.RedisTestService;
 import com.example.hotrohoctapbackend.service.TestService;
+import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,6 +64,11 @@ public class TestController {
         }
     }
 
+    @GetMapping("/getall-list")
+    public List<AdminTestGetDTO> getAllTestSummariesAdmin(){
+        return testService.getAllTestSummariesAdminList();
+    }
+
     @GetMapping("/{testId}/questions")
     public ResponseEntity<List<QuestionDTO_User>> getQuestionsByTestId(@PathVariable int testId) {
         List<QuestionDTO_User> questions = questionService.getQuestionsByTestId(testId);
@@ -80,11 +87,16 @@ public class TestController {
         return ResponseEntity.ok(responseDTO);
     }
 
+//    @GetMapping("/getall")
+//    public List<AdminTestGetDTO> getTestSummaries() {
+//        return testService.getAllTestSummariesAdmin();
+//    }
     @GetMapping("/getall")
-    public List<AdminTestGetDTO> getTestSummaries() {
-        return testService.getAllTestSummariesAdmin();
-    }
-
+    public Page<AdminTestGetDTO> getAllTestSummariesAdmin(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+    return testService.getAllTestSummariesAdmin(page, size);
+}
     @PostMapping("/add")
     public ResponseEntity<Test> addTest(@RequestBody AdminTestUpdateDTO newTestDTO) {
         try {
@@ -154,6 +166,18 @@ public class TestController {
             return ResponseEntity.ok().body("Account with ID " + id + " marked as deleted.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found with ID: " + id);
+        }
+    }
+    @PutMapping("/update-to-lesson/{id}")
+    public ResponseEntity<Test> updateTestToLesson(@PathVariable("id") int id,
+                                                   @RequestBody AdminUpdateTestToLesson updateDTO) {
+        try {
+            // Gọi service để cập nhật Test
+            Test updatedTest = testService.updateTestToLesson(id, updateDTO);
+            return ResponseEntity.ok(updatedTest);  // Trả về Test đã được cập nhật
+        } catch (RuntimeException e) {
+            // Trường hợp không tìm thấy Test hoặc Lesson
+            return ResponseEntity.status(404).body(null);  // Trả về mã lỗi 404 nếu không tìm thấy
         }
     }
 

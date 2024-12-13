@@ -94,6 +94,14 @@ public class CourseController {
 
         return courseService.getCoursesByAccountId(accountId, page, size);
     }
+    @GetMapping("/accountADMIN/enrolled/{accountId}")
+    public Page<CourseDTO_User_Profile> getEnrolledCoursesADMIN(
+            @PathVariable("accountId") Integer accountId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+
+        return courseService.getCoursesByAccountId(accountId, page, size);
+    }
 
     //Section vao hoc
     @GetMapping("/take-course/{courseId}")
@@ -167,5 +175,29 @@ public class CourseController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return courseService.getCoursesWithDiscounts(page, size);
+    }
+    @PutMapping("/status/{id}")
+    public ResponseEntity<?> statusAccountAdmin(@PathVariable int id) {
+        try {
+            Course deletedCourse = courseService.statusCourseAdmin(id);
+            return ResponseEntity.ok().body("Course with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
+        }
+    }
+
+    @PutMapping("/unstatus/{id}")
+    public ResponseEntity<?> unstatusCourseAdmin(@PathVariable int id) {
+        try {
+            Course deletedCourse = courseService.unstatusCourseAdmin(id);
+            return ResponseEntity.ok().body("Course with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
+        }
+    }
+    @GetMapping("/{courseId}/first-chapter-lesson")
+    public ResponseEntity<Map<String, Integer>> getFirstChapterAndLesson(@PathVariable Integer courseId) {
+        Map<String, Integer> result = courseService.getFirstChapterAndLesson(courseId);
+        return ResponseEntity.ok(result);
     }
 }

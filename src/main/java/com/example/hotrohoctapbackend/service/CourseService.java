@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -472,5 +473,45 @@ public class CourseService {
 
         return result;
     }
+    public Course statusCourseAdmin(int courseId) {
+        Optional<Course> accountOpt = courseRepository.findById(courseId);
 
+        if (accountOpt.isPresent()) {
+            Course account = accountOpt.get();
+            account.setStatus(true);
+            return courseRepository.save(account);
+        } else {
+            throw new RuntimeException("Course not found with id: " + courseId);
+        }
+    }
+
+    public Course unstatusCourseAdmin(int courseId) {
+        Optional<Course> lessonOpt = courseRepository.findById(courseId);
+
+        if (lessonOpt.isPresent()) {
+            Course lesson = lessonOpt.get();
+            lesson.setStatus(false);
+            return courseRepository.save(lesson);
+        } else {
+            throw new RuntimeException("Course not found with id: " + courseId);
+        }
+    }
+    public Map<String, Integer> getFirstChapterAndLesson(Integer courseId) {
+        // Lấy chapter đầu tiên
+        Optional<Integer> chapterId = chapterRepository.findFirstChapterIdByCourseId(courseId);
+        if (chapterId.isPresent()) {
+            // Lấy lesson đầu tiên của chương đó
+            Optional<Integer> lessonId = lessonRepository.findFirstLessonIdByChapterId(chapterId.get());
+            if (lessonId.isPresent()) {
+                Map<String, Integer> result = new HashMap<>();
+                result.put("chapterId", chapterId.get());
+                result.put("lessonId", lessonId.get());
+                return result;
+            } else {
+                throw new ResourceNotFoundException("No lessons found for the first chapter.");
+            }
+        } else {
+            throw new ResourceNotFoundException("No chapters found for the course.");
+        }
+    }
 }

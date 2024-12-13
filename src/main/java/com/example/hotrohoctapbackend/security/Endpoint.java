@@ -195,13 +195,22 @@ public class Endpoint {
             "/api/notifications/getall",
             "/api/courses/courses/discounts",
             "/api/courses/courses/ofaccount",
+            "/api/tests/getall-list",
             "/api/blogs/admingetall",
             "/api/blogs/admin/detail/**",
 
             "/api/account/admin/profile/**",
             "/api/settings",
             "/api/settings/**",
-            "/api/settings/type/**"
+            "/api/settings/type/**" ,
+
+            "/api/test-results/average-scoreADMIN",
+            "/api/test-results/pass-rateADMIN",
+            "/api/test-results/result/detailADMIN",
+            "/api/test-results/result-countADMIN",
+            "/api/progress/calculateADMIN",
+            "/api/enrolled-course/accounts/courses/**",
+            "/api/courses/accountADMIN/enrolled/",
 
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
@@ -476,6 +485,8 @@ public class Endpoint {
             "/api/settings/**",
             "/api/settings/*/activate/*",
             "/api/chapters/edit/**",
+            "/api/courses/status/**",
+            "/api/courses/unstatus/**",
     };
 
 
@@ -507,7 +518,9 @@ public class Endpoint {
             "/api/test-results/result-count",
             "/ws/info",
             "/ws",
-            "/api/notifications/user/**"
+            "/api/notifications/user/**",
+            "/api/enrolled-course/status",
+            "/api/courses/*/first-chapter-lesson"
     };
 
     public static final String[] USER_POST_ENDPOINT = {
@@ -522,7 +535,8 @@ public class Endpoint {
             "/api/comments/submit",
             "/api/document-account/download",
             "/api/progress/check-pass",
-            "/api/reviews/course"
+            "/api/reviews/course",
+//            "/api/enrolled-course/update-status"
 
     };
 

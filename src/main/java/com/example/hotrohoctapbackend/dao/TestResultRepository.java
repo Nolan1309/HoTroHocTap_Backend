@@ -13,7 +13,7 @@ import java.util.List;
 @RepositoryRestResource(path = "testresults")
 public interface TestResultRepository extends JpaRepository<TestResult,Integer> {
     @Query(value = """
-        SELECT r.*, t.title 
+        SELECT r.test_result_id,r.completed_at,r.correct_answers, r.incorrect_answers, r.result, r.score,  r.total_questions, r.account_id, r.test_id, r.course_id,   r.deleted_date, r.is_deleted ,r.is_chapter_test, t.title 
         FROM test_results r 
         INNER JOIN tests t ON t.id = r.test_id 
         WHERE r.is_deleted = false 

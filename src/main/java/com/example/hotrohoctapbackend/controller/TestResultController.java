@@ -91,4 +91,37 @@ public class TestResultController {
         List<Object[]> results = testResultService.countResultsGroupedByResultUser(accountId, courseId);
         return ResponseEntity.ok(results);
     }
+
+    //ADMIN
+    @GetMapping("/average-scoreADMIN")
+    public ResponseEntity<Double> getAverageScoreAdmin(
+            @RequestParam Long accountId,
+            @RequestParam Long courseId) {
+        Double averageScore = testResultService.getAverageScoreUser(accountId, courseId);
+        return ResponseEntity.ok(averageScore);
+    }
+
+    @GetMapping("/pass-rateADMIN")
+    public ResponseEntity<Double> getPassRateADMIN(
+            @RequestParam Long accountId,
+            @RequestParam Long courseId) {
+        Double passRate = testResultService.getPassRateUser(accountId, courseId);
+        return ResponseEntity.ok(passRate);
+    }
+
+    @GetMapping("/result/detailADMIN")
+    public ResponseEntity<List<Object>> getTestResultsADMIN(
+            @RequestParam Long accountId,
+            @RequestParam Long courseId) {
+        List<Object> results = testResultService.getTestResultsUser(accountId, courseId);
+        return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/result-countADMIN")
+    public ResponseEntity<List<Object[]>> countResultsGroupedByResultADMIN(
+            @RequestParam Long accountId,
+            @RequestParam Long courseId) {
+        List<Object[]> results = testResultService.countResultsGroupedByResultUser(accountId, courseId);
+        return ResponseEntity.ok(results);
+    }
 }
