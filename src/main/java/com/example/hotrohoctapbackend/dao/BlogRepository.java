@@ -16,23 +16,24 @@ import java.util.Optional;
 public interface BlogRepository extends JpaRepository<Blog,Integer> {
 
     @Query(value = "SELECT \n" +
-            "    c.id, \n" +
-            "    c.content, \n" +
-            "    c.created_at, \n" +
-            "    c.title, \n" +
-            "    c.updated_at, \n" +
-            "    c.author_id, \n" +
-            "    c.cat_blog_id, \n" +
-            "    c.status, \n" +
-            "    c.image, \n" +
-            "    ac.fullname AS author_name, \n" +
-            "    bc.name AS category_name\n" +
-            "FROM \n" +
-            "    blogs c \n" +
-            "INNER JOIN \n" +
-            "    account ac ON c.author_id = ac.id \n" +
-            "INNER JOIN \n" +
-            "    blog_categories bc ON c.cat_blog_id = bc.id;\n", nativeQuery = true)
+            "                c.id, \n" +
+            "               c.content, \n" +
+            "               c.created_at, \n" +
+            "               c.title, \n" +
+            "                c.updated_at, \n" +
+            "                c.author_id, \n" +
+            "               c.cat_blog_id, \n" +
+            "                c.status, \n" +
+            "                c.image, \n" +
+            "                ac.fullname AS author_name, \n" +
+            "                bc.name AS category_name\n" +
+            "            FROM \n" +
+            "               blogs c \n" +
+            "            INNER JOIN \n" +
+            "               account ac ON c.author_id = ac.id \n" +
+            "            INNER JOIN \n" +
+            "               blog_categories bc ON c.cat_blog_id = bc.id\n" +
+            "               where c.status = 1 and c.is_deleted = 0", nativeQuery = true)
     Page<Object[]> findAllBlogs(Pageable pageable);
 
 
@@ -46,18 +47,18 @@ public interface BlogRepository extends JpaRepository<Blog,Integer> {
     List<Object[]> getBlog(@Param("id") Integer id);
 
 
-    @Query(value = "SELECT c.id, c.content, c.created_at, c.title, c.updated_at, c.author_id, c.cat_blog_id, " +
-            "c.status, c.image, ac.fullname AS author_name, bc.name AS category_name " +
-            "FROM blogs c " +
-            "INNER JOIN account ac ON c.author_id = ac.id " +
-            "INNER JOIN blog_categories bc ON c.cat_blog_id = bc.id " +
-            "WHERE c.cat_blog_id = :categoryId",
+    @Query(value = "SELECT c.id, c.content, c.created_at, c.title, c.updated_at, c.author_id, c.cat_blog_id,\n" +
+            "            c.status, c.image, ac.fullname AS author_name, bc.name AS category_name \n" +
+            "            FROM blogs c \n" +
+            "            INNER JOIN account ac ON c.author_id = ac.id \n" +
+            "            INNER JOIN blog_categories bc ON c.cat_blog_id = bc.id \n" +
+            "            WHERE c.cat_blog_id = :categoryId and c.status = 1 and c.is_deleted = 0",
             countQuery = "SELECT COUNT(c.id) FROM blogs c WHERE c.cat_blog_id = :categoryId", // Để đếm tổng số lượng blog
             nativeQuery = true)
     Page<Object[]> findByCategoryIdWithPagination(@Param("categoryId") Integer categoryId, Pageable pageable);
 
 
-    List<Blog> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    List<Blog> findAllByStatusAndIsDeletedOrderByCreatedAtDesc(boolean status, boolean isDeleted, Pageable pageable);
 
     @Query(value = "SELECT b.id AS id, " +
             "b.title AS title,"+

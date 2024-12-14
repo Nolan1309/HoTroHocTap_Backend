@@ -222,7 +222,9 @@ public class Endpoint {
             "/api/courses/report-admin",
             "/api/courses/courses/*/check-completion",
             "/api/courses/courses/status",
-            "/api/courses/courses/*/category"
+            "/api/courses/courses/*/category",
+            "/api/videos/list/**",
+            "/api/videos/viewtest"
 
     };
     public static final String[] ADMIN_POST_ENDPOINS = {

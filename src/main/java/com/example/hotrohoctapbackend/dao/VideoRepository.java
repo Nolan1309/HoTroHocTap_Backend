@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.List;
+
 @RepositoryRestResource(path = "videos")
 public interface VideoRepository extends JpaRepository<Video,Integer> {
     @Query(value = "SELECT * FROM videos WHERE lesson_id = :lessonId", nativeQuery = true)
@@ -22,4 +24,11 @@ public interface VideoRepository extends JpaRepository<Video,Integer> {
         LIMIT 1
     """, nativeQuery = true)
     Video findFirstVideoByCourseId(@Param("courseId") int courseId);
+
+    @Query(value = "SELECT v.id, v.created_at, v.deleted_date, v.document_short, v.document_url, v.duration, v.is_deleted, v.video_title, v.updated_at, v.url, v.lesson_id, v.isviewtest " +
+            "FROM videos v " +
+            "INNER JOIN lessons l ON v.lesson_id = l.id " +
+            "WHERE l.course_id = :courseId AND l.is_deleted = 0", nativeQuery = true)
+    List<Video> findVideosByCourseId(@Param("courseId") Integer courseId);
+
 }

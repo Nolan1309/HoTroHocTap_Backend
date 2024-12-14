@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -92,6 +93,19 @@ public class VideoService {
             }
         } else {
             System.out.println("Video with ID " + id + " not found.");
+        }
+    }
+    public List<Video> getAllVideosByCourseId(Integer courseId) {
+        return videoRepository.findVideosByCourseId(courseId);
+    }
+    public Video updateVideoStatus(Integer videoId, Boolean isViewTest) {
+        Optional<Video> videoOpt = videoRepository.findById(videoId);
+        if (videoOpt.isPresent()) {
+            Video video = videoOpt.get();
+            video.setIsViewTest(isViewTest);  // Cập nhật trạng thái
+            return videoRepository.save(video); // Lưu thay đổi vào DB
+        } else {
+            return null; // Không tìm thấy video
         }
     }
 }
