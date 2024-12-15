@@ -35,7 +35,7 @@ public class BlogService {
     @Autowired
     private AccountRepository accountRepository;
     public List<Blog> getBlogsByNewest() {
-        return blogRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, 3));
+        return blogRepository.findAllByStatusAndIsDeletedOrderByCreatedAtDesc(true,false,PageRequest.of(0, 3));
     }
 
     public Page<BlogDTO> getAllBlogs(Pageable pageable) {

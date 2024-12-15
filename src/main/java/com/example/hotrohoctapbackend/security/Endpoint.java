@@ -204,7 +204,7 @@ public class Endpoint {
             "/api/account/admin/profile/**",
             "/api/settings",
             "/api/settings/**",
-            "/api/settings/type/**" ,
+            "/api/settings/type/**",
 
             "/api/test-results/average-scoreADMIN",
             "/api/test-results/pass-rateADMIN",
@@ -222,7 +222,10 @@ public class Endpoint {
             "/api/courses/report-admin",
             "/api/courses/courses/*/check-completion",
             "/api/courses/courses/status",
-            "/api/courses/courses/*/category"
+            "/api/courses/courses/*/category",
+            "/api/videos/list/**",
+            "/api/videos/viewtest",
+            "/api/payments/course-detail-admin/**",
 
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
@@ -318,7 +321,8 @@ public class Endpoint {
             "/api/blogs/admin/add",
             "/api/settings",
             "/api/settings/**",
-            "/api/backup/restore"
+            "/api/backup/restore",
+            "/api/blog-category"
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
             "/accounts",

@@ -135,6 +135,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
             "LEFT JOIN chapters ch ON c.id = ch.course_id " +
             "LEFT JOIN lessons l ON ch.id = l.chapter_id " +
             "LEFT JOIN course_reviews cr ON c.id = cr.course_id " +
+            "where c.is_deleted = 0 " +
             "GROUP BY c.id, c.course_category_id, c.image_url, c.price, c.cost, c.courses_title, " +
             "c.author, c.course_output, c.created_at, c.updated_at, c.description, c.duration, " +
             "c.language, c.status, c.type",
@@ -159,7 +160,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     @Query(value = "SELECT c.id, c.duration, c.image_url, c.courses_title, e.enrollment_date, c.status  " +
             "FROM enrolled_courses e " +
             "JOIN courses c ON e.course_id = c.id " +
-            "WHERE e.account_id = :accountId",
+            "WHERE e.account_id = :accountId and c.is_deleted = 0 ",
             countQuery = "SELECT COUNT(*) FROM enrolled_courses e WHERE e.account_id = :accountId",
             nativeQuery = true)
     Page<Object[]> findCoursesByAccountId(@Param("accountId") Integer accountId, Pageable pageable);

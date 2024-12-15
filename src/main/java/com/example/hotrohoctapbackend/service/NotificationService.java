@@ -70,7 +70,7 @@ public class NotificationService {
         userNotification.setRead_status(true);
         userNotificationRepository.save(userNotification);
 
-        List<Object[]> results = repository.findNotificationsByUserIdNativeAndNotificationId(userId,notificationId);
+        List<Object[]> results = repository.findNotificationsByUserIdNativeAndNotificationId(userId, notificationId);
 
         List<UserNotificationDTO_User> notifications = new ArrayList<>();
 
@@ -130,7 +130,10 @@ public class NotificationService {
                         (Boolean) record[1], // isDeleted
                         (String) record[2],  // message
                         (String) record[3],  // title
-                        (String) record[4]   // topic
+                        (String) record[4],   // topic
+                        ((java.sql.Timestamp) record[5]).toLocalDateTime(),
+                        ((java.sql.Timestamp) record[6]).toLocalDateTime(),
+                        ((java.sql.Timestamp) record[7]).toLocalDateTime()
                 )
         ).collect(Collectors.toList());
 

@@ -32,4 +32,16 @@ public class BlogCategoryService {
                         ((Long) row[5]).intValue())) // Convert Long to int for blog count
                 .collect(Collectors.toList());
     }
+    public BlogCategory addBlogCategory(String name, String description) {
+        if (blogCategoryRepository.existsByName(name)) {
+            throw new IllegalArgumentException("Tên danh mục đã tồn tại!");
+        }
+        BlogCategory blogCategory = new BlogCategory();
+        blogCategory.setName(name);
+        blogCategory.setDescription(description);
+        blogCategory.setCreatedAt(LocalDateTime.now());
+        blogCategory.setUpdatedAt(LocalDateTime.now());
+
+        return blogCategoryRepository.save(blogCategory);
+    }
 }

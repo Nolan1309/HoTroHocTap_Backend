@@ -39,7 +39,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
             "ORDER BY noti.created_at DESC", nativeQuery = true)
     List<Object[]> findNotificationsByUserIdNativeAndNotificationId(@Param("userId") Long userId,@Param("notificationId") Long notificationId);
 
-    @Query(value = "SELECT id, is_deleted, message, title, topic FROM notifications", nativeQuery = true)
+    @Query(value = "SELECT id, is_deleted, message,title ,topic,created_at, deleted_date, updated_at FROM notifications", nativeQuery = true)
     Page<Object[]> findCustomNotificationsWithPagination(Pageable pageable);
 //    List<Notification> findByUserIdAndIsDeleted(Long userId, boolean isDeleted);
 }

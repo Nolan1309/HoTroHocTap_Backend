@@ -23,5 +23,5 @@ public interface BlogCategoryRepository extends JpaRepository<BlogCategory,Integ
             "ORDER BY blog_count DESC",
             nativeQuery = true)
     List<Object[]> findBlogCategoriesWithBlogCount();
-
+    boolean existsByName(String name);
 }

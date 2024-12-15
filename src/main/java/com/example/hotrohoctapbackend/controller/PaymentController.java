@@ -83,6 +83,11 @@ public class PaymentController {
         List<CourseDetailDTO_User> courseDetails = paymentDetailService.getCourseDetailsByPaymentId(paymentId);
         return ResponseEntity.ok(courseDetails);
     }
+    @GetMapping("/course-detail-admin/{paymentId}")
+    public ResponseEntity<List<CourseDetailDTO_User>> getCourseDetailsAdmin(@PathVariable Integer paymentId) {
+        List<CourseDetailDTO_User> courseDetails = paymentDetailService.getCourseDetailsByPaymentId(paymentId);
+        return ResponseEntity.ok(courseDetails);
+    }
 
     @GetMapping("/dashboard")
     public DashboardReportDto getDashboardReport() {
