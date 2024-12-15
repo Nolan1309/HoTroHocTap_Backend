@@ -59,9 +59,12 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "FROM general_documents gd " +
             "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id " +
             "GROUP BY gd.id, gd.title, gd.image, gd.url, gd.view, gd.created_at",
-            countQuery = "SELECT COUNT(gd.id) FROM general_documents gd LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id",
+            countQuery = "SELECT COUNT(DISTINCT gd.id) " +
+                    "FROM general_documents gd " +
+                    "LEFT JOIN general_document_acount gda ON gd.id = gda.generaldocument_id",
             nativeQuery = true)
     Page<Object[]> findDocumentsAll(Pageable pageable);
+
 
     @Query(value = "SELECT   \n" +
             "    gd.id AS documentId, \n" +
