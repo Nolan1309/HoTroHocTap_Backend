@@ -319,7 +319,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
                                          c.courses_title AS courseName,
                                          sd.total_students AS students,
                                          rd.total_revenue AS revenue,
-                                         c.status AS status,
+                                         c.status AS status, 
                                          a.fullname AS authorName
                                      FROM courses c
                                      LEFT JOIN StudentsData sd ON c.id = sd.course_id

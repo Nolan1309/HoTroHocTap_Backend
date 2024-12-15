@@ -226,6 +226,7 @@ public class Endpoint {
             "/api/videos/list/**",
             "/api/videos/viewtest",
             "/api/payments/course-detail-admin/**",
+            "/api/report/export-revenue-report"
 
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
