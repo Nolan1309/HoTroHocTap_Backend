@@ -301,19 +301,33 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     List<Object[]> findVideosByChapterId(@Param("chapterId") Integer chapterId);
 
     @Query(value = """
-                SELECT 
-                    c.courses_title AS courseName,
-                    COUNT(ec.account_id) AS students,
-                    SUM(pd.price) AS revenue,
-                    c.status AS status,
-                    a.fullname AS authorName
-                FROM courses c
-                LEFT JOIN enrolled_courses ec ON c.id = ec.course_id
-                LEFT JOIN payments_detail pd ON c.id = pd.course_id
-                LEFT JOIN account a ON c.account_id = a.id
-                WHERE c.is_deleted = 0
-                GROUP BY c.id
-                ORDER BY revenue DESC
+                WITH RevenueData AS (
+                                         SELECT\s
+                                             pd.course_id,
+                                             SUM(pd.price) AS total_revenue
+                                         FROM payments_detail pd
+                                         GROUP BY pd.course_id
+                                     ),
+                                     StudentsData AS (
+                                         SELECT\s
+                                             ec.course_id,
+                                             COUNT(DISTINCT ec.account_id) AS total_students
+                                         FROM enrolled_courses ec
+                                         GROUP BY ec.course_id
+                                     )
+                                     SELECT\s
+                                         c.courses_title AS courseName,
+                                         sd.total_students AS students,
+                                         rd.total_revenue AS revenue,
+                                         c.status AS status,
+                                         a.fullname AS authorName
+                                     FROM courses c
+                                     LEFT JOIN StudentsData sd ON c.id = sd.course_id
+                                     LEFT JOIN RevenueData rd ON c.id = rd.course_id
+                                     INNER JOIN account a ON c.account_id = a.id
+                                     WHERE c.is_deleted = 0
+                                     ORDER BY rd.total_revenue DESC;
+                                     
             """, nativeQuery = true)
     List<Object[]> getCourseReport();
 
