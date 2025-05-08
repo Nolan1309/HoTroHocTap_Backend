@@ -4,6 +4,10 @@ import com.example.hotrohoctapbackend.DTO.AccountDTO;
 import com.example.hotrohoctapbackend.DTO.AccountDTO_Proflie;
 import com.example.hotrohoctapbackend.DTO.Admin.AddAccountDTOAdmin;
 import com.example.hotrohoctapbackend.DTO.Admin.UpdateAccountDTOAdmin;
+import com.example.hotrohoctapbackend.DTO.AdminV2.*;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Account.AccountDTOAdmin;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Account.AccountDTOAdminCreate;
+import com.example.hotrohoctapbackend.DTO.AdminV3.AuthorAdmin;
 import com.example.hotrohoctapbackend.DTO.Password.ForgotPasswordRequest;
 import com.example.hotrohoctapbackend.DTO.Password.ResetPasswordRequest;
 import com.example.hotrohoctapbackend.DTO.PasswordChangeRequest;
@@ -11,15 +15,21 @@ import com.example.hotrohoctapbackend.DTO.UpdateAccountDTO;
 import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
 import com.example.hotrohoctapbackend.dao.PasswordResetTokenRepository;
+import com.example.hotrohoctapbackend.dao.RoleUserRepository;
 import com.example.hotrohoctapbackend.dao.User_NotificationRepository;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Notification;
 import com.example.hotrohoctapbackend.entity.PasswordResetToken;
 import com.example.hotrohoctapbackend.entity.User_Notification;
+import com.example.hotrohoctapbackend.exception.ApiResponse;
 import com.example.hotrohoctapbackend.service.AccountService;
 import com.example.hotrohoctapbackend.service.NotificationService;
 import com.example.hotrohoctapbackend.service.services.EmailService;
+import com.example.hotrohoctapbackend.util.TOPIC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -30,19 +40,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
-import static com.example.hotrohoctapbackend.util.topic.DoiMatKhau;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/account")
 public class AccountController {
     @Autowired
     private AccountService accountService;
-
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
@@ -51,12 +57,14 @@ public class AccountController {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private EmailService emailService;
-
     @Autowired
     private NotificationService notificationService;
-
     @Autowired
     private User_NotificationRepository userNotificationRepository;
+
+    @Autowired
+    private RoleUserRepository roleUserRepository;
+
     @GetMapping("/{id}")
     public AccountDTO findAccountById(@PathVariable Integer id) {
         return accountService.findByAccount(id);
@@ -66,19 +74,15 @@ public class AccountController {
     public AccountDTO_Proflie findAccountProfileById(@PathVariable Integer id) {
         return accountService.findByAccountProfile(id);
     }
+
     @GetMapping("admin/profile/{id}")
     public AccountDTO_Proflie findAccountProfileByIdAdmin(@PathVariable Integer id) {
         return accountService.findByAccountProfile(id);
     }
+
     @PutMapping("/admin/update/{id}")
-    public ResponseEntity<AccountDTO_Proflie> updateAccountAdmin(
-            @PathVariable int id,
-            @RequestParam("fullname") String fullname,
-            @RequestParam("email") String email,
-            @RequestParam("phone") String phone,
-            @RequestParam("gender") String gender,
-            @RequestParam("birthday") String birthday, // Có thể cần format nếu sử dụng LocalDate
-            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+    public ResponseEntity<AccountDTO_Proflie> updateAccountAdmin(@PathVariable int id, @RequestParam("fullname") String fullname, @RequestParam("email") String email, @RequestParam("phone") String phone, @RequestParam("gender") String gender, @RequestParam("birthday") String birthday, // Có thể cần format nếu sử dụng LocalDate
+                                                                 @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
         // Xử lý ảnh (nếu có)
         String base64Image = null;
@@ -104,15 +108,23 @@ public class AccountController {
         AccountDTO_Proflie updatedAccount = accountService.updateAccountUser(id, updateAccountDTO);
         return ResponseEntity.ok(updatedAccount);
     }
+
+    @GetMapping("/list-all-search")
+    public ResponseEntity<Page<AccountDetailsDTO_V2>> getPaginatedBlogs(
+            @RequestParam(required = false) Integer roleId,
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(defaultValue = "0") int page,   // Default page is 0
+            @RequestParam(defaultValue = "10") int size    // Default page size is 10
+    ) {
+
+        Page<AccountDetailsDTO_V2> blogPage = accountService.getAllListAccountSearch(roleId, searchTerm, page, size);
+
+        return ResponseEntity.ok(blogPage);
+    }
+
     @PutMapping("/update/{id}")
-    public ResponseEntity<AccountDTO_Proflie> updateAccount(
-            @PathVariable int id,
-            @RequestParam("fullname") String fullname,
-            @RequestParam("email") String email,
-            @RequestParam("phone") String phone,
-            @RequestParam("gender") String gender,
-            @RequestParam("birthday") String birthday, // Có thể cần format nếu sử dụng LocalDate
-            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+    public ResponseEntity<AccountDTO_Proflie> updateAccount(@PathVariable int id, @RequestParam("fullname") String fullname, @RequestParam("email") String email, @RequestParam("phone") String phone, @RequestParam("gender") String gender, @RequestParam("birthday") String birthday, // Có thể cần format nếu sử dụng LocalDate
+                                                            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
         // Xử lý ảnh (nếu có)
         String base64Image = null;
@@ -143,13 +155,11 @@ public class AccountController {
     private PasswordEncoder passwordEncoder;  // Mã hóa mật khẩu
 
     @PutMapping("/change-password/{id}")
-    public ResponseEntity<String> changePassword(
-            @PathVariable int id,
-            @RequestBody PasswordChangeRequest passwordChangeRequest) {
+    public ResponseEntity<String> changePassword(@PathVariable int id, @RequestBody PasswordChangeRequest passwordChangeRequest) {
 
         Account account = accountService.findAccountByID(id);  // Lấy tài khoản theo ID
 
-        if(account.isGoogleAccount() && account.getPassword() == null){
+        if (account.isGoogleAccount() && account.getPassword() == null) {
             String encodedNewPassword = passwordEncoder.encode(passwordChangeRequest.getNewPassword());
             account.setPassword(encodedNewPassword);
             accountService.updatePassword(account);
@@ -157,7 +167,7 @@ public class AccountController {
             String title = "Thông báo đổi mật khẩu";
             String getMessage = "Tài khoản " + account.getFullname() + " đổi mật khẩu thành công";
 
-            Notification notification = notificationService.createNotification(title, getMessage, DoiMatKhau);
+            Notification notification = notificationService.createNotification(title, getMessage, TOPIC.PASSWORD);
             UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
             User_Notification userNotification = new User_Notification();
             userNotification.setAccount(account);
@@ -194,8 +204,7 @@ public class AccountController {
         String title = "Thông báo đổi mật khẩu";
         String getMessage = "Tài khoản " + account.getFullname() + " đổi mật khẩu thành công";
 
-        Notification notification = notificationService.createNotification(
-                title, getMessage, DoiMatKhau);
+        Notification notification = notificationService.createNotification(title, getMessage, TOPIC.PASSWORD);
         UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
         User_Notification userNotification = new User_Notification();
         userNotification.setAccount(account);
@@ -220,9 +229,7 @@ public class AccountController {
     }
 
     @PutMapping("/change-password-admin/{id}")
-    public ResponseEntity<String> changePasswordAdmin(
-            @PathVariable int id,
-            @RequestBody PasswordChangeRequest passwordChangeRequest) {
+    public ResponseEntity<String> changePasswordAdmin(@PathVariable int id, @RequestBody PasswordChangeRequest passwordChangeRequest) {
 
         Account account = accountService.findAccountByID(id);  // Lấy tài khoản theo ID
 
@@ -244,8 +251,7 @@ public class AccountController {
         String title = "Thông báo đổi mật khẩu";
         String getMessage = "Tài khoản " + account.getFullname() + " đổi mật khẩu thành công";
 
-        Notification notification = notificationService.createNotification(
-                title, getMessage, DoiMatKhau);
+        Notification notification = notificationService.createNotification(title, getMessage, TOPIC.PASSWORD);
         UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
         User_Notification userNotification = new User_Notification();
         userNotification.setAccount(account);
@@ -270,15 +276,7 @@ public class AccountController {
     }
 
     @PutMapping("/admin/{id}")
-    public ResponseEntity<?> updateAccountAdmin(
-            @PathVariable int id,
-            @RequestParam("fullname") String fullname,
-            @RequestParam("email") String email,
-            @RequestParam("phone") String phone,
-            @RequestParam("gender") String gender,
-            @RequestParam("birthday") String birthday,
-            @RequestParam("roleId") String roleId,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+    public ResponseEntity<?> updateAccountAdmin(@PathVariable int id, @RequestParam("fullname") String fullname, @RequestParam("email") String email, @RequestParam("phone") String phone, @RequestParam("gender") String gender, @RequestParam("birthday") String birthday, @RequestParam("roleId") String roleId, @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
         // Xử lý ảnh (nếu có)
         String base64Image = null;
@@ -345,15 +343,7 @@ public class AccountController {
     }
 
     @PostMapping("/admin/add")
-    public ResponseEntity<?> addAccountAdmin(
-            @RequestParam("fullname") String fullname,
-            @RequestParam("email") String email,
-            @RequestParam("phone") String phone,
-            @RequestParam("gender") String gender,
-            @RequestParam("password") String password,
-            @RequestParam("birthday") String birthday,
-            @RequestParam("roleId") String roleId,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+    public ResponseEntity<?> addAccountAdmin(@RequestParam("fullname") String fullname, @RequestParam("email") String email, @RequestParam("phone") String phone, @RequestParam("gender") String gender, @RequestParam("password") String password, @RequestParam("birthday") String birthday, @RequestParam("roleId") String roleId, @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -432,4 +422,213 @@ public class AccountController {
 
         return ResponseEntity.ok("Password has been reset successfully");
     }
+
+    @GetMapping("/list-teacher")
+    public List<AdminAccount_V2> getAccountsByRoles() {
+        return accountService.getAccountsByRoles();
+    }
+
+    @GetMapping("/list-teacher-only")
+    public ResponseEntity<List<AccountTeacherDTO_V2>> getActiveAccountsByRole() {
+        List<AccountTeacherDTO_V2> accounts = accountService.getActiveAccountsByRole(3);
+        return ResponseEntity.ok(accounts);
+    }
+
+    @GetMapping("/restore/list-all-accounts")
+    public ResponseEntity<Page<AccountDetailsDTO_V2>> getAllListAccountRestore(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        Page<AccountDetailsDTO_V2> accountDetailsDTOV2s = accountService.getAllListAccountRestore(page, size);
+        return ResponseEntity.ok(accountDetailsDTOV2s);
+    }
+
+    @GetMapping("/students/list-all-students")
+    public Page<AccountDetailsDTO_V2> getLessons(
+            @RequestParam(required = false) Integer courseId,
+            @RequestParam(required = false) Integer roleId,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String enrollmentDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        if (fullName.equals("")) {
+            fullName = null;
+        }
+        if (enrollmentDate.equals("")) {
+            enrollmentDate = null;
+        }
+
+        return accountService.getAccountStudentByCourseId(courseId, roleId, fullName, enrollmentDate, page, size);
+    }
+
+    @GetMapping("/restore/list-all/search-accounts")
+    public ResponseEntity<Page<AccountDetailsDTO_V2>> searchAccounts(
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String deletedDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<AccountDetailsDTO_V2> result = accountService.getAllListAccountRestoreSearch(fullName, deletedDate, page, size);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/restore-no-delete/list-all-no-accounts-teacher")
+    public List<AccountDetailsDTO_V2> getNoDeletedCourses() {
+        return accountService.getAllListAccountAdminAndTeacher();
+    }
+
+    @PutMapping("/restore/{accountId}")
+    public ResponseEntity<Account> restoreAccount(@PathVariable Integer accountId) {
+        AccountDetailsDTO_V2 accountDetails = new AccountDetailsDTO_V2();
+        accountDetails.setId(accountId);
+        Account restoredAccount = accountService.updateRestoreAccount(accountDetails);
+        return ResponseEntity.ok(restoredAccount);
+    }
+
+    @DeleteMapping("/delete/{accountId}")
+    public ResponseEntity<String> deleteAccount(@PathVariable Integer accountId) {
+        AccountDetailsDTO_V2 accountDetails = new AccountDetailsDTO_V2();
+        accountDetails.setId(accountId);
+        accountService.deleteRestoreAccount(accountDetails);
+        return ResponseEntity.ok("Account permanently deleted.");
+    }
+
+    @GetMapping("/author")
+    public List<AuthorAdmin> getAuthors() {
+        return accountService.getAuthorsByRole();
+    }
+
+    @GetMapping
+    public ApiResponse<Page<AccountDTOAdmin>> getAccounts(
+            @RequestParam(value = "fullname", required = false, defaultValue = "") String fullname,
+            @RequestParam(value = "status", required = false, defaultValue = "") String status,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+
+        Account.AccountStatus accountStatus = null;
+        if (!status.isEmpty()) {
+            try {
+                accountStatus = Account.AccountStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Trả về lỗi nếu status không hợp lệ
+                return new ApiResponse<>(400, "Invalid status value provided", null);
+            }
+        }
+        Pageable pageable = PageRequest.of(page, size); // Thiết lập phân trang
+        Page<AccountDTOAdmin> accountPage = accountService.getAccounts(fullname, accountStatus, pageable);
+
+        return new ApiResponse<>(200, "Accounts fetched successfully", accountPage); // Trả về kết quả
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<AccountDTOAdmin>> createAccount(@RequestBody AccountDTOAdminCreate accountDTO) {
+        try {
+
+            boolean EmailCheck = accountService.checkEmailExists(accountDTO.getEmail());
+            if (EmailCheck) {
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Email already", null), HttpStatus.BAD_REQUEST);
+            }
+            boolean PhoneCheck = accountService.checkPhoneExists(accountDTO.getPhone());
+            if (PhoneCheck) {
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Phone already", null), HttpStatus.BAD_REQUEST);
+            }
+            // Tạo mới tài khoản từ AccountDTO
+            Account account = new Account();
+            account.setFullname(accountDTO.getFullname());
+            account.setEmail(accountDTO.getEmail());
+            account.setPhone(accountDTO.getPhone());
+
+            account.setRole(roleUserRepository.findById(accountDTO.getRoleId()).orElseThrow(() -> new IllegalArgumentException("Role not found")));
+
+            account.setStatus(Account.AccountStatus.valueOf(accountDTO.getStatus().toUpperCase()));
+            account.setImage(accountDTO.getImage());
+            account.setLastLogin(LocalDateTime.now());
+            account.setCreatedAt(LocalDateTime.now());
+            account.setUpdatedAt(LocalDateTime.now());
+
+            // Lưu tài khoản vào database
+            Account updatedAccount = accountService.createAccount(account, accountDTO.getPassword());
+
+
+            // Chuyển đổi từ Account entity sang AccountDTO
+            AccountDTOAdmin responseDTO = new AccountDTOAdmin(updatedAccount.getId(), updatedAccount.getFullname(),
+                    updatedAccount.getEmail(), updatedAccount.getPhone(), updatedAccount.getRole().getRoleName(), updatedAccount.getRole().getId(),
+                    updatedAccount.getStatus().toString(), updatedAccount.getEmail(), updatedAccount.getLastLogin(),
+                    updatedAccount.getCreatedAt(), updatedAccount.getUpdatedAt());
+
+            // Trả về response
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.CREATED.value(), "Account created successfully", responseDTO), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<AccountDTOAdmin>> updateAccount(@PathVariable Integer id, @RequestBody AccountDTOAdminCreate accountDTO) {
+        try {
+            // Tìm tài khoản theo ID
+            Account existingAccount = accountRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Account not found"));
+            if (!existingAccount.getPhone().equals(accountDTO.getPhone())) {
+                boolean PhoneCheck = accountService.checkPhoneExists(accountDTO.getPhone());
+                if (PhoneCheck) {
+                    return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Phone already", null), HttpStatus.BAD_REQUEST);
+                }
+            }
+
+
+            // Cập nhật thông tin tài khoản
+            existingAccount.setFullname(accountDTO.getFullname());
+            existingAccount.setEmail(accountDTO.getEmail());
+            existingAccount.setPhone(accountDTO.getPhone());
+            existingAccount.setRole(roleUserRepository.findById(accountDTO.getRoleId()).orElseThrow(() -> new IllegalArgumentException("Role not found")));
+            existingAccount.setStatus(Account.AccountStatus.valueOf(accountDTO.getStatus().toUpperCase()));
+            existingAccount.setImage(accountDTO.getImage());
+            existingAccount.setUpdatedAt(LocalDateTime.now());
+
+            // Lưu tài khoản cập nhật vào database
+            Account updatedAccount = accountService.updateAccount(existingAccount, accountDTO.getPassword());
+
+            // Chuyển đổi từ Account entity sang AccountDTO
+            AccountDTOAdmin responseDTO = new AccountDTOAdmin(updatedAccount.getId(), updatedAccount.getFullname(),
+                    updatedAccount.getEmail(), updatedAccount.getPhone(), updatedAccount.getRole().getRoleName(), updatedAccount.getRole().getId(),
+                    updatedAccount.getStatus().toString(), updatedAccount.getEmail(), updatedAccount.getLastLogin(),
+                    updatedAccount.getCreatedAt(), updatedAccount.getUpdatedAt());
+
+            // Trả về response
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Account updated successfully", responseDTO), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to update account", null), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<String>> updateAccountStatus(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> statusRequest) {
+        try {
+            // Lấy trạng thái từ request body
+            String status = statusRequest.get("status");
+
+            // Tìm tài khoản theo ID
+            Account account = accountRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
+            // Cập nhật trạng thái tài khoản
+            Account.AccountStatus accountStatus = Account.AccountStatus.valueOf(status.toUpperCase());
+            account.setStatus(accountStatus);
+            account.setUpdatedAt(LocalDateTime.now());
+
+            // Lưu thay đổi vào database
+            accountRepository.save(account);
+
+            // Trả về response thành công
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Account status updated successfully", null), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to update account status", null), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
 }

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RequestMapping("/api/test-results")
 public class TestResultController {
     @Autowired
@@ -132,5 +132,13 @@ public class TestResultController {
             @RequestParam("testResultId") Long testResultId) {
         List<QuestionDownloadDTO> userAnswers = testResultService.getUserAnswersByAccountAndTestResult(accountId, testResultId);
         return ResponseEntity.ok(userAnswers);
+    }
+
+    @GetMapping("/check-count-test")
+    public ResponseEntity<Boolean> getUserAnswers(
+            @RequestParam("testId") Integer testId
+    ) {
+        Boolean checkCount = testResultService.checkCountTestResultByTestId(testId);
+        return ResponseEntity.ok(checkCount);
     }
 }

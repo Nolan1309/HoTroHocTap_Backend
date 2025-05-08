@@ -29,7 +29,6 @@ public class TestUserAnswer {
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
-
     @Column(name = "result")
     private String result;
     @ManyToOne
@@ -40,7 +39,7 @@ public class TestUserAnswer {
     private LocalDateTime deletedDate;
 
     @Column(name = "isDeleted")
-    private boolean isDeleted = false; // Đặt mặc định là false
+    private boolean isDeleted = false;  // Đặt mặc định là false
 
     @PrePersist
     protected void onCreate() {

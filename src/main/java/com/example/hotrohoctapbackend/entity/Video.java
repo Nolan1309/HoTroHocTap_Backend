@@ -3,9 +3,7 @@ package com.example.hotrohoctapbackend.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Entity
@@ -46,8 +44,7 @@ public class Video {
     private boolean isDeleted = false; // Đặt mặc định là false
 
     @Column(name = "isviewtest")
-    private Boolean isViewTest = false; // Đặt mặc định là false
-
+    private Boolean isViewTest = false;
 
     @PrePersist
     protected void onCreate() {

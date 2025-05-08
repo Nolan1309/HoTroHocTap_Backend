@@ -1,4 +1,5 @@
 package com.example.hotrohoctapbackend.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,4 +27,17 @@ public class Enrolled_Courses {
 
     @Column(name = "status")
     private String status;
+
+    // ===== THÔNG TIN CHỨNG CHỈ =====
+    @Column(name = "certificate_code", unique = true)
+    private String certificateCode;
+
+    @Column(name = "certificate_url")
+    private String certificateUrl;
+
+    @Column(name = "issued_at")
+    private LocalDateTime issuedAt;
+
+    @Column(name = "certificate_verified")
+    private Boolean certificateVerified;
 }

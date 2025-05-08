@@ -94,8 +94,8 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             "            ORDER BY gd.view DESC LIMIT 6", nativeQuery = true)
     public List<Object[]> findAllWithViewDesc();
 
-    @Query(value = "SELECT * FROM general_documents WHERE id = :id", nativeQuery = true)
-    Object[] getDocumentByID(@Param("id") int id);
+//    @Query(value = "SELECT * FROM general_documents WHERE id = :id", nativeQuery = true)
+//    Object[] getDocumentByID(@Param("id") int id);
 
 
     @Query(value = "SELECT d.id AS documentId, " +
@@ -169,21 +169,25 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
 
 
     @Query(value = """
-            SELECT 
-                gd.id AS document_id,
-                gd.title AS document_title, 
-                gd.description AS document_description, 
-                gd.url AS document_url,
-                gd.is_deleted AS deleted,
-                c1.name AS category_level_1, 
-                c2.name AS category_level_2, 
-                c3.name AS category_level_3,
-                gd.id_category
-            FROM 
-                general_documents gd 
-            LEFT JOIN categories c3 ON gd.id_category = c3.id_category
-            LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
-            LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
+            SELECT\s
+                                   gd.id AS document_id,
+                                   gd.title AS document_title,\s
+                                   gd.description AS document_description,\s
+                                   gd.url AS document_url,
+                                   gd.is_deleted AS deleted,
+                                   c1.name AS category_level_1,\s
+                                   c2.name AS category_level_2,\s
+                                   c3.name AS category_level_3,
+                                   gd.id_category,
+                                   gd.view,
+                                   gd.created_at,
+                                   gd.status
+                               FROM\s
+                                   general_documents gd\s
+                               LEFT JOIN categories c3 ON gd.id_category = c3.id_category
+                               LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
+                               LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
+                               where gd.is_deleted = 0
             """,
             countQuery = """
                     SELECT 
@@ -193,9 +197,61 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
                     LEFT JOIN categories c3 ON gd.id_category = c3.id_category
                     LEFT JOIN categories c2 ON c2.id_category = c3.parent_id
                     LEFT JOIN categories c1 ON c1.id_category = c2.parent_id
+                     where gd.is_deleted = 0
                     """,
             nativeQuery = true)
     Page<Object[]> findDocumentsWithCategories(Pageable pageable);
+
+    @Query(value = """
+            SELECT 
+                gd.id AS document_id,
+                gd.title AS document_title,
+                gd.description AS document_description,
+                gd.url AS document_url,
+                gd.is_deleted AS deleted,
+                c1.name AS category_level_1,
+                c2.name AS category_level_2,
+                c3.name AS category_level_3,
+                gd.id_category,
+                gd.view,
+                gd.created_at,
+                gd.status
+            FROM 
+                general_documents gd
+            LEFT JOIN categories c3 ON gd.id_category = c3.id_category
+            LEFT JOIN categories c2 ON c3.parent_id = c2.id_category
+            LEFT JOIN categories c1 ON c2.parent_id = c1.id_category
+            WHERE 
+                gd.is_deleted = 0
+                AND (:categoryId1 IS NULL OR c1.id_category = :categoryId1)
+                AND (:categoryId2 IS NULL OR c2.id_category = :categoryId2)
+                AND (:categoryId3 IS NULL OR c3.id_category = :categoryId3)
+                AND (:searchTerm IS NULL OR gd.title LIKE CONCAT('%', :searchTerm, '%'))
+            """,
+            countQuery = """
+                    SELECT 
+                        COUNT(*)
+                    FROM 
+                        general_documents gd
+                    LEFT JOIN categories c3 ON gd.id_category = c3.id_category
+                    LEFT JOIN categories c2 ON c3.parent_id = c2.id_category
+                    LEFT JOIN categories c1 ON c2.parent_id = c1.id_category
+                    WHERE 
+                        gd.is_deleted = 0
+                        AND (:categoryId1 IS NULL OR c1.id_category = :categoryId1)
+                        AND (:categoryId2 IS NULL OR c2.id_category = :categoryId2)
+                        AND (:categoryId3 IS NULL OR c3.id_category = :categoryId3)
+                        AND (:searchTerm IS NULL OR gd.title LIKE CONCAT('%', :searchTerm, '%'))
+                    """,
+            nativeQuery = true)
+    Page<Object[]> findDocumentsWithCategoriesSearch(
+            @Param("categoryId1") Integer categoryId1,
+            @Param("categoryId2") Integer categoryId2,
+            @Param("categoryId3") Integer categoryId3,
+            @Param("searchTerm") String searchTerm,
+            Pageable pageable
+    );
+
 
     @Query(value = "SELECT \n" +
             "    g.id AS id,\n" +
@@ -278,5 +334,81 @@ public interface GeneralDocumentRepository extends JpaRepository<GeneralDocument
             """, nativeQuery = true)
     long countDocumentsByAccountIdUser(@Param("accountId") Long accountId);
 
+
+    @Query(value = """
+            SELECT d.id, d.created_at, d.description, d.image, d.title, d.updated_at, d.url, d.view, d.id_category, d.deleted_date, d.is_deleted, d.status
+            FROM general_documents d
+            LEFT JOIN categories c3 ON d.id_category = c3.id_category
+            LEFT JOIN categories c2 ON c3.parent_id = c2.id_category
+            LEFT JOIN categories c1 ON c2.parent_id = c1.id_category
+            WHERE d.is_deleted = 1
+            AND (:categoryId1 IS NULL OR c1.id_category = :categoryId1)
+            AND (:categoryId2 IS NULL OR c2.id_category = :categoryId2)
+            AND (:categoryId3 IS NULL OR c3.id_category = :categoryId3)
+            AND (:title IS NULL OR LOWER(d.title) LIKE LOWER(CONCAT('%', :title, '%')))
+            AND (:deletedDate IS NULL OR DATE(d.deleted_date) = :deletedDate)
+            """,
+            countQuery = """
+                    SELECT COUNT(*) FROM general_documents d
+                    LEFT JOIN categories c3 ON d.id_category = c3.id_category
+                    LEFT JOIN categories c2 ON c3.parent_id = c2.id_category
+                    LEFT JOIN categories c1 ON c2.parent_id = c1.id_category
+                    WHERE d.is_deleted = 1
+                    AND (:categoryId1 IS NULL OR c1.id_category = :categoryId1)
+                    AND (:categoryId2 IS NULL OR c2.id_category = :categoryId2)
+                    AND (:categoryId3 IS NULL OR c3.id_category = :categoryId3)
+                    AND (:title IS NULL OR LOWER(d.title) LIKE LOWER(CONCAT('%', :title, '%')))
+                    AND (:deletedDate IS NULL OR DATE(d.deleted_date) = :deletedDate)
+                    """,
+            nativeQuery = true)
+    Page<Object[]> findGeneralDocumentsBy(
+            @Param("categoryId1") Integer categoryId1,
+            @Param("categoryId2") Integer categoryId2,
+            @Param("categoryId3") Integer categoryId3,
+            @Param("title") String title,
+            @Param("deletedDate") String deletedDate,
+            Pageable pageable);
+
+    @Query("SELECT g FROM GeneralDocument g WHERE "
+            + "(LOWER(g.title) LIKE LOWER(CONCAT('%', :title, '%')) OR :title = '') "
+            + "AND (g.status = :status OR :status = '') "
+            + "AND g.isDeleted = false ")
+    Page<GeneralDocument> findGeneralDocumentsByFilters(
+            String title,
+            String status,
+            Pageable pageable
+    );
+
+    // Tài liệu phổ biến (lượt xem cao nhất), lọc theo tên, danh mục và định dạng
+    @Query("SELECT gd FROM GeneralDocument gd WHERE " +
+            "gd.isDeleted = false AND " +
+            "gd.status = 'ACTIVE' AND " +
+            "(:title IS NULL OR gd.title LIKE %:title%) AND " +
+            "(:categoryId IS NULL OR gd.category.id = :categoryId) AND " +
+            "(:format IS NULL OR gd.format = :format) " +
+            "ORDER BY gd.view DESC")
+    Page<GeneralDocument> findMostPopularDocuments(String title, Integer categoryId, String format, Pageable pageable);
+
+    // Tài liệu mới nhất (dựa trên ngày tạo), lọc theo tên, danh mục và định dạng
+    @Query("SELECT gd FROM GeneralDocument gd WHERE " +
+            "gd.isDeleted = false AND " +
+            "gd.status = 'ACTIVE' AND " +
+            "(:title IS NULL OR gd.title LIKE %:title%) AND " +
+            "(:categoryId IS NULL OR gd.category.id = :categoryId) AND " +
+            "(:format IS NULL OR gd.format = :format) " +
+            "ORDER BY gd.createdAt DESC")
+    Page<GeneralDocument> findLatestDocuments(String title, Integer categoryId, String format, Pageable pageable);
+
+    @Query("SELECT gd FROM GeneralDocument gd " +
+            "LEFT JOIN gd.generalDocumentAcounts gda " +
+            "WHERE gd.isDeleted = false AND " +
+            "gd.status = 'ACTIVE' AND " +
+            "(:title IS NULL OR gd.title LIKE %:title%) AND " +
+            "(:categoryId IS NULL OR gd.category.id = :categoryId) AND " +
+            "(:format IS NULL OR gd.format = :format) AND " +
+            "(gd.view > :minView OR COUNT(gda) > :minDownload) " + // Lọc theo lượt xem và lượt tải
+            "GROUP BY gd.id " +
+            "ORDER BY gd.view DESC, COUNT(gda) DESC")
+    Page<GeneralDocument> findRecommendedDocuments(String title, Integer categoryId, String format, int minView, int minDownload, Pageable pageable);
 }
 

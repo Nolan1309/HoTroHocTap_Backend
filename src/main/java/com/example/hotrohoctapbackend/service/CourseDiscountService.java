@@ -42,7 +42,7 @@ public class CourseDiscountService {
         Discount discount = optionalDiscount.get();
 
         // Lấy giá trị giảm giá từ Discount
-        BigDecimal discountValue = discount.getDiscount_value();
+        BigDecimal discountValue = discount.getDiscountValue();
         if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Giá trị giảm giá không hợp lệ.");
         }
@@ -90,7 +90,7 @@ public class CourseDiscountService {
                 if (exist > 0) {
                     Optional<Course_Discount> optionalCourseDiscount = courseDiscountRepository.findByCourseIdAndDiscountId(courseId, discountId);
                     if (optionalCourseDiscount.isPresent()) {
-                        optionalCourseDiscount.get().setCheck(true);
+                        optionalCourseDiscount.get().setStatus(true);
                         courseDiscountRepository.save(optionalCourseDiscount.get());
                     }
                 } else {
@@ -100,7 +100,7 @@ public class CourseDiscountService {
                     courseDiscount.setDiscount(discount);
                     courseDiscount.setDeletedDate(LocalDateTime.now());
                     courseDiscount.setDeleted(false);
-                    courseDiscount.setCheck(true);
+                    courseDiscount.setStatus(true);
                     courseDiscountRepository.save(courseDiscount);
 
                     responseBuilder.append("Thành công thêm khuyến mãi cho khóa học ID: ").append(courseId).append("\n");

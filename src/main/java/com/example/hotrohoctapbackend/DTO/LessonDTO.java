@@ -8,14 +8,47 @@ public class LessonDTO {
     private String title;
     private Boolean deleted;
 
+    private Boolean status;
+
+    private String topic;
+
+    private String isTestExcluded;
+
     // Constructors
     public LessonDTO() {
     }
 
-    public LessonDTO(int id, String title, Boolean deleted) {
+    public LessonDTO(int id, String title, Boolean deleted, Boolean status, String topic , String isTestExcluded) {
         this.id = id;
         this.title = title;
         this.deleted = deleted;
+        this.status = status;
+        this.topic = topic;
+        this.isTestExcluded = isTestExcluded;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public String getIsTestExcluded() {
+        return isTestExcluded;
+    }
+
+    public void setIsTestExcluded(String isTestExcluded) {
+        this.isTestExcluded = isTestExcluded;
+    }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
     }
 
     public Boolean getDeleted() {

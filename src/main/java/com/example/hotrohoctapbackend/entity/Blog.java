@@ -1,9 +1,10 @@
 package com.example.hotrohoctapbackend.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
-import java.util.List;
+
 @Data
 @Entity
 @Table(name = "blogs")
@@ -16,7 +17,7 @@ public class Blog {
     @Column(name = "title", columnDefinition = "LONGTEXT")
     private String title;
 
-    @Column(name = "content",columnDefinition = "LONGTEXT")
+    @Column(name = "content", columnDefinition = "LONGTEXT")
     private String content;
 
     @Column(name = "status")
@@ -34,7 +35,7 @@ public class Blog {
 
     @ManyToOne
     @JoinColumn(name = "cat_blog_id")
-    private BlogCategory category;
+    private Category category;
 
     @ManyToOne
     @JoinColumn(name = "author_id")
@@ -45,6 +46,23 @@ public class Blog {
 
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
+
+    // Tóm tắt bài viết
+    @Column(name = "summary", columnDefinition = "LONGTEXT")
+    private String summary;
+
+    // Đánh dấu bài viết nổi bật
+    @Column(name = "featured")
+    private Boolean featured = false;
+
+    // Số lượt xem
+    @Column(name = "views")
+    private Integer views = 0;
+
+    // Số lượng bình luận
+    @Column(name = "comment_count")
+    private Integer commentCount = 0;
+    
 
     @PrePersist
     protected void onCreate() {

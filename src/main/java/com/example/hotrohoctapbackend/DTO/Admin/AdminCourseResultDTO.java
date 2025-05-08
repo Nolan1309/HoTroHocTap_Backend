@@ -11,6 +11,7 @@ public class AdminCourseResultDTO {
     private boolean status;
     private boolean deleted;
     private String categoryName; // Thêm trường categoryName
+    private String type;
 
     // Constructors
     public AdminCourseResultDTO(int id, String courseTitle, String duration, BigDecimal price, BigDecimal cost,
@@ -23,6 +24,26 @@ public class AdminCourseResultDTO {
         this.status = status;
         this.deleted = deleted;
         this.categoryName = categoryName; // Gán giá trị categoryName
+    }
+
+    public AdminCourseResultDTO(int id, String courseTitle, String duration, BigDecimal price, BigDecimal cost, boolean status, boolean deleted, String categoryName, String type) {
+        this.id = id;
+        this.courseTitle = courseTitle;
+        this.duration = duration;
+        this.price = price;
+        this.cost = cost;
+        this.status = status;
+        this.deleted = deleted;
+        this.categoryName = categoryName;
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public BigDecimal getCost() {

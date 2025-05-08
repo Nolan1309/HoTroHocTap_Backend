@@ -7,11 +7,20 @@ public class AccountDTO {
     private String email;
     private String password;
     private String phone;
+    private String birthday;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private int roleId;
 
     public AccountDTO() {
+    }
+
+    public String getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(String birthday) {
+        this.birthday = birthday;
     }
 
     public String getFullname() {

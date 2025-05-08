@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+
 @Entity
 @Table(name = "payments_detail")
 @Data
@@ -26,4 +27,15 @@ public class PaymentDetail {
     @JoinColumn(name = "course_id")
     private Course course;
 
+    @Column(name = "subscriptionId")
+    private Integer subscriptionId; // Lưu ID của gói VIP
+
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
+    private PaymentDetailType type;
+
+    public enum PaymentDetailType {
+        COURSE,
+        VIP
+    }
 }

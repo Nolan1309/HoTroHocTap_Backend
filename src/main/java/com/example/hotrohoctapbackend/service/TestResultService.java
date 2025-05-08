@@ -12,6 +12,7 @@ import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Test;
 import com.example.hotrohoctapbackend.entity.TestResult;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -126,7 +127,7 @@ public class TestResultService {
 
         for (Object[] row : results) {
             userAnswers.add(new QuestionDownloadDTO(
-                    (Integer)(row[0]), // id
+                    (Integer) (row[0]), // id
                     (String) row[1],                  // question
                     (String) row[2],                  // optionA
                     (String) row[3],                  // optionB
@@ -137,5 +138,13 @@ public class TestResultService {
             ));
         }
         return userAnswers;
+    }
+
+    public Boolean checkCountTestResultByTestId(Integer testId) {
+        Long item = testResultRepository.getCountTestById(testId);
+        if (item != 0) {
+            return true;
+        }
+        return false;
     }
 }

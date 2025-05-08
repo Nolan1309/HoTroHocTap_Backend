@@ -2,10 +2,20 @@ package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.*;
 import com.example.hotrohoctapbackend.DTO.Admin.GeneralDocumentDTO_Version2;
+import com.example.hotrohoctapbackend.DTO.AdminV2.AdminCourseDTORestoreList;
+import com.example.hotrohoctapbackend.DTO.AdminV2.AdminDocumentDTORestoreList;
+import com.example.hotrohoctapbackend.DTO.AdminV2.AdminLesssonDTORestoreList;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Account.AccountDTOAdmin;
+import com.example.hotrohoctapbackend.DTO.AdminV3.GeneralDocument.GeneralDocumentDTOAdmin;
 import com.example.hotrohoctapbackend.DTO.User.GeneralDocumentDTO_User;
+import com.example.hotrohoctapbackend.entity.Category;
+import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
+import com.example.hotrohoctapbackend.exception.ApiResponse;
+import com.example.hotrohoctapbackend.service.CategoryService;
 import com.example.hotrohoctapbackend.service.GeneralDocumentsService;
 import com.example.hotrohoctapbackend.util.FirebaseStorageService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,10 +26,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/general_documents")
 public class GeneralDocumentsController {
@@ -27,8 +38,44 @@ public class GeneralDocumentsController {
     @Autowired
     private GeneralDocumentsService generalDocumentsService;
 
+
+    @Autowired
+    private CategoryService categoryService;
+
     @Autowired
     private FirebaseStorageService firebaseStorageService;
+
+    @GetMapping
+    public ApiResponse<Page<GeneralDocumentDTOAdmin>> getGeneralDocuments(
+            @RequestParam(value = "title", required = false, defaultValue = "") String title,
+            @RequestParam(value = "status", required = false, defaultValue = "") String status,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<GeneralDocumentDTOAdmin> generalDocuments = generalDocumentsService.getGeneralDocuments(title, status, pageable);
+
+        return new ApiResponse<>(200, "General documents fetched successfully", generalDocuments);
+    }
+
+    @GetMapping("/public")
+    public ApiResponse<Page<GeneralDocumentDTOAdmin>> getDocuments(
+            @RequestParam(required = false) String type, // type = "popular", "latest", "recommended"
+            @RequestParam(required = false, defaultValue = "") String title,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String format,
+            @RequestParam(defaultValue = "0") int minView,
+            @RequestParam(defaultValue = "0") int minDownload,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // Gọi Service để lấy tài liệu theo loại
+        Page<GeneralDocumentDTOAdmin> documents = generalDocumentsService.getDocuments(type, title, categoryId, format, minView, minDownload, page, size);
+
+        // Trả về dữ liệu dưới dạng ApiResponse
+        return new ApiResponse<>(200, "Success", documents);
+    }
+
 
     @GetMapping("/create_desc")
     public List<DocumentDTO> getAllDocumentsCreateDesc() {
@@ -57,9 +104,17 @@ public class GeneralDocumentsController {
     }
 
     @GetMapping("/{id}")
-    public Object[] getDocumentsByID(@PathVariable("id") int id) {
-        return generalDocumentsService.getDocumentsByIDDanhMuc(id);
+    public ApiResponse<GeneralDocumentDTOAdmin> getDocumentsByID(@PathVariable("id") int id) {
+        try {
+            GeneralDocumentDTOAdmin documentDTO = generalDocumentsService.getDocumentByIdConvert(id);
+            return new ApiResponse<>(200, "Success", documentDTO); // Trả về mã trạng thái 200 OK cùng dữ liệu
+        } catch (EntityNotFoundException e) {
+            return new ApiResponse<>(404, "Document not found", null); // Trả về mã trạng thái 404 khi không tìm thấy tài liệu
+        } catch (Exception e) {
+            return new ApiResponse<>(500, "Internal Server Error: " + e.getMessage(), null); // Xử lý lỗi 500
+        }
     }
+
 
     @GetMapping("/category")
     public Page<Object[]> getDocumentsByCategory(@RequestParam Long id, Pageable pageable) {
@@ -107,29 +162,28 @@ public class GeneralDocumentsController {
         return generalDocumentsService.getDocumentsWithCategories(pageable);
     }
 
-    //    @PostMapping("/upload")
-//    public String uploadDocument(
-//            @RequestParam("file") MultipartFile file,
-//            @RequestParam("title") String title,
-//            @RequestParam("description") String description,
-//            @RequestParam("categoryId") int categoryId) {
-//        try {
-//            generalDocumentsService.saveDocument(file, title, description, categoryId);
-//            return "Conversion successful!";
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "Conversion failed: " + e.getMessage();
-//        }
-//    }
+    @GetMapping("/documents-with-categories-search")
+    public Page<GeneralDocumentDTO_Version2> getDocumentsWithCategoriesSearch(
+            @RequestParam(required = false) Integer categoryId1,
+            @RequestParam(required = false) Integer categoryId2,
+            @RequestParam(required = false) Integer categoryId3,
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return generalDocumentsService.getDocumentsWithCategoriesSearch(categoryId1, categoryId2, categoryId3, searchTerm, pageable);
+    }
+
     @PostMapping("/upload")
     public ResponseEntity<GeneralDocument> uploadDocument(
             @RequestParam("file") MultipartFile file,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
             @RequestParam("categoryId") int categoryId,
+            @RequestParam("status") String status,
             @RequestParam("thumbnail") MultipartFile thumbnail) {
         try {
-            GeneralDocument document = generalDocumentsService.saveDocument(file, title, description, categoryId, thumbnail);
+            GeneralDocument document = generalDocumentsService.saveDocument(file, title, description, categoryId, thumbnail, status);
             return new ResponseEntity<>(document, HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -138,52 +192,50 @@ public class GeneralDocumentsController {
         }
     }
 
-    //        @PutMapping("/generaldocuments-update/{id}")
-//        public ResponseEntity<GeneralDocument> updateGeneralDocument(
-//                @PathVariable("id") int id,
-//                @RequestBody UpdateDocumentRequest updateRequest) {
-//            GeneralDocument updatedDoc = generalDocumentsService.updateGeneralDocument(id, updateRequest);
-//            if (updatedDoc != null) {
-//                return ResponseEntity.ok(updatedDoc);
-//            } else {
-//                return ResponseEntity.notFound().build();
-//            }
-//        }
     @PutMapping("/generaldocuments-update/{id}")
-    public ResponseEntity<GeneralDocument> updateGeneralDocument(
+    public ResponseEntity<ApiResponse<?>> updateGeneralDocument(
             @PathVariable("id") int id,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
-            @RequestParam("idCategory") int idCategory,
+            @RequestParam("categoryId") int categoryId,
+            @RequestParam("status") String status,
             @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "url", required = false) String url,
-            @RequestParam("image_url") String imageUrl) {
+            @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail) {
 
         try {
-            // Xử lý tệp (nếu có)
-            String fileUrl = null;
-            if (file != null && !file.isEmpty()) {
-                fileUrl = firebaseStorageService.uploadFileURL(file); // Giả sử có service để lưu tệp
-            }
 
-            // Tạo đối tượng yêu cầu cập nhật
-            UpdateDocumentRequest updateRequest = new UpdateDocumentRequest();
-            updateRequest.setTitle(title);
-            updateRequest.setDescription(description);
-            updateRequest.setIdCategory(idCategory);
-            updateRequest.setUrl(fileUrl != null ? fileUrl : url); // Nếu có tệp thì dùng URL tệp, nếu không dùng URL được gửi
-//            updateRequest.setImageUrl(imageUrl);
+
+            GeneralDocument generalDocument = generalDocumentsService.getDocumentById(id);
+            if (generalDocument == null) {
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "No found document", null), HttpStatus.BAD_REQUEST);
+            }
+            Category category = categoryService.getCategoryById(categoryId);
+            if (category == null) {
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "No found category", null), HttpStatus.BAD_REQUEST);
+            }
+            GeneralDocument generalDocument1 = new GeneralDocument();
+            if (file != null && !file.isEmpty()) {
+                generalDocument1 = firebaseStorageService.uploadFileURL(generalDocument, file);
+                generalDocument1.setImage_url(firebaseStorageService.uploadFileImage(thumbnail));
+            }
+            generalDocument1.setId(generalDocument.getId());
+            generalDocument1.setTitle(title);
+            generalDocument1.setDescription(description);
+            generalDocument1.setCategory(category);
+            generalDocument1.setStatus(status);
+            generalDocument1.setUpdatedAt(LocalDateTime.now());
+            generalDocument1.setGeneralDocumentAcounts(generalDocument.getGeneralDocumentAcounts());
 
             // Cập nhật tài liệu
-            GeneralDocument updatedDoc = generalDocumentsService.updateGeneralDocument(id, updateRequest);
-            if (updatedDoc != null) {
-                return ResponseEntity.ok(updatedDoc);
+            Boolean updatedDoc = generalDocumentsService.updateGeneralDocument(generalDocument1);
+            if (updatedDoc) {
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.CREATED.value(), "Successful", null), HttpStatus.CREATED);
             } else {
-                return ResponseEntity.notFound().build();
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Update fail", null), HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "System Error", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -232,5 +284,62 @@ public class GeneralDocumentsController {
     public ResponseEntity<GeneralDocument> incrementViewCount(@PathVariable int id) {
         GeneralDocument updatedDocument = generalDocumentsService.incrementViewCount(id);
         return ResponseEntity.ok(updatedDocument);
+    }
+
+
+    @PutMapping("/status/{id}")
+    public ResponseEntity<?> statusGeneralDocumentAdmin(@PathVariable int id) {
+        try {
+            GeneralDocument deletedCourse = generalDocumentsService.updateStatusActive(id);
+            return ResponseEntity.ok().body("Course with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
+        }
+    }
+
+    @PutMapping("/unstatus/{id}")
+    public ResponseEntity<?> instatusGeneralDocumentAdmin(@PathVariable int id) {
+        try {
+            GeneralDocument deletedCourse = generalDocumentsService.updateStatusInActive(id);
+            return ResponseEntity.ok().body("Course with ID " + id + " marked as deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found with ID: " + id);
+        }
+    }
+
+    @GetMapping("/restore/list-all-documents")
+    public Page<AdminDocumentDTORestoreList> getGeneralDocument(
+            @RequestParam(required = false) Integer categoryId1,
+            @RequestParam(required = false) Integer categoryId2,
+            @RequestParam(required = false) Integer categoryId3,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String deletedDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        if (title.equals("")) {
+            title = null;
+        }
+        if (deletedDate.equals("")) {
+            deletedDate = null;
+        }
+
+        return generalDocumentsService.getGeneralDocument(categoryId1, categoryId2, categoryId3, title, deletedDate, page, size);
+    }
+
+    @PutMapping("/restore/{documentId}")
+    public ResponseEntity<GeneralDocument> restoreDocument(@PathVariable Integer documentId) {
+        AdminDocumentDTORestoreList adminDocumentDTORestoreList = new AdminDocumentDTORestoreList();
+        adminDocumentDTORestoreList.setId(documentId);
+        GeneralDocument restoredAccount = generalDocumentsService.updateRestoreDocument(adminDocumentDTORestoreList);
+        return ResponseEntity.ok(restoredAccount);
+    }
+
+    @DeleteMapping("/delete/{documentId}")
+    public ResponseEntity<String> deleteDocument(@PathVariable Integer documentId) {
+        AdminDocumentDTORestoreList adminDocumentDTORestoreList = new AdminDocumentDTORestoreList();
+        adminDocumentDTORestoreList.setId(documentId);
+        generalDocumentsService.deleteRestoreDocument(adminDocumentDTORestoreList);
+        return ResponseEntity.ok("Document permanently deleted.");
     }
 }

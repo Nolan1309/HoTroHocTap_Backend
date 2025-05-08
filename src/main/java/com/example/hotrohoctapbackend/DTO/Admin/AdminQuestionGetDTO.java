@@ -11,6 +11,7 @@ public class AdminQuestionGetDTO {
     private String instruction;
     private String resultCheck;
 
+
     // Constructor
     public AdminQuestionGetDTO(int id, String content, String optionA, String optionB, String optionC, String optionD, String result, String instruction, String resultCheck) {
         this.id = id;
@@ -23,6 +24,8 @@ public class AdminQuestionGetDTO {
         this.instruction = instruction;
         this.resultCheck = resultCheck;
     }
+
+
 
     // Getters and setters
     public int getId() {

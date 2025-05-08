@@ -12,4 +12,6 @@ public class AdminBlogAddDTO {
     private String image;
     private int cat_id;
     private int author_id;
+    private int level_2_id;
+    private int level_1_id;
 }

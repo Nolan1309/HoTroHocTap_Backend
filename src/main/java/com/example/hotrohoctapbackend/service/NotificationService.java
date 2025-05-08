@@ -6,6 +6,7 @@ import com.example.hotrohoctapbackend.dao.NotificationRepository;
 import com.example.hotrohoctapbackend.dao.User_NotificationRepository;
 import com.example.hotrohoctapbackend.entity.Notification;
 import com.example.hotrohoctapbackend.entity.User_Notification;
+import com.example.hotrohoctapbackend.util.TOPIC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -29,15 +30,20 @@ public class NotificationService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    public Notification createNotification(String title, String message, String topic) {
+    public Notification createNotification(String title, String message, TOPIC topic) {
         Notification notification = new Notification();
         notification.setTitle(title);
         notification.setMessage(message);
-        notification.setTopic(topic);
+        notification.setTopic(topic.name());
 //        notification.setUserId(userId);
         notification.setCreatedAt(LocalDateTime.now());
         notification.setUpdatedAt(LocalDateTime.now());
         return repository.save(notification);
+    }
+
+    public Notification getNotificationByTopic(TOPIC topic) {
+        String topicValue = topic.name();
+        return repository.findByTopic(topicValue);
     }
 
     public List<UserNotificationDTO_User> getUserNotifications(Long userId) {

@@ -22,12 +22,12 @@ public class CourseDTO {
     private Date created_at;
     private Date updated_at;
     private String description;
-    private String duration;
+    private Integer duration;
     private String language;
     private Boolean status;
     private String type;
 
-    public CourseDTO(Integer id, Integer id_danhmuc, String title, String imageUrl, BigDecimal price, BigDecimal cost, Long numberOfStudents, Long totalLessons, BigDecimal averageRating,String type) {
+    public CourseDTO(Integer id, Integer id_danhmuc, String title, String imageUrl, BigDecimal price, BigDecimal cost, Long numberOfStudents, Long totalLessons, BigDecimal averageRating, String type) {
         this.id = id;
         this.id_danhmuc = id_danhmuc;
         this.title = title;
@@ -39,7 +39,8 @@ public class CourseDTO {
         this.averageRating = averageRating;
         this.type = type;
     }
-    public CourseDTO(Integer id, Integer id_danhmuc, String title, String imageUrl, BigDecimal price, BigDecimal cost, Long numberOfStudents, Long totalLessons, BigDecimal averageRating,String type,Boolean status) {
+
+    public CourseDTO(Integer id, Integer id_danhmuc, String title, String imageUrl, BigDecimal price, BigDecimal cost, Long numberOfStudents, Long totalLessons, BigDecimal averageRating, String type, Boolean status) {
         this.id = id;
         this.id_danhmuc = id_danhmuc;
         this.title = title;
@@ -52,10 +53,11 @@ public class CourseDTO {
         this.type = type;
         this.status = status;
     }
+
     public CourseDTO(Integer id, Integer id_danhmuc, String imageUrl, BigDecimal price, BigDecimal cost,
                      String title, Long numberOfStudents, Long totalLessons, BigDecimal averageRating,
                      String author, String course_output, Date created_at, Date updated_at, String description,
-                     String duration, String language, Boolean status, String type) {
+                     Integer duration, String language, Boolean status, String type) {
         this.id = id;
         this.id_danhmuc = id_danhmuc;
         this.imageUrl = imageUrl;
@@ -124,11 +126,11 @@ public class CourseDTO {
         this.description = description;
     }
 
-    public String getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 

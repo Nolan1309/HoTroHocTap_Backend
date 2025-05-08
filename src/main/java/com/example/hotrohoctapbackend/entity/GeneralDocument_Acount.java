@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class GeneralDocument_Acount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
 
     @ManyToOne

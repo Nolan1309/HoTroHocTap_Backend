@@ -1,4 +1,5 @@
 package com.example.hotrohoctapbackend.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,4 +24,11 @@ public class User_Notification {
 
     @Column(name = "read_status")
     private boolean read_status;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "message", columnDefinition = "TEXT")
+    private String message;
+
 }

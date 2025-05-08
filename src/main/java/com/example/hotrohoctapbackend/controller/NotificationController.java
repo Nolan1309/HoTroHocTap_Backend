@@ -12,6 +12,7 @@ import com.example.hotrohoctapbackend.entity.User_Notification;
 import com.example.hotrohoctapbackend.service.EnrolledCourseService;
 import com.example.hotrohoctapbackend.service.NotificationService;
 import com.example.hotrohoctapbackend.service.services.EmailService;
+import com.example.hotrohoctapbackend.util.TOPIC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
@@ -40,10 +41,11 @@ public class NotificationController {
 
     @PostMapping("/send")
     public ResponseEntity<Notification> sendNotification(@RequestBody NotificationRequestUser request) {
+        TOPIC topicEnum = TOPIC.valueOf(request.getTopic());
         Notification notification = notificationService.createNotification(
                 request.getTitle(),
                 request.getMessage(),
-                request.getTopic()
+                topicEnum
 
         );
         return ResponseEntity.ok(notification);
@@ -72,8 +74,9 @@ public class NotificationController {
     //ADMIN SE XAI CAI NAY , TAO + THONG BAO NGAY
     @PostMapping("/notify")
     public ResponseEntity<?> notify(@RequestBody NotificationRequestUser request) {
+        TOPIC topicEnum = TOPIC.valueOf(request.getTopic());
         Notification notification = notificationService.createNotification(
-                request.getTitle(), request.getMessage(), request.getTopic());
+                request.getTitle(), request.getMessage(), topicEnum);
 
         if (request.getUserId() == null) {
             UserNotificationDTO_User user = new UserNotificationDTO_User(notification, false);

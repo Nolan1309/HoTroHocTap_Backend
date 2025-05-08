@@ -13,14 +13,8 @@ import java.util.List;
 @RepositoryRestResource(path = "notifications")
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
 
-    //    List<Notification> findByUserIdOrTopic(Long userId, String topic);
-//    @Query("SELECT n FROM Notification n " +
-//            "WHERE (n.userId = :userId AND n.isDeleted = false) " +
-//            "OR (n.topic IN :topics AND n.userId IS NULL AND n.isDeleted = false) ORDER BY n.createdAt DESC ")
-//    List<Notification> findNotificationsByUserOrTopic(
-//            @Param("userId") Long userId,
-//            @Param("topics") List<String> topics
-//    );
+    Notification findByTopic(String topic);
+
     @Query(value = "SELECT noti.id, noti.created_at, noti.title, noti.updated_at, noti.deleted_date, noti.is_deleted, noti.topic, noti.message, us.read_status as checked " +
             "FROM notifications noti " +
             "INNER JOIN user_notifications us " +
@@ -37,7 +31,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
             "WHERE noti.is_deleted = 0 " +
             "AND us.account_id = :userId AND noti.id = :notificationId " +
             "ORDER BY noti.created_at DESC", nativeQuery = true)
-    List<Object[]> findNotificationsByUserIdNativeAndNotificationId(@Param("userId") Long userId,@Param("notificationId") Long notificationId);
+    List<Object[]> findNotificationsByUserIdNativeAndNotificationId(@Param("userId") Long userId, @Param("notificationId") Long notificationId);
 
     @Query(value = "SELECT id, is_deleted, message,title ,topic,created_at, deleted_date, updated_at FROM notifications", nativeQuery = true)
     Page<Object[]> findCustomNotificationsWithPagination(Pageable pageable);

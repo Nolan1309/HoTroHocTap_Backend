@@ -39,8 +39,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if (account != null && account.isDeleted()) {
             throw new OAuth2AuthenticationException("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ hỗ trợ.");
         }
-        RoleUser roleUser = roleUserRepository.findByRoleName("USER");
 
+        RoleUser roleUser = roleUserRepository.findByRoleName("USER");
         account = accountRepository.findByEmailOptional(email).orElseGet(() -> {
             Account newAccount = new Account();
             newAccount.setEmail(email);
@@ -51,7 +51,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             newAccount.setCreatedAt(LocalDateTime.now());
             return accountRepository.save(newAccount);
         });
-
         // Trả về CustomOAuth2User
         return new CustomOAuth2User(oAuth2User, account);
     }

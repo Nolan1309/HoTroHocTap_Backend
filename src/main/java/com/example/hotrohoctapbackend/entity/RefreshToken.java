@@ -12,6 +12,7 @@ public class RefreshToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")// Tự động tăng
     private Integer id;
 
     @OneToOne

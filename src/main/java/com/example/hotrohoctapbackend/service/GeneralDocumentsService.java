@@ -5,13 +5,19 @@ import com.convertapi.client.ConvertApi;
 import com.convertapi.client.Param;
 import com.example.hotrohoctapbackend.DTO.*;
 import com.example.hotrohoctapbackend.DTO.Admin.GeneralDocumentDTO_Version2;
+import com.example.hotrohoctapbackend.DTO.AdminV2.AdminCourseDTORestoreList;
+import com.example.hotrohoctapbackend.DTO.AdminV2.AdminDocumentDTORestoreList;
+import com.example.hotrohoctapbackend.DTO.AdminV2.AdminLesssonDTORestoreList;
+import com.example.hotrohoctapbackend.DTO.AdminV3.GeneralDocument.GeneralDocumentDTOAdmin;
 import com.example.hotrohoctapbackend.DTO.User.GeneralDocumentDTO_User;
 import com.example.hotrohoctapbackend.dao.CategoryRepository;
 import com.example.hotrohoctapbackend.dao.GeneralDocumentRepository;
 import com.example.hotrohoctapbackend.entity.Category;
+import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.GeneralDocument;
 import com.example.hotrohoctapbackend.util.ByteArrayMultipartFile;
 import com.example.hotrohoctapbackend.util.FirebaseStorageService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.InputStreamResource;
@@ -48,9 +54,13 @@ public class GeneralDocumentsService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-//    @Cacheable(value = "documentlist", key = "#pageable.pageNumber")
+    //    @Cacheable(value = "documentlist", key = "#pageable.pageNumber")
     public Page<Object[]> getDocuments(Pageable pageable) {
         return generalDocumentRepository.findDocumentsAll(pageable);
+    }
+
+    public GeneralDocument getDocumentById(Integer id) {
+        return generalDocumentRepository.findById(id).get();
     }
 
     // Hàm tìm kiếm với phân trang
@@ -71,13 +81,78 @@ public class GeneralDocumentsService {
                 (int) doc[8],
                 (String) doc[9] // category_name
         ));
-//        return generalDocumentRepository.searchDocumentsByTitleOrCategory(keyword, pageable);
     }
+
+
+    // Phương thức lấy tài liệu phổ biến, mới nhất hoặc đề xuất
+    public Page<GeneralDocumentDTOAdmin> getDocuments(String type, String title, Integer categoryId, String format, int minView, int minDownload, int page, int size) {
+        // Tạo đối tượng PageRequest với thông tin trang và kích thước trang
+        PageRequest pageable = PageRequest.of(page, size);
+
+        // Chuyển đổi format về chữ thường nếu nó không phải null, nếu null thì không làm gì cả
+        String formatUPCASE = format != null ? format.toLowerCase() : null;
+
+        // Tùy thuộc vào loại tài liệu yêu cầu (popular, new, recommended)
+        Page<GeneralDocument> generalDocumentDTOAdmins = null;
+
+        switch (type != null ? type.toLowerCase() : "") {
+            case "popular":
+                generalDocumentDTOAdmins = generalDocumentRepository.findMostPopularDocuments(title, categoryId, formatUPCASE, pageable);
+                break;
+            case "new":
+                generalDocumentDTOAdmins = generalDocumentRepository.findLatestDocuments(title, categoryId, formatUPCASE, pageable);
+                break;
+            case "recommended":
+                generalDocumentDTOAdmins = generalDocumentRepository.findRecommendedDocuments(title, categoryId, formatUPCASE, minView, minDownload, pageable);
+                break;
+            default:
+                // Nếu không có loại nào khớp, trả về popular theo mặc định
+                generalDocumentDTOAdmins = generalDocumentRepository.findMostPopularDocuments(title, categoryId, formatUPCASE, pageable);
+                break;
+        }
+
+        // Chuyển đổi từ Entity sang DTO và trả về kết quả
+        return generalDocumentDTOAdmins.map(this::convertToDTO);
+    }
+
+
+    public Page<GeneralDocumentDTOAdmin> getGeneralDocuments(String title, String status, Pageable pageable) {
+        Page<GeneralDocument> generalDocumentPage = generalDocumentRepository.findGeneralDocumentsByFilters(title, status, pageable);
+
+        // Convert from entity to DTO
+        return generalDocumentPage.map(this::convertToDTO);
+    }
+
+    public GeneralDocumentDTOAdmin getDocumentByIdConvert(int id) {
+        GeneralDocument generalDocument = generalDocumentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("GeneralDocument not found with id: " + id));
+        return convertToDTO(generalDocument);
+    }
+
+
+    private GeneralDocumentDTOAdmin convertToDTO(GeneralDocument generalDocument) {
+        GeneralDocumentDTOAdmin dto = new GeneralDocumentDTOAdmin();
+        dto.setId(generalDocument.getId());
+        dto.setTitle(generalDocument.getTitle());
+        dto.setCategoryId(generalDocument.getCategory().getId());
+        dto.setCategoryName(generalDocument.getCategory().getName());
+        dto.setFileUrl(generalDocument.getUrl());
+        dto.setUpdatedAt(generalDocument.getUpdatedAt()); // Assuming this is stored in entity
+        dto.setCreatedAt(generalDocument.getCreatedAt()); // Format to string if needed
+        dto.setFormat(generalDocument.getFormat());
+        dto.setSize(generalDocument.getSize()); // Size if relevant
+        dto.setView(generalDocument.getView());
+        dto.setDescription(generalDocument.getDescription());
+        dto.setDownloads(generalDocument.getGeneralDocumentAcounts().size());
+        dto.setStatus(generalDocument.getStatus());
+        return dto;
+    }
+
 
     public List<DocumentRelateUserDTO> getDocumentsByCategoryId(Long categoryId) {
         List<Object[]> list = generalDocumentRepository.findDocumentSummariesByCategoryId(categoryId);
         List<DocumentRelateUserDTO> listDocument = new ArrayList<>();
-        for (Object[] item : list){
+        for (Object[] item : list) {
             DocumentRelateUserDTO documentRelateUserDTO = new DocumentRelateUserDTO();
             documentRelateUserDTO.setId(((Number) item[0]).intValue());
             documentRelateUserDTO.setTitle((String) item[1]);
@@ -88,21 +163,18 @@ public class GeneralDocumentsService {
         return listDocument;
     }
 
-//    @Cacheable(value = "search", key = "'documentsData_100'")
+    //    @Cacheable(value = "search", key = "'documentsData_100'")
     public List<Object[]> getDocumentsData_100() {
         return generalDocumentRepository.findTop100Documents();
     }
 
-//    @Cacheable(value = "all", key = "#pageable.pageNumber")
+    //    @Cacheable(value = "all", key = "#pageable.pageNumber")
     public Page<Object> getAll(Pageable pageable) {
         return generalDocumentRepository.GetAll(pageable);
     }
 
-    public Object[] getDocumentsByIDDanhMuc(int id) {
-        return generalDocumentRepository.getDocumentByID(id);
-    }
 
-//    @Cacheable(value = "documentbycategory", key = "#categoryId + '-' + #pageable.pageNumber")
+    //    @Cacheable(value = "documentbycategory", key = "#categoryId + '-' + #pageable.pageNumber")
     public Page<Object[]> getDocumentsByCategory(Long categoryId, Pageable pageable) {
         return generalDocumentRepository.findDocumentsByCategory(categoryId, pageable);
     }
@@ -161,7 +233,10 @@ public class GeneralDocumentsService {
                         (String) row[5],    // categoryLevel1
                         (String) row[6],    // categoryLevel2
                         (String) row[7],     // categoryLevel3
-                        (Integer)row[8]
+                        (Integer) row[8],
+                        (Integer) row[9],    // categoryLevel2
+                        convertTimestampToLocalDateTime(row[10]),     // categoryLevel3
+                        (Boolean) row[11]
                 ))
                 .collect(Collectors.toList());
 
@@ -169,35 +244,45 @@ public class GeneralDocumentsService {
         return new PageImpl<>(documentWithCategoriesList, pageable, resultsPage.getTotalElements());
     }
 
-    public GeneralDocument saveDocument(MultipartFile file, String title, String description, int idCategory, MultipartFile thumbnail) throws Exception {
+    public Page<GeneralDocumentDTO_Version2> getDocumentsWithCategoriesSearch(Integer categoryId1, Integer categoryId2, Integer categoryId3, String searchTerm, Pageable pageable) {
+        Page<Object[]> resultsPage = generalDocumentRepository.findDocumentsWithCategoriesSearch(categoryId1, categoryId2, categoryId3, searchTerm, pageable);
+
+        // Map the content of the Page<Object[]> to a list of GeneralDocumentDTO
+        List<GeneralDocumentDTO_Version2> documentWithCategoriesList = resultsPage.getContent().stream()
+                .map(row -> new GeneralDocumentDTO_Version2(
+                        (Integer) row[0],   // documentId
+                        (String) row[1],    // documentTitle
+                        (String) row[2],    // documentDescription
+                        (String) row[3],    // documentUrl
+                        (Boolean) row[4],   // deleted
+                        (String) row[5],    // categoryLevel1
+                        (String) row[6],    // categoryLevel2
+                        (String) row[7],     // categoryLevel3
+                        (Integer) row[8],
+                        (Integer) row[9],    // categoryLevel2
+                        convertTimestampToLocalDateTime(row[10]),     // categoryLevel3
+                        (Boolean) row[11]
+                ))
+                .collect(Collectors.toList());
+
+        // Return the mapped result as a Page
+        return new PageImpl<>(documentWithCategoriesList, pageable, resultsPage.getTotalElements());
+    }
+
+
+    public GeneralDocument saveDocument(MultipartFile file, String title, String description, int idCategory, MultipartFile thumbnail, String status) throws Exception {
         GeneralDocument generalDocument = firebaseStorageService.uploadFile(file, title, description, idCategory);
         generalDocument.setImage_url(firebaseStorageService.uploadFileImage(thumbnail));
+        generalDocument.setStatus(status);
         return generalDocumentRepository.save(generalDocument);
     }
 
-    public GeneralDocument updateGeneralDocument(int id, UpdateDocumentRequest updateRequest) {
-        Optional<GeneralDocument> existingDocumentOpt = generalDocumentRepository.findById(id);
-        if (existingDocumentOpt.isPresent()) {
-            GeneralDocument existingDocument = existingDocumentOpt.get();
-
-            Optional<Category> categoryOpt = categoryRepository.findById(updateRequest.getIdCategory());
-            if (categoryOpt.isPresent()) {
-                Category category = categoryOpt.get();
-                existingDocument.setTitle(updateRequest.getTitle());
-                existingDocument.setDescription(updateRequest.getDescription());
-                existingDocument.setUrl(updateRequest.getUrl());
-                existingDocument.setCategory(category);
-                existingDocument.setUpdatedAt(LocalDateTime.now());
-
-                return generalDocumentRepository.save(existingDocument);
-            } else {
-                System.out.println("Category not found with id: " + updateRequest.getIdCategory());
-                return null;
-            }
-        } else {
-            System.out.println("Document not found with id: " + id);
-            return null;
+    public Boolean updateGeneralDocument(GeneralDocument updateRequest) {
+        GeneralDocument update = generalDocumentRepository.saveAndFlush(updateRequest);
+        if (update == null) {
+            return false;
         }
+        return true;
     }
 
     public Optional<GeneralDocumentDetails> getDocumentDetailsById(int id) {
@@ -220,6 +305,7 @@ public class GeneralDocumentsService {
 
         return Optional.of(documentDetails);
     }
+
     public Page<GeneralDocumentDTO_User> getDocumentsByAccountIdUser(Long accountId, int page, int size) {
         int offset = page * size;
 
@@ -238,6 +324,7 @@ public class GeneralDocumentsService {
 
         return new PageImpl<>(documents, PageRequest.of(page, size), totalElements);
     }
+
     public GeneralDocument hideGeneralDocumentAdmin(int documentID) {
         // Tìm tài khoản theo ID
         Optional<GeneralDocument> accountOpt = generalDocumentRepository.findById(documentID);
@@ -248,6 +335,28 @@ public class GeneralDocumentsService {
             account.setDeleted(true);
             account.setDeletedDate(LocalDateTime.now());
             // Lưu thay đổi
+            return generalDocumentRepository.save(account);
+        } else {
+            throw new RuntimeException("Test not found with id: " + documentID);
+        }
+    }
+
+    public GeneralDocument updateStatusActive(int documentID) {
+        Optional<GeneralDocument> accountOpt = generalDocumentRepository.findById(documentID);
+        if (accountOpt.isPresent()) {
+            GeneralDocument account = accountOpt.get();
+            account.setStatus("ACTIVE");
+            return generalDocumentRepository.save(account);
+        } else {
+            throw new RuntimeException("Test not found with id: " + documentID);
+        }
+    }
+
+    public GeneralDocument updateStatusInActive(int documentID) {
+        Optional<GeneralDocument> accountOpt = generalDocumentRepository.findById(documentID);
+        if (accountOpt.isPresent()) {
+            GeneralDocument account = accountOpt.get();
+            account.setStatus("INACTIVE");
             return generalDocumentRepository.save(account);
         } else {
             throw new RuntimeException("Test not found with id: " + documentID);
@@ -268,10 +377,72 @@ public class GeneralDocumentsService {
             throw new RuntimeException("Account not found with id: " + documentID);
         }
     }
+
     public GeneralDocument incrementViewCount(int documentId) {
         GeneralDocument document = generalDocumentRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Document not found with id: " + documentId));
         document.setView(document.getView() + 1);
         return generalDocumentRepository.save(document);
     }
+
+    private LocalDateTime convertTimestampToLocalDateTime(Object timestampObj) {
+        if (timestampObj instanceof Timestamp) {
+            Timestamp timestamp = (Timestamp) timestampObj;
+            return timestamp.toLocalDateTime();
+        }
+        return null;
+    }
+
+    public Page<AdminDocumentDTORestoreList> getGeneralDocument(Integer categoryId1, Integer categoryId2, Integer categoryId3, String title, String deletedDate, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Object[]> resultPage = generalDocumentRepository.findGeneralDocumentsBy(categoryId1, categoryId2, categoryId3, title, deletedDate, pageable);
+        List<AdminDocumentDTORestoreList> adminDocumentDTORestoreLists = new ArrayList<>();
+        for (Object[] result : resultPage) {
+            AdminDocumentDTORestoreList dto = new AdminDocumentDTORestoreList();
+            dto.setId((Integer) result[0]);
+            LocalDateTime createAt = convertTimestampToLocalDateTime(result[1]);
+            dto.setCreatedAt(createAt);
+            dto.setDescription((String) result[2]);
+
+            dto.setImage((String) result[3]);
+            dto.setTitle((String) result[4]);
+
+            LocalDateTime updateAt = convertTimestampToLocalDateTime(result[5]);
+            dto.setUpdatedAt(updateAt);
+
+
+            dto.setUrl((String) result[6]);
+
+            dto.setView((Integer) result[7]);
+            dto.setIdCategory((Integer) result[8]);
+
+            LocalDateTime deleteAt = convertTimestampToLocalDateTime(result[9]);
+            dto.setDeletedDate(deleteAt);
+            dto.setIsDeleted((Boolean) result[10]);
+            dto.setStatus((Boolean) result[11]);
+            adminDocumentDTORestoreLists.add(dto);
+        }
+        return new PageImpl<>(adminDocumentDTORestoreLists, pageable, resultPage.getTotalElements());
+    }
+
+    public GeneralDocument updateRestoreDocument(AdminDocumentDTORestoreList adminDocumentDTORestoreList) {
+        Optional<GeneralDocument> accountOptional = generalDocumentRepository.findById(adminDocumentDTORestoreList.getId());
+        if (accountOptional.isEmpty()) {
+            throw new RuntimeException("Document not found with id: " + adminDocumentDTORestoreList.getId());
+        } else {
+            GeneralDocument generalDocument = accountOptional.get();
+            generalDocument.setDeleted(false);
+            return generalDocumentRepository.save(generalDocument);
+        }
+    }
+
+    public void deleteRestoreDocument(AdminDocumentDTORestoreList adminDocumentDTORestoreList) {
+        Optional<GeneralDocument> generalDocument = generalDocumentRepository.findById(adminDocumentDTORestoreList.getId());
+        if (generalDocument.isEmpty()) {
+            throw new RuntimeException("Account not found with id: " + adminDocumentDTORestoreList.getId());
+        } else {
+            generalDocumentRepository.delete(generalDocument.get());
+        }
+    }
+
 }

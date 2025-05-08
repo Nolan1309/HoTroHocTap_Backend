@@ -1,10 +1,12 @@
 package com.example.hotrohoctapbackend.entity;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Data
 @Entity
 @Table(name = "lessons")
@@ -36,10 +38,28 @@ public class Lesson {
     @JsonIgnore
     private Course course;
 
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Test> tests;
+
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Video> videos;
+
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Progress> progresses;
+
     @Column(name = "deletedDate")
     private LocalDateTime deletedDate;
 
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
+
+    @Column(name = "is_test_excluded")
+    private String isTestExcluded;
+
+    @Column(name = "topic")
+    private String topic;
+
+    @Column(name = "status")
+    private boolean status = false;
 
 }

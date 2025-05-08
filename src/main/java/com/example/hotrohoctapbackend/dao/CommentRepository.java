@@ -43,4 +43,32 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
             countQuery = "SELECT COUNT(*) FROM comments c",
             nativeQuery = true)
     Page<Object[]> findAllComments(Pageable pageable);
+
+    @Query(value = """
+            SELECT cm.id, cm.content, cm.created_at, cm.deleted_date, cm.is_approved, cm.is_deleted, cm.updated_at, cm.acc_id, cm.content_id, cm.lesson_id, cm.video_id
+            FROM comments cm\s
+            WHERE cm.is_deleted = 1
+            AND (:content IS NULL OR LOWER(cm.content) LIKE LOWER(CONCAT('%', :content, '%')))
+            AND (:deletedDate IS NULL OR DATE(cm.deleted_date) = :deletedDate)
+            """,
+            countQuery = """
+                    SELECT COUNT(*) FROM comments cm\s
+                    WHERE cm.is_deleted = 1
+                    AND (:content IS NULL OR LOWER(cm.content) LIKE LOWER(CONCAT('%', :content, '%')))
+                    AND (:deletedDate IS NULL OR DATE(cm.deleted_date) = :deletedDate)
+                    """,
+            nativeQuery = true)
+    Page<Object[]> findComments(
+            @Param("content") String content,
+            @Param("deletedDate") String deletedDate,
+            Pageable pageable);
+
+    List<Comment> findCommentsByAccount_Id(Integer accountId);
+
+    @Query("SELECT c FROM Comment c WHERE " +
+            "(:content IS NULL OR c.content LIKE %:content%) AND " +
+            "(:status IS NULL OR c.status = :status) AND " +
+            "(:targetType IS NULL OR c.targetType = :targetType) AND " +
+            "c.isDeleted = false")
+    Page<Comment> findAllWithFilters(String content, Comment.Status status, Comment.TargetType targetType, Pageable pageable);
 }

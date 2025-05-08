@@ -1,8 +1,7 @@
 package com.example.hotrohoctapbackend.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cache;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,15 +21,15 @@ public class Course {
 
     @ManyToOne
     @JoinColumn(name = "course_category_id")
-    private CourseCategory courseCategory;
+    private Category category;
 
-    @Column(name = "description",columnDefinition = "LONGTEXT")
+    @Column(name = "description", columnDefinition = "LONGTEXT")
     private String description;
 
     @Column(name = "image_url", columnDefinition = "LONGTEXT")
     private String image_url;
 
-    @Column(name = "course_output",columnDefinition = "LONGTEXT")
+    @Column(name = "course_output", columnDefinition = "LONGTEXT")
     private String courseOutput;
 
     @Column(name = "language")
@@ -38,11 +37,16 @@ public class Course {
 
     @Column(name = "author")
     private String author;
+
+    @Column(name = "level")
+    private String level;
+
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
+
     @Column(name = "duration")
-    private String duration;
+    private Integer duration;
 
     @Column(name = "cost")
     private BigDecimal cost;
@@ -59,7 +63,7 @@ public class Course {
     @Column(name = "status")
     private Boolean status;
 
-    @Column(name="type")
+    @Column(name = "type")
     private String type;
 
     @Column(name = "deletedDate")
@@ -67,6 +71,34 @@ public class Course {
 
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Chapter> chapters;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Lesson> lessons;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Review> reviews;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Course_Discount> courseDiscounts;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Enrolled_Courses> enrolledCourses;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<TestResult> testResults;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<TestUserAnswer> testUserAnswers;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Progress> progresses;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PaymentDetail> paymentDetails;
+
 
     @PrePersist
     protected void onCreate() {

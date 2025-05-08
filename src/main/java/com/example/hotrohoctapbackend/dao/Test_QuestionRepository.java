@@ -2,7 +2,9 @@ package com.example.hotrohoctapbackend.dao;
 
 import com.example.hotrohoctapbackend.entity.Test_Question;
 import io.lettuce.core.dynamic.annotation.Param;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
@@ -17,5 +19,12 @@ public interface Test_QuestionRepository extends JpaRepository<Test_Question, In
 
     @Query(value = "SELECT id, question_id, test_id FROM test_answers WHERE test_id = :testId", nativeQuery = true)
     List<Test_Question> findTestAnswersByTestId(@Param("testId") Integer testId);
+
     void deleteByTestId(Integer testId);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Test_Question tq WHERE tq.test.id = :testId AND tq.question.id = :questionIds")
+    int deleteQuestionsByTestIdAndQuestionId(@Param("testId") Integer testId, @Param("questionIds") Integer questionIds);
+
 }

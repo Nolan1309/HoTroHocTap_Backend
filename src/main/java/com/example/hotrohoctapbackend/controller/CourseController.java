@@ -1,40 +1,80 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.Admin.*;
+import com.example.hotrohoctapbackend.DTO.AdminV2.*;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Course.CourseDTOAdminV3;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Course.CourseDTOUserPublic;
 import com.example.hotrohoctapbackend.DTO.CourseDTO;
 import com.example.hotrohoctapbackend.DTO.User.ChapterDTOUserView;
 import com.example.hotrohoctapbackend.DTO.User.CourseDTO_User_Profile;
 import com.example.hotrohoctapbackend.DTO.CourseDetailDTO;
 import com.example.hotrohoctapbackend.DTO.User.CourseInfoDetailDTO_User;
 import com.example.hotrohoctapbackend.DTO.User.LessonDTOUserView;
+import com.example.hotrohoctapbackend.config.ImageKitService;
+import com.example.hotrohoctapbackend.dao.CourseRepository;
+import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Lesson;
+import com.example.hotrohoctapbackend.exception.ApiResponse;
 import com.example.hotrohoctapbackend.service.CourseService;
 import com.example.hotrohoctapbackend.service.EnrolledCourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/courses")
 public class CourseController {
 
     @Autowired
     private CourseService courseService;
+
+    @Autowired
+    private CourseRepository courseRepository;
     @Autowired
     private EnrolledCourseService enrolledCoursesService;
+    @Autowired
+    private ImageKitService imageKitService;
+
+    @GetMapping()
+    public ResponseEntity<Page<CourseDTO>> getAllCourses(Pageable pageable) {
+        Page<CourseDTO> coursesPage = courseService.getAllCourse(pageable);
+        if (coursesPage.hasContent()) {
+            return ResponseEntity.ok(coursesPage);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        }
+    }
+
+    @GetMapping("/public/filter")
+    public ApiResponse<Page<CourseDTOUserPublic>> getCourses(
+            @RequestParam(required = false, defaultValue = "") String type,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<CourseDTOUserPublic> courses = courseService.getCoursesPublic(type, title, categoryId, pageable);
+        return new ApiResponse<>(200, "Success", courses);
+    }
 
     @GetMapping("/{id}")
-    public CourseDetailDTO getCourseById(@PathVariable Integer id) {
-        return courseService.getCourseDetailById(id);
+    public ApiResponse<CourseDTOAdminV3> getCourseById(@PathVariable int id) {
+        CourseDTOAdminV3 courseDTO = courseService.getCourseById(id);
+        return new ApiResponse<>(200, "Success", courseDTO);
     }
 
     @GetMapping("/statistics/{courseId}")
@@ -48,16 +88,6 @@ public class CourseController {
         return courseService.getTop_6_CoursesWithDetails();
     }
 
-    @GetMapping()
-    public ResponseEntity<Page<CourseDTO>> getAllCourses(Pageable pageable) {
-        Page<CourseDTO> coursesPage = courseService.getAllCourse(pageable);
-        if (coursesPage.hasContent()) {
-            return ResponseEntity.ok(coursesPage);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
-        }
-    }
 
     @GetMapping("/category/{courseCategoryId}")
     public ResponseEntity<Page<CourseDTO>> getCoursesByCategory(@PathVariable Integer courseCategoryId, Pageable pageable) {
@@ -72,9 +102,10 @@ public class CourseController {
 
     @GetMapping("/categories")
     public ResponseEntity<Page<CourseDTO>> getCoursesByCategories(
-            @RequestParam List<Integer> courseCategoryIds,
+            @RequestParam Integer categoryId,
+            @RequestParam Integer categoryIds,
             Pageable pageable) {
-        Page<CourseDTO> coursesPage = courseService.getCoursesByCategories(courseCategoryIds, pageable);
+        Page<CourseDTO> coursesPage = courseService.getCoursesByCategories(categoryId, categoryIds, pageable);
 
         // Trả về danh sách rỗng và mã 200 OK thay vì 404 Not Found
         return ResponseEntity.ok(coursesPage);
@@ -111,26 +142,108 @@ public class CourseController {
         return ResponseEntity.ok(courseDetails);
     }
 
-    //Admin
     @PostMapping("/add-course")
-    public ResponseEntity<Course> addCourse(@RequestBody AdminAddCourseDTO courseDTO) {
-        Course createdCourse = courseService.addCourse(courseDTO);
-        return new ResponseEntity<>(createdCourse, HttpStatus.CREATED);
-    }
+    public ResponseEntity<ApiResponse<Course>> addCourse(
+            @RequestParam("coursesTitle") String title,
+            @RequestParam("author") String author,
+            @RequestParam("description") String description,
+            @RequestParam("duration") Integer duration,
+            @RequestParam("language") String language,
+            @RequestParam("cost") String cost,
+            @RequestParam("price") String price,
+            @RequestParam("level") String level,
+            @RequestParam("courseOutput") String courseOutput,
+            @RequestParam("image") MultipartFile image,  // Nhận file hình ảnh
+            @RequestParam("courseCategoryId") Integer courseCategoryId,
+            @RequestParam("accountId") Integer accountId,
+            @RequestParam("type") String type,
+            @RequestParam("status") Boolean status) {
 
-    @PutMapping("/update-course/{courseId}")
-    public ResponseEntity<Course> updateCourse(
-            @PathVariable Integer courseId,
-            @RequestBody AdminAddCourseDTO courseDTO) {
         try {
-            Course updatedCourse = courseService.editCourse(courseId, courseDTO);
-            return ResponseEntity.ok(updatedCourse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            // Tiến hành lưu file nếu có
+            String imageUrl = null;
+            if (!image.isEmpty()) {
+                imageUrl = imageKitService.uploadFromBytes(image).getUrl(); // Giả sử sử dụng dịch vụ upload hình ảnh
+            }
+
+            // Tạo DTO cho khóa học
+            AdminAddCourseDTO adminAddCourseDTO = new AdminAddCourseDTO();
+            adminAddCourseDTO.setCoursesTitle(title);
+            adminAddCourseDTO.setAuthor(author);
+            adminAddCourseDTO.setDescription(description);
+            adminAddCourseDTO.setDuration(duration);
+            adminAddCourseDTO.setLevel(level);
+            adminAddCourseDTO.setLanguage(language);
+            adminAddCourseDTO.setCost(new BigDecimal(cost));
+            adminAddCourseDTO.setPrice(new BigDecimal(price));
+            adminAddCourseDTO.setCourseOutput(courseOutput);
+            adminAddCourseDTO.setImageUrl(imageUrl);
+            adminAddCourseDTO.setType(type);
+            adminAddCourseDTO.setStatus(status);
+            adminAddCourseDTO.setAccountId(accountId);
+            adminAddCourseDTO.setCourseCategoryId(courseCategoryId);
+            // Gọi service để thêm khóa học
+            Course createdCourse = courseService.addCourse(adminAddCourseDTO);
+
+            // Trả về response với status 201 và khóa học vừa tạo
+            ApiResponse<Course> response = new ApiResponse<>(HttpStatus.CREATED.value(), "Thêm khóa học thành công", createdCourse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            // Trả về lỗi nếu có vấn đề trong quá trình thêm khóa học
+            ApiResponse<Course> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi khi thêm khóa học", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+
+    @PutMapping("/update-course/{courseId}")
+    public ResponseEntity<ApiResponse<Boolean>> updateCourse(
+            @PathVariable Integer courseId,
+            @RequestParam("coursesTitle") String title,
+            @RequestParam("author") String author,
+            @RequestParam("description") String description,
+            @RequestParam("duration") Integer duration,
+            @RequestParam("language") String language,
+            @RequestParam("cost") String cost,
+            @RequestParam("level") String level,
+            @RequestParam("price") String price,
+            @RequestParam("courseOutput") String courseOutput,
+            @RequestParam(value = "image", required = false) MultipartFile image, // Nhận file hình ảnh, có thể null
+            @RequestParam("courseCategoryId") Integer courseCategoryId,
+            @RequestParam("accountId") Integer accountId,
+            @RequestParam("type") String type,
+            @RequestParam("status") Boolean status) {
+
+        try {
+            // Tìm khóa học cần chỉnh sửa từ ID
+            Course existingCourse = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new RuntimeException("Course not found"));
+
+            // Nếu có file hình ảnh mới, tiến hành lưu và lấy URL
+            String imageUrl = existingCourse.getImage_url(); // Nếu không có ảnh mới, giữ nguyên URL cũ
+            if (image != null && !image.isEmpty()) {
+                // Giả sử bạn sử dụng dịch vụ để upload ảnh và lấy URL
+                imageUrl = imageKitService.uploadFromBytes(image).getUrl();
+            }
+            // Gọi service để xử lý logic cập nhật
+            Boolean updatedCourse = courseService.updateCourse(courseId, title, author, description, duration, language, cost, price, courseOutput, courseCategoryId, accountId, type, status, imageUrl, existingCourse, level);
+
+            // Trả về phản hồi thành công
+            ApiResponse<Boolean> response = new ApiResponse<>(HttpStatus.OK.value(), "Cập nhật khóa học thành công", updatedCourse);
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            // Lỗi nếu không tìm thấy khóa học
+            ApiResponse<Boolean> response = new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "Khóa học không tồn tại", false);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            // Lỗi khi có vấn đề khác
+            ApiResponse<Boolean> response = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi khi cập nhật khóa học", false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
 
     @GetMapping("/getall")
     public ResponseEntity<Page<AdminCourseGetDTO>> getCourses(
@@ -141,8 +254,8 @@ public class CourseController {
     }
 
     @GetMapping("/getall-list")
-    public ResponseEntity<List<AdminCourseResultDTO>> getAllCoursesListAdmin() {
-        List<AdminCourseResultDTO> courses = courseService.getAllCoursesListAdmin();
+    public ResponseEntity<List<AdminCourseFilterDTO_V2>> getAllCoursesListAdmin() {
+        List<AdminCourseFilterDTO_V2> courses = courseService.getAllCoursesListAdmin();
 
         // Kiểm tra nếu không có dữ liệu
         if (courses.isEmpty()) {
@@ -189,7 +302,7 @@ public class CourseController {
     }
 
     @GetMapping("/courses/ofaccount/{accountId}")
-    public Page<AdminCourseResultDTO> getCoursesByAccountId(
+    public Page<AdminCourseResultDTO_V2> getCoursesByAccountId(
             @PathVariable("accountId") int accountId,
             @RequestParam(value = "page", defaultValue = "0") int page, // Giá trị mặc định là 0
             @RequestParam(value = "size", defaultValue = "10") int size // Giá trị mặc định là 10
@@ -198,11 +311,29 @@ public class CourseController {
     }
 
     @GetMapping("/getallresult")
-    public Page<AdminCourseResultDTO> getAllCourses(
+    public Page<AdminCourseResultDTO_V2> getAllCourses(
             @RequestParam(value = "page", defaultValue = "0") int page, // Giá trị mặc định là 0
             @RequestParam(value = "size", defaultValue = "10") int size // Giá trị mặc định là 10
     ) {
         return courseService.getAllCoursesAdmin(page, size);
+    }
+
+    @GetMapping("/all-get-result-search")
+    public Page<AdminCourseDTOList> getAllCoursesSearch(
+            @RequestParam(required = false) Integer categoryId1,
+            @RequestParam(required = false) Integer categoryId2,
+            @RequestParam(required = false) Integer categoryId3,
+            @RequestParam(required = false) String searchTerm,
+            @RequestParam(value = "page", defaultValue = "0") int page, // Giá trị mặc định là 0
+            @RequestParam(value = "size", defaultValue = "10") int size // Giá trị mặc định là 10
+    ) {
+//        return courseService.getAllCoursesAdminSearch(categoryId1, categoryId2, categoryId3, searchTerm, page, size);
+        return courseService.getAllCoursesAdmin(categoryId3, searchTerm, page, size);
+    }
+
+    @GetMapping("/get-all-result-list")
+    public List<AdminCourseResultDTO_V2> getAllCoursesList() {
+        return courseService.getAllCoursesList();
     }
 
     @GetMapping("/courses/discounts")
@@ -249,7 +380,7 @@ public class CourseController {
     }
 
     @GetMapping("/courses/{courseId}/check-completion")
-    public boolean checkCourseCompletion(@PathVariable Long courseId) {
+    public boolean checkCourseCompletion(@PathVariable Integer courseId) {
         return courseService.checkCourseCompleteness(courseId);
     }
 
@@ -287,4 +418,61 @@ public class CourseController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/restore/list-all-courses")
+    public Page<AdminCourseDTORestoreList> getDeletedCourses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return courseService.getDeletedCourses(pageRequest);
+    }
+
+    @GetMapping("/restore-no-delete/list-all-no-courses")
+    public List<AdminCourseDTORestoreList> getNoDeletedCourses() {
+        return courseService.getNoDeletedCoursesList();
+    }
+
+    //COze - Lay all khoa hoc - Ko check
+    @GetMapping("/public/course-all")
+    public DataExportPublic getCoursesListPublicQuery(@RequestParam(required = false) String author,
+                                                      @RequestParam(required = false) String title,
+                                                      @RequestParam(required = false) String language,
+                                                      @RequestParam(required = false) String price,
+                                                      @RequestParam(required = false) String type
+
+    ) {
+        DataExportPublic dataExportPublic = new DataExportPublic();
+        dataExportPublic.setData(courseService.getCoursesListPublicQuery(author, title, language, type, price));
+        return dataExportPublic;
+    }
+
+    @GetMapping("/restore/list-all/search-courses")
+    public ResponseEntity<Page<AdminCourseDTORestoreList>> searchAccounts(
+            @RequestParam(required = false) String courseTitle,
+            @RequestParam(required = false) String deletedDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<AdminCourseDTORestoreList> result = courseService.getDeletedCoursesSearch(courseTitle, deletedDate, page, size);
+        return ResponseEntity.ok(result);
+    }
+
+    @PutMapping("/restore/{courseId}")
+    public ResponseEntity<Course> restoreCourse(@PathVariable Integer courseId) {
+        AdminCourseDTORestoreList accountDetails = new AdminCourseDTORestoreList();
+        accountDetails.setId(courseId);
+        Course restoredAccount = courseService.updateRestoreCourse(accountDetails);
+        return ResponseEntity.ok(restoredAccount);
+    }
+
+    @DeleteMapping("/delete/{courseId}")
+    public ResponseEntity<String> deleteCourse(@PathVariable Integer courseId) {
+        AdminCourseDTORestoreList accountDetails = new AdminCourseDTORestoreList();
+        accountDetails.setId(courseId);
+        courseService.deleteRestoreCourse(accountDetails);
+        return ResponseEntity.ok("Course permanently deleted.");
+    }
+
+
 }
