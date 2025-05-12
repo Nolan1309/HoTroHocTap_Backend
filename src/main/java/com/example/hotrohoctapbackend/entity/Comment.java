@@ -3,7 +3,6 @@ package com.example.hotrohoctapbackend.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -20,19 +19,33 @@ public class Comment {
 
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
+    
 
     @ManyToOne
-    @JoinColumn(name = "content_id", nullable = true)
-    private Comment comment;
+    @JoinColumn(name = "parent_comment_id", nullable = true)
+    private Comment parentComment;
+
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Comment> replies;
+
 
     @ManyToOne
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
 
-    @Column(name = "is_approved")
-    private boolean isApproved;
+    @ManyToOne
+    @JoinColumn(name = "video_id")
+    private Video video;
 
-    @Column(name = "created_at")
+    @ManyToOne
+    @JoinColumn(name = "acc_id", nullable = false)
+    private Account account;
+
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Column(name = "created_at", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
@@ -40,17 +53,30 @@ public class Comment {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "video_id", nullable = false)
-    private Video video;
 
-    @ManyToOne
-    @JoinColumn(name = "acc_id", nullable = false)
-    private Account account;
+    @Column(name = "target_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TargetType targetType;
 
-    @Column(name = "deletedDate")
-    private LocalDateTime deletedDate;
 
-    @Column(name = "isDeleted")
-    private boolean isDeleted = false; // Đặt mặc định là false
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    // Enum for status
+    public enum Status {
+        PUBLISHED,
+        PENDING,
+        REJECTED
+    }
+
+    // Enum for target type (course, lesson, material, article)
+    public enum TargetType {
+        COURSE,
+        LESSON,
+        MATERIAL,
+        ARTICLE
+    }
 }

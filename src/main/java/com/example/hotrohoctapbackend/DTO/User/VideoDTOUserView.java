@@ -1,26 +1,36 @@
 package com.example.hotrohoctapbackend.DTO.User;
 
+import lombok.Getter;
+
 public class VideoDTOUserView {
 
     private Integer videoId;
     private String videoTitle;
     private Integer videoDuration;
-    private Boolean viewTest;
+    private Boolean isPreview;
+
+    @Getter
+    private String linkVideo;
 
     // Constructor, getters, setters
-    public VideoDTOUserView(Integer videoId, String videoTitle, Integer videoDuration,Boolean viewTest) {
+    public VideoDTOUserView(Integer videoId, String videoTitle, Integer videoDuration, Boolean viewTest, String linkVideo) {
         this.videoId = videoId;
         this.videoTitle = videoTitle;
         this.videoDuration = videoDuration;
-        this.viewTest = viewTest;
+        this.isPreview = viewTest;
+        this.linkVideo = linkVideo;
     }
 
-    public Boolean getViewTest() {
-        return viewTest;
+    public void setLinkVideo(String linkVideo) {
+        this.linkVideo = linkVideo;
     }
 
-    public void setViewTest(Boolean viewTest) {
-        this.viewTest = viewTest;
+    public Boolean getPreview() {
+        return isPreview;
+    }
+
+    public void setPreview(Boolean preview) {
+        isPreview = preview;
     }
 
     public Integer getVideoId() {

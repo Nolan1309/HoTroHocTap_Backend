@@ -5,13 +5,31 @@ import java.time.LocalDateTime;
 public class AccountDTO {
     private String fullname;
     private String email;
+    private String image;
     private String password;
     private String phone;
+    private String birthday;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private int roleId;
 
     public AccountDTO() {
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(String birthday) {
+        this.birthday = birthday;
     }
 
     public String getFullname() {

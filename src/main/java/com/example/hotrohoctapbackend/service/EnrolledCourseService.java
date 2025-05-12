@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminCourseEnrolledDTO;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Student.StudentDTO;
 import com.example.hotrohoctapbackend.DTO.CountCourseDTO;
 import com.example.hotrohoctapbackend.DTO.User.AccountSendNotification_User;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
@@ -9,8 +10,10 @@ import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Course;
 import com.example.hotrohoctapbackend.entity.Enrolled_Courses;
 import com.example.hotrohoctapbackend.entity.RoleUser;
+import com.example.hotrohoctapbackend.exception.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,9 @@ import java.util.stream.Collectors;
 public class EnrolledCourseService {
     @Autowired
     private Enrolled_CoursesRepository enrolledCoursesRepository;
+
+    @Autowired
+    private StudentCourseDataService studentCourseDataService;
 
     @Autowired
     private AccountRepository accountRepository;
@@ -58,6 +64,46 @@ public class EnrolledCourseService {
 
     public boolean isUserEnrolled(Long userId, Long courseId) {
         return enrolledCoursesRepository.findEnrolledCourse(userId, courseId).isPresent();
+    }
+//    public boolean isUserEnrolledComplete(Long userId, Long courseId) {
+//
+//    }
+
+    public ApiResponse<List<StudentDTO>> getStudentsByCourseId(
+            int courseId,
+            String searchTerm,
+            List<String> roles,
+            int page,
+            int size
+    ) {
+        // Tạo phân trang
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Tìm danh sách học viên với phân trang, tìm kiếm và lọc theo vai trò
+        Page<Enrolled_Courses> enrolledCourses = enrolledCoursesRepository.findStudentsByCourseIdAndSearchTermAndRole(
+                courseId,
+                searchTerm,
+                roles,
+                pageable
+        );
+
+        // Chuyển đổi Enrolled_Courses thành StudentDTO
+        List<StudentDTO> students = enrolledCourses.stream().map(enrolled -> {
+            Account account = enrolled.getAccount();
+            Double progress = studentCourseDataService.getAssignmentCompletionRate(account.getId(), courseId);
+            return new StudentDTO(
+                    String.valueOf(account.getId()),
+                    account.getFullname(),
+                    account.getEmail(),
+                    account.getPhone(),
+                    enrolled.getEnrollmentDate().toString(),  // Giả sử có trường enrollmentDate trong Enrolled_Courses
+                    progress,
+                    enrolled.getStatus(),
+                    account.getRole().getRoleName()  // Role của học viên (Student, Teacher, ...)
+            );
+        }).collect(Collectors.toList());
+
+        return new ApiResponse<>(200, "Successfully fetched students", students);
     }
 
     public CountCourseDTO getEnrolledCoursesByAccountId(Integer accountId) {
@@ -112,6 +158,7 @@ public class EnrolledCourseService {
         }
         return allUser;
     }
+
     public Page<AdminCourseEnrolledDTO> getAccountsByCourseId(int courseId, Pageable pageable) {
         // Truy vấn dữ liệu từ repository
         Page<Object[]> results = enrolledCoursesRepository.findAccountsByCourseIdAndStatus(courseId, pageable);
@@ -126,6 +173,7 @@ public class EnrolledCourseService {
 
         return accountDTOs;
     }
+
     public String getStatusByAccountAndCourse(Integer accountId, Integer courseId) {
         Optional<Enrolled_Courses> enrolledCourse = enrolledCoursesRepository
                 .findByAccount_IdAndCourse_Id(accountId, courseId);
@@ -144,11 +192,16 @@ public class EnrolledCourseService {
         enrolledCoursesRepository.save(enrolledCourseEntity);
         return "Success";
     }
+
     public List<String> getEnrolledAccounts(Long accountId) {
         return enrolledCoursesRepository.findEnrolledAccountsByCourseOwner(accountId);
     }
 
     public List<String> getCourseAuthors(Long accountId) {
         return enrolledCoursesRepository.findCourseAuthorsByAccountId(accountId);
+    }
+
+    public List<Enrolled_Courses> getAllEnroll_Course(Integer accountId) {
+        return enrolledCoursesRepository.findByAccountId(accountId);
     }
 }

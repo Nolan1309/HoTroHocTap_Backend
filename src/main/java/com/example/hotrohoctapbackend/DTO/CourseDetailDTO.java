@@ -1,9 +1,5 @@
 package com.example.hotrohoctapbackend.DTO;
 
-import com.example.hotrohoctapbackend.entity.CourseCategory;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -19,7 +15,7 @@ public class CourseDetailDTO {
     private String courseOutput;
     private LocalDateTime createdAt;
     private String description;
-    private String duration;
+    private Integer duration;
     private String image_url;
     private String language;
     private BigDecimal price;
@@ -32,7 +28,7 @@ public class CourseDetailDTO {
     public CourseDetailDTO() {
     }
 
-    public CourseDetailDTO(int id, String author, BigDecimal cost, String courseOutput, LocalDateTime createdAt, String description, String duration, String image_url, String language, BigDecimal price, Boolean status, String title, LocalDateTime updatedAt, int course_category_id) {
+    public CourseDetailDTO(int id, String author, BigDecimal cost, String courseOutput, LocalDateTime createdAt, String description, Integer duration, String image_url, String language, BigDecimal price, Boolean status, String title, LocalDateTime updatedAt, int course_category_id) {
         this.id = id;
         this.author = author;
         this.cost = cost;

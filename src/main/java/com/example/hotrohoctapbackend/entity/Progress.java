@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class Progress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
 
     @Column(name = "video_completed", columnDefinition = "BIT", nullable = false)

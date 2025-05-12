@@ -1,7 +1,8 @@
 package com.example.hotrohoctapbackend.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class GeneralDocument {
     @JoinColumn(name = "id_category")
     private Category category;
 
-    @Column(name = "image", columnDefinition = "TEXT")
+    @Column(name = "image", columnDefinition = "LONGTEXT")
     private String image_url;
 
     @Column(name = "url", columnDefinition = "TEXT")
@@ -27,10 +28,16 @@ public class GeneralDocument {
     @Column(name = "title")
     private String title;
 
+    @Column(name = "format")
+    private String format;
+
+    @Column(name = "size")
+    private String size;
+
     @Column(name = "view")
     private int view;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "created_at")
@@ -44,6 +51,12 @@ public class GeneralDocument {
 
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
+
+    @Column(name = "status")
+    private String status;
+
+    @OneToMany(mappedBy = "generalDocument", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<GeneralDocument_Acount> generalDocumentAcounts;
 
     @PrePersist
     protected void onCreate() {

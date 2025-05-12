@@ -4,13 +4,23 @@ public class CategoryDTO {
     private int id;
     private int level;
     private String name;
+    private String type;
     private Long parentId;
 
-    public CategoryDTO(int id, int level, String name, Long parentId) {
+    public CategoryDTO(int id, int level, String name,String type, Long parentId) {
         this.id = id;
         this.level = level;
         this.name = name;
+        this.type = type;
         this.parentId = parentId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public int getId() {

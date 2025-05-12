@@ -45,6 +45,11 @@ public interface ProgressRepository extends JpaRepository<Progress, Integer> {
             Integer accountId, Integer courseId, Integer chapterId, Boolean chapterTested
     );
 
+    @Query(value = "SELECT p.id, p.is_chapter_test, p.completed_at, p.test_completed, p.test_score, p.video_completed, p.account_id, p.chapter_id, p.course_id, p.lesson_id " +
+            "FROM progress p " +
+            "WHERE p.account_id = :accountId AND p.course_id = :courseId", nativeQuery = true)
+    List<Object[]> findByAccountIdAndCourseId(Integer accountId, Integer courseId);
+
     @Query(value = "SELECT c.id FROM chapters c WHERE c.course_id = :courseId ORDER BY c.id ASC", nativeQuery = true)
     List<Integer> findAllChaptersByCourseId(@Param("courseId") Integer courseId);
 
@@ -65,7 +70,7 @@ public interface ProgressRepository extends JpaRepository<Progress, Integer> {
             Integer accountId, Integer courseId, Integer chapterId, Integer lessonId, boolean chapterTested);
 
     @Query(value = "SELECT COUNT(DISTINCT CASE WHEN p.lesson_id IS NOT NULL THEN p.lesson_id END) as countLesson " +
-            "FROM progress p WHERE p.account_id = :accountId AND p.course_id = :courseId AND p.test_score > 0",nativeQuery = true)
+            "FROM progress p WHERE p.account_id = :accountId AND p.course_id = :courseId AND p.test_score > 0", nativeQuery = true)
     Long countCompletedLessonsUser(@Param("accountId") Integer accountId, @Param("courseId") Integer courseId);
 
     @Query(value = "SELECT COUNT(DISTINCT CASE WHEN p.is_chapter_test = true THEN p.chapter_id END) as countChapter " +
@@ -83,4 +88,12 @@ public interface ProgressRepository extends JpaRepository<Progress, Integer> {
     Optional<Progress> findProgressByChapterTest(@Param("courseId") int courseId,
                                                  @Param("accountId") int accountId,
                                                  @Param("chapterId") int chapterId);
+
+    @Query("SELECT COUNT(p) FROM Progress p WHERE p.account.id = :accountId AND p.course.id = :courseId AND p.chapter.id = :chapterId AND p.lesson.id = :lessonId")
+    long countAttemptsByLessonAndCourseAndAccount(
+            @Param("accountId") Integer accountId,
+            @Param("courseId") Integer courseId,
+            @Param("chapterId") Integer chapterId,
+            @Param("lessonId") Integer lessonId
+    );
 }

@@ -8,20 +8,21 @@ import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+
 @Data
 public class ReviewDTO {
-
     private int id;
-
     private int rating;
     private String review;
     private LocalDateTime updated_at;
     private LocalDateTime created_at;
-    private int account_id;
-    private int course_id;
+    private Integer account_id;
+    private Integer course_id;
+    private Integer test_id;
     private String fullname;
     private String image;
-    public ReviewDTO(Integer id, LocalDateTime created_at, int rating, String review, LocalDateTime updated_at, Integer account_id, Integer course_id, String name,String image) {
+
+    public ReviewDTO(Integer id, LocalDateTime created_at, int rating, String review, LocalDateTime updated_at, Integer account_id, Integer course_id, String name, String image, Integer testId) {
         this.id = id;
         this.account_id = account_id;
         this.course_id = course_id;
@@ -31,5 +32,8 @@ public class ReviewDTO {
         this.created_at = created_at;
         this.fullname = name;
         this.image = image;
+        this.test_id = testId;
     }
+
+
 }

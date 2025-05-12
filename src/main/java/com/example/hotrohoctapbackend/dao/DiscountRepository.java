@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.dao;
 
 import com.example.hotrohoctapbackend.entity.Discount;
+import com.example.hotrohoctapbackend.enums.DiscountFormat;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,4 +24,15 @@ public interface DiscountRepository extends JpaRepository<Discount, Integer> {
             "FROM discounts d WHERE d.id = :id",
             nativeQuery = true)
     List<Object[]> findDiscountById(@Param("id") Integer id);
+
+    List<Discount> findByIsDeletedTrue();
+
+    Discount findTopByOrderByCreatedAtDesc();
+
+    @Query("SELECT d FROM Discount d WHERE d.isDeleted = false AND (:title IS NULL OR d.title LIKE %:title%) " +
+            "AND (:format IS NULL OR d.format = :format)")
+    Page<Discount> findByTitleAndDiscountType(
+            @Param("title") String title,
+            @Param("format") DiscountFormat format,
+            Pageable pageable);
 }

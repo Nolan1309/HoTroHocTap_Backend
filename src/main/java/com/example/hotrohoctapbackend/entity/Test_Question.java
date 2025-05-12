@@ -3,8 +3,6 @@ package com.example.hotrohoctapbackend.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "test_answers")
 @Data

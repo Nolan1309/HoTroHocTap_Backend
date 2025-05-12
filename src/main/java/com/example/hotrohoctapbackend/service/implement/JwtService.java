@@ -23,7 +23,7 @@ import java.util.Map;
 
 @Component
 public class JwtService {
-//    public static final String SERECT = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+    //    public static final String SERECT = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
     @Value("${app.jwtSecret}")
     private String SERECT;
     @Autowired
@@ -34,12 +34,12 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
 
         boolean isAdmin = false;
-        boolean isStaff = false;
+        boolean isTeacher = false;
         boolean isUser = false;
+        boolean isUserVip = false;
+
+        boolean isHuitStudent = false;
         Account account = userService.findByEmail(tenDangNhap);
-//        System.out.println(account.getRole().getClass().getName());
-
-
         if (account != null && account.getAuthorities().size() > 0) {
             RoleUser role = account.getRole();
             if (role != null) {
@@ -47,16 +47,24 @@ public class JwtService {
                     isAdmin = true;
                 }
                 if (role.getRoleName().equals("TEACHER")) {
-                    isStaff = true;
+                    isTeacher = true;
                 }
                 if (role.getRoleName().equals("USER")) {
                     isUser = true;
                 }
+                if (role.getRoleName().equals("USERVIP")) {
+                    isUserVip = true;
+                }
+                if (role.getRoleName().equals("HUITSTUDENT")) {
+                    isHuitStudent = true;
+                }
             }
         }
         claims.put("isAdmin", isAdmin);
-        claims.put("isTeacher", isStaff);
+        claims.put("isTeacher", isTeacher);
         claims.put("isUser", isUser);
+        claims.put("isUserVip", isUserVip);
+        claims.put("isHuitStudent", isHuitStudent);
 
 //        claims.put("isAdmin", true);
 //        claims.put("x", "ABC");
@@ -69,7 +77,7 @@ public class JwtService {
                 .setClaims(claims)
                 .setSubject(tenDangNhap)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 120 * 60 * 1000)) // JWT hết hạn sau 30 phút
+                .setExpiration(new Date(System.currentTimeMillis() + 6 * 60 * 60 * 1000)) // JWT hết hạn sau 30 phút
                 .signWith(SignatureAlgorithm.HS256, getSigneKey())
                 .compact();
     }

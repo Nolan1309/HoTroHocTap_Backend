@@ -21,6 +21,7 @@ public class LessonDTOVideo_Admin {
     private String document_url;
 
     private Integer test_id;
+    private String topic;
     private String test_title;
 
 }

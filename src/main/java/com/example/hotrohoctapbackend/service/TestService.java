@@ -4,26 +4,38 @@ import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO_Version2;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestUpdateDTO;
 import com.example.hotrohoctapbackend.DTO.Admin.AdminUpdateTestToLesson;
+import com.example.hotrohoctapbackend.DTO.AdminV2.*;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Exam.ExamDTOPublic;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Exam.ExamDetailDTOPublic;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Exam.TestWithExamInfoDTO;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Test.TestDTO;
 import com.example.hotrohoctapbackend.DTO.User.TestDTO_User;
-import com.example.hotrohoctapbackend.dao.ChapterRepository;
-import com.example.hotrohoctapbackend.dao.CourseRepository;
-import com.example.hotrohoctapbackend.dao.LessonRepository;
-import com.example.hotrohoctapbackend.dao.TestRepository;
+import com.example.hotrohoctapbackend.config.ImageKitService;
+import com.example.hotrohoctapbackend.dao.*;
 import com.example.hotrohoctapbackend.entity.*;
-import org.jetbrains.annotations.NotNull;
+import com.example.hotrohoctapbackend.enums.DiscountStatus;
+import com.example.hotrohoctapbackend.enums.ExamLevel;
+import com.example.hotrohoctapbackend.enums.ExamStatus;
+import com.example.hotrohoctapbackend.enums.ExamType;
+import com.example.hotrohoctapbackend.exception.ApiResponse;
+//import org.jetbrains.annotations.NotNull;
+import com.google.firebase.database.annotations.NotNull;
+import io.imagekit.sdk.models.results.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,8 +47,27 @@ public class TestService {
     private LessonRepository lessonRepository;
     @Autowired
     private ChapterRepository chapterRepository;
+
+    @Autowired
+    private ExamInfoRepository examInfoRepository;
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private QuestionService questionService;
+
+    @Autowired
+    private ImageKitService imageKitService;
+    @Autowired
+    private Test_QuestionRepository testQuestionRepository;
+
+    @Autowired
+    private Course_DiscountRepository courseDiscountRepository;
+
+    @Transactional
+    public Test saveTest(Test test) {
+        return testRepository.save(test);
+    }
 
     public TestDTO_User getTestById(int id) {
         Optional<Test> item = testRepository.findById(id);
@@ -79,33 +110,7 @@ public class TestService {
     }
 
     @Transactional
-    public Test addTest(@NotNull AdminTestUpdateDTO newTestDTO) {
-//        // Khởi tạo một đối tượng Test mới
-//        Test test = new Test();
-//
-//        // Cập nhật các trường
-//        test.setTitle(newTestDTO.getTitle());
-//        test.setDescription(newTestDTO.getDescription());
-//        test.setTotalQuestion(newTestDTO.getTotalQuestion());
-//        test.setSummary(newTestDTO.getIsSummary());
-//        test.setCreatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
-//        test.setLesson(null);
-//
-//
-//        if (newTestDTO.getChapterId() != null) {
-//            Chapter chapter = chapterRepository.findById(newTestDTO.getChapterId())
-//                    .orElseThrow(() -> new RuntimeException("Chapter not found"));
-//            test.setChapter(chapter);
-//        }
-//
-//        if (newTestDTO.getCourseId() != null) {
-//            Course course = courseRepository.findById(newTestDTO.getCourseId())
-//                    .orElseThrow(() -> new RuntimeException("Course not found"));
-//            test.setCourse(course);
-//        }
-//
-//        // Lưu lại Test mới
-//        return testRepository.save(test);
+    public Test addTest(@NotNull AdminTestAddDTO_V2 newTestDTO) {
         // Kiểm tra xem đã có bài kiểm tra với course_id, chapter_id và is_summary chưa
         if (newTestDTO.getIsSummary()) {
             boolean exists = testRepository.existsByCourseIdAndChapterIdAndIsSummary(newTestDTO.getCourseId(),
@@ -116,18 +121,55 @@ public class TestService {
                 throw new RuntimeException("A test with the same course_id, chapter_id, and is_summary already exists.");
             }
         }
+        Map<String, String> typeMapping = new HashMap<>();
+        typeMapping.put("Điền khuyết", "fill-in-the-blank");
+        typeMapping.put("Tự luận", "essay");
+        typeMapping.put("Checkbox", "checkbox");
+        typeMapping.put("Trắc nghiệm", "multiple-choice");
 
 
-        // Khởi tạo một đối tượng Test mới và cập nhật các trường từ DTO
         Test test = new Test();
 
-        // Tiếp tục các bước xử lý khác...
-        // Cập nhật các trường của đối tượng test
         test.setTitle(newTestDTO.getTitle());
         test.setDescription(newTestDTO.getDescription());
         test.setTotalQuestion(newTestDTO.getTotalQuestion());
+        test.setFormat(newTestDTO.getFormat());
+
+        if (newTestDTO.getFormat().equals("exam")) {
+            test.setAssigned(true);
+        }
+
+        if (newTestDTO.getLessonId() != null) {
+            Lesson lesson = lessonRepository.findById(newTestDTO.getLessonId()).get();
+            test.setLesson(lesson);
+        }
         test.setSummary(newTestDTO.getIsSummary());
+
+        if (newTestDTO.getIsSummary() && newTestDTO.getLessonId() == null) {
+            test.setAssigned(true);
+        } else if (!newTestDTO.getIsSummary() && newTestDTO.getLessonId() != null) {
+            test.setAssigned(true);
+            Lesson lesson = lessonRepository.findById(newTestDTO.getLessonId()).get();
+            lesson.setIsTestExcluded("FULLTEST");
+            lessonRepository.save(lesson);
+            // Phải update lesson
+        }
+
         test.setCreatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+        test.setUpdatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+
+        test.setEasyQuestion(newTestDTO.getEasyQuestion());
+        test.setMediumQuestion(newTestDTO.getMediumQuestion());
+        test.setHardQuestion(newTestDTO.getHardQuestion());
+        test.setDuration(newTestDTO.getDuration());
+
+
+        List<String> types = newTestDTO.getType();
+        String result = types.stream()
+                .map(type -> typeMapping.getOrDefault(type, type)) // Ánh xạ tên hoặc giữ nguyên nếu không tìm thấy
+                .collect(Collectors.joining(", "));
+
+        test.setType(result);
         // Thêm các thông tin khác như chapter, course...
         if (newTestDTO.getChapterId() != null) {
             Chapter chapter = chapterRepository.findById(newTestDTO.getChapterId())
@@ -145,10 +187,332 @@ public class TestService {
         return testRepository.save(test);
     }
 
+    public TestWithExamInfoDTO addExam(TestWithExamInfoDTO dto, MultipartFile[] files) {
+        try {
+            Course course = courseRepository.findById(dto.getCourseId())
+                    .orElseThrow(() -> new RuntimeException("Course not found"));
+
+            Test test = new Test();
+            test.setTitle(dto.getTitle());
+            test.setDescription(dto.getDescription());
+            test.setTotalQuestion(dto.getTotalQuestion());
+            test.setEasyQuestion(dto.getEasyQuestion());
+            test.setMediumQuestion(dto.getMediumQuestion());
+            test.setHardQuestion(dto.getHardQuestion());
+            test.setDuration(dto.getDuration());
+            test.setFormat(dto.getFormat());
+            test.setPoint(dto.getPoint());
+            test.setCourse(course);
+
+
+            test.setType(dto.getType());
+            test.setCreatedAt(new Date());
+
+            Test savedTest = testRepository.save(test);
+
+            ExamInfo info = new ExamInfo();
+            info.setTest(savedTest);
+            info.setIntro(dto.getIntro());
+            info.setTestContents(dto.getTestContents());
+            info.setKnowledgeRequirements(dto.getKnowledgeRequirements());
+            info.setLevel(dto.getLevel());
+            info.setPrice(dto.getPrice());
+            info.setCost(dto.getCost());
+            info.setExamType(dto.getExamType());
+            info.setStatus(dto.getStatus());
+
+            info.setTestContents(dto.getTestContents());
+            info.setKnowledgeRequirements(dto.getKnowledgeRequirements());
+
+            // TODO: xử lý lưu file nếu cần
+            if (files != null && files.length > 0) {
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        Result imageUrl = imageKitService.uploadFromBytes(file);
+                        info.setImageUrl(imageUrl.getUrl());
+                    }
+                }
+            }
+            examInfoRepository.save(info);
+            return dto;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error while saving test: " + e.getMessage());
+        }
+    }
+
+    public TestWithExamInfoDTO updateExam(TestWithExamInfoDTO dto, MultipartFile[] files) {
+        try {
+            Test test = testRepository.findById(dto.getTestId())
+                    .orElseThrow(() -> new RuntimeException("Test not found"));
+
+            test.setTitle(dto.getTitle());
+            test.setDescription(dto.getDescription());
+            test.setTotalQuestion(dto.getTotalQuestion());
+            test.setEasyQuestion(dto.getEasyQuestion());
+            test.setMediumQuestion(dto.getMediumQuestion());
+            test.setHardQuestion(dto.getHardQuestion());
+            test.setDuration(dto.getDuration());
+            test.setFormat(dto.getFormat());
+            test.setPoint(dto.getPoint());
+            test.setType(dto.getType());
+            test.setUpdatedAt(new Date());
+
+            Course course = courseRepository.findById(dto.getCourseId())
+                    .orElseThrow(() -> new RuntimeException("Course not found"));
+            test.setCourse(course);
+
+            testRepository.save(test);
+
+            ExamInfo info = examInfoRepository.findByTestId(dto.getTestId())
+                    .orElseThrow(() -> new RuntimeException("ExamInfo not found"));
+
+            info.setIntro(dto.getIntro());
+            info.setTestContents(dto.getTestContents());
+            info.setKnowledgeRequirements(dto.getKnowledgeRequirements());
+            info.setLevel(dto.getLevel());
+            info.setTestContents(dto.getTestContents());
+            info.setKnowledgeRequirements(dto.getKnowledgeRequirements());
+            if (dto.getExamType() == ExamType.FREE) {
+                info.setCost(new BigDecimal("0.0"));
+                info.setPrice(new BigDecimal("0.0"));
+            } else {
+                info.setCost(dto.getCost());
+                info.setPrice(dto.getPrice());
+            }
+            info.setExamType(dto.getExamType());
+            Optional<Course_Discount> testDiscount = courseDiscountRepository.findByTestId(test.getId());
+            if (testDiscount.isPresent() && testDiscount.get().getDiscount() != null && testDiscount.get().getDiscount().getStatus() == DiscountStatus.ACTIVE && info.getExamType() == ExamType.FEE) {
+                UpdatePriceTest(testDiscount.get().getDiscount().getDiscountValue(), info);
+            }
+
+
+            info.setStatus(dto.getStatus());
+            info.setUpdatedAt(LocalDateTime.now());
+
+
+            if (files != null && files.length > 0) {
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        Result uploadResult = imageKitService.uploadFromBytes(file);
+                        info.setImageUrl(uploadResult.getUrl());
+                    }
+                }
+            }
+
+            examInfoRepository.save(info);
+
+            return dto;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Lỗi khi cập nhật: " + e.getMessage());
+        }
+    }
+
+    public ApiResponse<?> toggleExamStatus(Integer testId) {
+        try {
+
+//            List<Course_Discount> courseDiscountList = courseDiscountRepository.findByDiscountId(discountId);
+
+            ExamInfo examInfo = examInfoRepository.findByTestId(testId)
+                    .orElseThrow(() -> new RuntimeException("ExamInfo not found"));
+
+            ExamStatus currentStatus = examInfo.getStatus();
+            ExamStatus newStatus = currentStatus == ExamStatus.ACTIVE ? ExamStatus.INACTIVE : ExamStatus.ACTIVE;
+
+            examInfo.setStatus(newStatus);
+            examInfo.setUpdatedAt(LocalDateTime.now());
+
+            examInfoRepository.save(examInfo);
+
+            return new ApiResponse<>(200, "Cập nhật trạng thái thành công", newStatus.name());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ApiResponse<>(500, "Lỗi khi cập nhật trạng thái: " + e.getMessage(), null);
+        }
+    }
+
+    public boolean UpdatePriceTest(BigDecimal percentDiscount, ExamInfo test) {
+        BigDecimal percentDecimal = percentDiscount.divide(BigDecimal.valueOf(100));
+        BigDecimal finalPrice = test.getCost().multiply(BigDecimal.ONE.subtract(percentDecimal));
+        test.setPrice(finalPrice);
+        return true;
+    }
+
+    public void AddMultiTest(List<AdminTestAddDTO_V2> newTestDTOList) {
+
+        for (AdminTestAddDTO_V2 newTestDTO : newTestDTOList) {
+            if (newTestDTO.getIsSummary()) {
+                boolean exists = testRepository.existsByCourseIdAndChapterIdAndIsSummary(newTestDTO.getCourseId(),
+                        newTestDTO.getChapterId());
+                if (exists) {
+                    throw new IllegalArgumentException("A test with the same course_id, chapter_id, and is_summary already exists.");
+                }
+            }
+        }
+        for (AdminTestAddDTO_V2 newTestDTO : newTestDTOList) {
+            // Kiểm tra xem đã có bài kiểm tra với course_id, chapter_id và is_summary chưa
+            if (newTestDTO.getIsSummary()) {
+                boolean exists = testRepository.existsByCourseIdAndChapterIdAndIsSummary(newTestDTO.getCourseId(),
+                        newTestDTO.getChapterId());
+
+                if (exists) {
+//                    throw new RuntimeException("A test with the same course_id, chapter_id, and is_summary already exists.");
+                    throw new IllegalArgumentException("A test with the same course_id, chapter_id, and is_summary already exists.");
+                }
+            }
+            Map<String, String> typeMapping = new HashMap<>();
+            typeMapping.put("Điền khuyết", "fill-in-the-blank");
+            typeMapping.put("Tự luận", "essay");
+            typeMapping.put("Checkbox", "checkbox");
+            typeMapping.put("Trắc nghiệm", "multiple-choice");
+
+
+            Test test = new Test();
+
+            test.setTitle(newTestDTO.getTitle());
+            test.setFormat(newTestDTO.getFormat());
+            test.setDescription(newTestDTO.getDescription());
+            test.setTotalQuestion(newTestDTO.getTotalQuestion());
+
+//            if (newTestDTO.getLessonId() != null){
+//                Lesson lesson = lessonRepository.findById(newTestDTO.getLessonId()).get();
+//                test.setLesson(lesson);
+//
+//                lesson.setIsTestExcluded("FULLTEST");
+//                lessonRepository.saveAndFlush(lesson);
+//            }
+            test.setSummary(newTestDTO.getIsSummary());
+//
+//            if(newTestDTO.getIsSummary() && newTestDTO.getLessonId() == null)
+//            {
+//                test.setAssigned(true);
+//            } else if ( !newTestDTO.getIsSummary() && newTestDTO.getLessonId() != null) {
+//                test.setAssigned(true);
+//            }
+
+
+            test.setCreatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+
+            test.setEasyQuestion(newTestDTO.getEasyQuestion());
+            test.setMediumQuestion(newTestDTO.getMediumQuestion());
+            test.setHardQuestion(newTestDTO.getHardQuestion());
+            test.setDuration(newTestDTO.getDuration());
+            List<String> types = newTestDTO.getType();
+            String result = types.stream()
+                    .map(type -> typeMapping.getOrDefault(type, type)) // Ánh xạ tên hoặc giữ nguyên nếu không tìm thấy
+                    .collect(Collectors.joining(", "));
+
+            test.setType(result);
+
+            // Thêm các thông tin khác như chapter, course...
+            if (newTestDTO.getChapterId() != null) {
+                Chapter chapter = chapterRepository.findById(newTestDTO.getChapterId())
+                        .orElseThrow(() -> new IllegalArgumentException("Chapter not found"));
+                test.setChapter(chapter);
+                if (newTestDTO.getLessonId() != null) {
+                    test.setAssigned(true);
+                    Lesson lesson = lessonRepository.findById(newTestDTO.getLessonId()).get();
+                    lesson.setIsTestExcluded("FULLTEST");
+                    lessonRepository.saveAndFlush(lesson);
+                } else if (newTestDTO.getLessonId() == null && newTestDTO.getIsSummary()) {
+                    test.setAssigned(true);
+                } else {
+                    test.setAssigned(false);
+                }
+            }
+
+
+            if (newTestDTO.getCourseId() != null) {
+                Course course = courseRepository.findById(newTestDTO.getCourseId())
+                        .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+                test.setCourse(course);
+            }
+            testRepository.save(test);
+        }
+    }
+
+
+    public void AddMultiExam(List<AdminTestAddDTO_V2> newTestDTOList) {
+
+        for (AdminTestAddDTO_V2 newTestDTO : newTestDTOList) {
+            if (newTestDTO.getIsSummary()) {
+                boolean exists = testRepository.existsByCourseIdAndChapterIdAndIsSummary(newTestDTO.getCourseId(),
+                        newTestDTO.getChapterId());
+                if (exists) {
+                    throw new IllegalArgumentException("A test with the same course_id, chapter_id, and is_summary already exists.");
+                }
+            }
+        }
+        for (AdminTestAddDTO_V2 newTestDTO : newTestDTOList) {
+            // Kiểm tra xem đã có bài kiểm tra với course_id, chapter_id và is_summary chưa
+            if (newTestDTO.getIsSummary()) {
+                boolean exists = testRepository.existsByCourseIdAndChapterIdAndIsSummary(newTestDTO.getCourseId(),
+                        newTestDTO.getChapterId());
+                if (exists) {
+                    throw new IllegalArgumentException("A test with the same course_id, chapter_id, and is_summary already exists.");
+                }
+            }
+            Map<String, String> typeMapping = new HashMap<>();
+            typeMapping.put("Điền khuyết", "fill-in-the-blank");
+            typeMapping.put("Tự luận", "essay");
+            typeMapping.put("Checkbox", "checkbox");
+            typeMapping.put("Trắc nghiệm", "multiple-choice");
+
+
+            Test test = new Test();
+
+            test.setTitle(newTestDTO.getTitle());
+            test.setFormat(newTestDTO.getFormat());
+            test.setDescription(newTestDTO.getDescription());
+            test.setTotalQuestion(newTestDTO.getTotalQuestion());
+            test.setSummary(newTestDTO.getIsSummary());
+            test.setCreatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+            test.setEasyQuestion(newTestDTO.getEasyQuestion());
+            test.setMediumQuestion(newTestDTO.getMediumQuestion());
+            test.setHardQuestion(newTestDTO.getHardQuestion());
+            test.setDuration(newTestDTO.getDuration());
+            List<String> types = newTestDTO.getType();
+            String result = types.stream()
+                    .map(type -> typeMapping.getOrDefault(type, type)) // Ánh xạ tên hoặc giữ nguyên nếu không tìm thấy
+                    .collect(Collectors.joining(", "));
+
+            test.setType(result);
+
+            // Thêm các thông tin khác như chapter, course...
+            if (newTestDTO.getChapterId() != null) {
+                Chapter chapter = chapterRepository.findById(newTestDTO.getChapterId())
+                        .orElseThrow(() -> new IllegalArgumentException("Chapter not found"));
+                test.setChapter(chapter);
+                test.setAssigned(true);
+            }
+
+            if (newTestDTO.getCourseId() != null) {
+                Course course = courseRepository.findById(newTestDTO.getCourseId())
+                        .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+                test.setCourse(course);
+            }
+            testRepository.save(test);
+        }
+    }
+
+
     @Transactional
-    public Test updateTest(int id, AdminTestUpdateDTO updateDTO) {
+    public Boolean updateTest(int id, AdminTestGetListDTO_V2 updateDTO) {
         // Lấy Test từ database
         Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
+        List<Test_Question> listQuestion = testQuestionRepository.findTestAnswersByTestId(id);
+
+        if (!listQuestion.isEmpty() && listQuestion.size() > updateDTO.getTotalQuestion()) {
+            throw new RuntimeException("Tổng số câu hỏi không thể nhỏ hơn số lượng câu hỏi hiện có trong bài kiểm tra.");
+        }
+        int total = updateDTO.getEasyQuestion() + updateDTO.getMediumQuestion() + updateDTO.getHardQuestion();
+        if (total < updateDTO.getTotalQuestion() || total > updateDTO.getTotalQuestion()) {
+            throw new RuntimeException("Tỉ lệ số câu phải bằng tổng số câu hỏi trong bài kiểm tra.");
+        }
+
         test.setUpdatedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
         // Cập nhật các trường
         if (updateDTO.getTitle() != null) {
@@ -159,8 +523,9 @@ public class TestService {
             test.setDescription(updateDTO.getDescription());
         }
 
-        test.setLesson(null);
-
+        if (updateDTO.getLessonId() != null) {
+            test.setLesson(lessonRepository.findById(updateDTO.getLessonId()).get());
+        }
 
         if (updateDTO.getChapterId() != null) {
             Chapter chapter = chapterRepository.findById(updateDTO.getChapterId())
@@ -174,60 +539,78 @@ public class TestService {
             test.setCourse(course);
         }
 
-        if (updateDTO.getTotalQuestion() != null) {
-            test.setTotalQuestion(updateDTO.getTotalQuestion());
-        }
+        test.setTotalQuestion(updateDTO.getTotalQuestion());
 
-        if (updateDTO.getIsSummary() != null) {
-            test.setSummary(updateDTO.getIsSummary());
-        }
+        if (updateDTO.getSummary()) {
+            boolean exists = testRepository.existsByCourseIdAndChapterIdAndIsSummary(updateDTO.getCourseId(),
+                    updateDTO.getChapterId());
+            if (exists) {
+                throw new IllegalArgumentException("A test with the same course_id, chapter_id, and is_summary already exists.");
+            }
 
+        }
+        test.setSummary(updateDTO.getSummary());
+        test.setEasyQuestion(updateDTO.getEasyQuestion());
+        test.setMediumQuestion(updateDTO.getMediumQuestion());
+        test.setHardQuestion(updateDTO.getHardQuestion());
+        test.setDuration(updateDTO.getDuration());
+        test.setPoint(updateDTO.getPoint());
+
+        if (updateDTO.getType() != null) {
+            test.setType(String.join(",", updateDTO.getType())); // Convert List<String> thành String
+        }
         // Lưu lại
-        return testRepository.save(test);
+
+        Test item = testRepository.save(test);
+        if (item != null) {
+            return true;
+        }
+        return false;
     }
 
     @Transactional
-    public Test updateTestToLesson(int id, AdminUpdateTestToLesson updateDTO) {
-        // Lấy Test từ database
-        List<Test> testList = testRepository.findTestsByLessonId(updateDTO.getLessonId());
-        Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
-        if (testList.size() > 1) {
-            for (Test test2 : testList) {
-                if (test.getId() == test2.getId()) {
-                    Lesson lesson = lessonRepository.findById(updateDTO.getLessonId())
-                            .orElseThrow(() -> new RuntimeException("Chapter not found"));
-                    test.setLesson(lesson);
+    public ApiResponse<Boolean> updateTestToLesson(int id, AdminUpdateTestToLesson updateDTO) {
+        try {
+            Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
+            Lesson lesson = lessonRepository.findById(updateDTO.getLessonId()).orElseThrow(() -> new RuntimeException("Lesson not found"));
 
-                } else {
-                    test2.setLesson(null);
-                }
-            }
-        } else {
-            Lesson lesson = lessonRepository.findById(updateDTO.getLessonId())
-                    .orElseThrow(() -> new RuntimeException("Chapter not found"));
             test.setLesson(lesson);
-            for (Test test2 : testList) {
-                if (test2.getId() == test.getId()) {
-                    test2.setLesson(lesson);
-                    return testRepository.save(test2);
-                } else {
-                    test2.setLesson(null);
-                    return testRepository.save(test2);
-                }
-            }
+            test.setAssigned(true);
+            test.setSummary(false);
+
+            // Cập nhật trạng thái của lesson
+            lesson.setIsTestExcluded("FULLTEST");
+            lessonRepository.saveAndFlush(lesson);
+
+            // Cập nhật test
+            testRepository.saveAndFlush(test);
+
+            return new ApiResponse<>(200, "Success", true);  // Trả về true nếu cập nhật thành công
+        } catch (Exception e) {
+            return new ApiResponse<>(500, "Error: " + e.getMessage(), false);  // Trả về false nếu có lỗi
         }
-        // Lưu lại
-        return testRepository.save(test);
     }
 
-    public AdminTestUpdateDTO getTestByIdAdmin(int id) {
-        Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Test not found"));
 
-        // Chuyển đổi Test sang AdminTestResponseDTO
-        AdminTestUpdateDTO responseDTO = new AdminTestUpdateDTO();
+    @Transactional
+    public AdminTestGetListDTO_V2 getTestByIdAdmin(int id) {
+        Test test = testRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Test not found"));
+
+        List<String> questionTypes = (test.getType() != null)
+                ? Arrays.asList(((String) test.getType()).split(",\\s*")) // Tách chuỗi nếu không null
+                : Collections.emptyList();
+
+        // Khởi tạo DTO và thiết lập giá trị bằng setter
+        AdminTestGetListDTO_V2 responseDTO = new AdminTestGetListDTO_V2();
         responseDTO.setId(test.getId());
         responseDTO.setTitle(test.getTitle());
         responseDTO.setDescription(test.getDescription());
+        responseDTO.setEasyQuestion(test.getEasyQuestion());
+        responseDTO.setMediumQuestion(test.getMediumQuestion());
+        responseDTO.setHardQuestion(test.getHardQuestion());
+
+        // Kiểm tra null trước khi set giá trị
         if (test.getLesson() != null) {
             responseDTO.setLessonId(test.getLesson().getId());
         }
@@ -237,9 +620,11 @@ public class TestService {
         if (test.getCourse() != null) {
             responseDTO.setCourseId(test.getCourse().getId());
         }
-        responseDTO.setTotalQuestion(test.getTotalQuestion());
-        responseDTO.setIsSummary(test.isSummary());
 
+        responseDTO.setTotalQuestion(test.getTotalQuestion());
+        responseDTO.setSummary(test.isSummary());
+        responseDTO.setType(questionTypes);  // Gán vào DTO
+        responseDTO.setDuration(test.getDuration());
         return responseDTO;
     }
 
@@ -247,17 +632,7 @@ public class TestService {
         return testRepository.saveAndFlush(test);
     }
 
-    //    public List<AdminTestGetDTO> getAllTestSummariesAdmin() {
-//        return testRepository.findAllTestSummaries().stream()
-//                .map(result -> new AdminTestGetDTO(
-//                        (Integer) result[0],                // id
-//                        (String) result[1],                 // title
-//                        (Integer) result[2],                // totalQuestion
-//                        (Date) result[3],                    // createdAt
-//                        (Boolean) result[4]                // createdAt
-//                ))
-//                .collect(Collectors.toList());
-//    }
+
     public Page<AdminTestGetDTO_Version2> getAllTestSummariesAdmin(int page, int size) {
         Pageable pageable = PageRequest.of(page, size); // Tạo Pageable từ page và size
         Page<Object[]> testSummaries = testRepository.findAllTestSummaries(pageable); // Lấy dữ liệu phân trang
@@ -275,6 +650,179 @@ public class TestService {
         ));
     }
 
+    public Page<AdminTestGetListDTO_V2> getAllTestSummariesAdmin_V2(Integer courseId, String title, Pageable pageable) {
+        // Lấy dữ liệu phân trang
+        Page<Object[]> testSummaries = testRepository.findByCourseIdAndTitleWithPagination(courseId, title, pageable);
+
+        // Tạo danh sách mới để lưu kết quả
+        List<AdminTestGetListDTO_V2> results = new ArrayList<>();
+
+        // Sử dụng vòng lặp for để chuyển đổi từng phần tử
+        for (Object[] result : testSummaries.getContent()) {
+            List<String> types = (result[6] != null)
+                    ? Arrays.asList(((String) result[6]).split(",\\s*")) // Tách chuỗi nếu không null
+                    : Collections.emptyList();
+            AdminTestGetListDTO_V2 dto = new AdminTestGetListDTO_V2(
+                    (Integer) result[0],  // id
+                    (String) result[1],   // title
+                    (Integer) result[2],  // totalQuestion
+                    (Integer) result[3],  // field 4
+                    (Integer) result[4],  // field 5
+                    (Integer) result[5],  // field 6
+                    types,   // field 7
+                    (Date) result[7],     // createdAt
+                    (Boolean) result[8],  // isDeleted
+                    (Boolean) result[9],  // field 9
+                    (Integer) result[10], // field 10
+                    (Integer) result[11], // field 11
+                    (Integer) result[12], // field 12
+                    (String) result[13],
+                    (Boolean) result[14],
+                    (Integer) result[15],
+                    (String) result[16],
+                    (Integer) result[17]
+
+            );
+            results.add(dto);
+        }
+
+        // Trả về đối tượng Page từ danh sách đã chuyển đổi
+        return new PageImpl<>(results, pageable, testSummaries.getTotalElements());
+    }
+
+    public Page<AdminTestGetListDTO_V2> getAllTestSummariesAdmin_V2_Exam(Integer courseId, String title, Pageable pageable) {
+        // Lấy dữ liệu phân trang
+        Page<Object[]> testSummaries = testRepository.findByCourseIdAndTitleWithPaginationExam(courseId, title, pageable);
+
+        // Tạo danh sách mới để lưu kết quả
+        List<AdminTestGetListDTO_V2> results = new ArrayList<>();
+
+        // Sử dụng vòng lặp for để chuyển đổi từng phần tử
+        for (Object[] result : testSummaries.getContent()) {
+            List<String> types = (result[6] != null)
+                    ? Arrays.asList(((String) result[6]).split(",\\s*"))
+                    : Collections.emptyList();
+            AdminTestGetListDTO_V2 dto = new AdminTestGetListDTO_V2(
+                    (Integer) result[0],  // id
+                    (String) result[1],   // title
+                    (Integer) result[2],  // totalQuestion
+                    (Integer) result[3],  // field 4
+                    (Integer) result[4],  // field 5
+                    (Integer) result[5],  // field 6
+                    types,   // field 7
+                    (Date) result[7],     // createdAt
+                    (Boolean) result[8],  // isDeleted
+                    (Boolean) result[9],  // field 9
+                    (Integer) result[10], // field 10
+                    (Integer) result[11], // field 11
+                    (Integer) result[12], // field 12
+                    (String) result[13],
+                    (Boolean) result[14],
+                    (Integer) result[15],
+                    (String) result[16],
+                    (Integer) result[17]
+
+            );
+            results.add(dto);
+        }
+
+        // Trả về đối tượng Page từ danh sách đã chuyển đổi
+        return new PageImpl<>(results, pageable, testSummaries.getTotalElements());
+    }
+
+    public Page<TestWithExamInfoDTO> getFilteredTests(String title, Integer courseId, Pageable pageable) {
+        Page<Test> tests = testRepository.findFiltered(title, courseId, pageable);
+
+        return tests.map(test -> {
+            TestWithExamInfoDTO dto = new TestWithExamInfoDTO();
+            dto.setTestId(test.getId());
+            dto.setTitle(test.getTitle());
+            dto.setDescription(test.getDescription());
+            dto.setTotalQuestion(test.getTotalQuestion());
+            dto.setEasyQuestion(test.getEasyQuestion());
+            dto.setMediumQuestion(test.getMediumQuestion());
+            dto.setHardQuestion(test.getHardQuestion());
+            dto.setType(test.getType());
+            dto.setFormat(test.getFormat());
+            dto.setDuration(test.getDuration());
+            dto.setPoint(test.getPoint());
+            dto.setCreatedAt(test.getCreatedAt());
+            dto.setUpdatedAt(test.getUpdatedAt());
+            if ("exam".equalsIgnoreCase(test.getFormat())) {
+                dto.setItemCount(test.getTestEnrollments().size());
+            }
+
+            if (test.getCourse() != null) {
+                dto.setCourseId(test.getCourse().getId());
+                dto.setCourseTitle(test.getCourse().getTitle());
+            }
+
+            Optional<Course_Discount> courseDiscountOpt = courseDiscountRepository.findByTestId(test.getId());
+            if (courseDiscountOpt.isPresent() && courseDiscountOpt.get().getDiscount() != null && courseDiscountOpt.get().getDiscount().getStatus() == DiscountStatus.ACTIVE) {
+                dto.setDiscountStatus(true);
+            } else {
+                dto.setDiscountStatus(false);
+            }
+
+            if ("exam".equalsIgnoreCase(test.getFormat())) {
+                examInfoRepository.findByTestId(test.getId()).ifPresent(info -> {
+                    dto.setIntro(info.getIntro());
+                    dto.setImageUrl(info.getImageUrl());
+                    dto.setLevel(info.getLevel());
+                    dto.setPrice(info.getPrice());
+                    dto.setCost(info.getCost());
+                    dto.setExamType(info.getExamType());
+                    dto.setStatus(info.getStatus());
+                });
+            }
+            return dto;
+        });
+    }
+
+    public List<TestWithExamInfoDTO> getFilteredExamList(Integer courseId) {
+        List<Test> tests = testRepository.findFilteredExaList(courseId);
+
+        return tests.stream().map(test -> {
+            TestWithExamInfoDTO dto = new TestWithExamInfoDTO();
+            dto.setTestId(test.getId());
+            dto.setTitle(test.getTitle());
+            dto.setDescription(test.getDescription());
+            dto.setTotalQuestion(test.getTotalQuestion());
+            dto.setEasyQuestion(test.getEasyQuestion());
+            dto.setMediumQuestion(test.getMediumQuestion());
+            dto.setHardQuestion(test.getHardQuestion());
+            dto.setType(test.getType());
+            dto.setFormat(test.getFormat());
+            dto.setDuration(test.getDuration());
+            dto.setPoint(test.getPoint());
+            dto.setCreatedAt(test.getCreatedAt());
+            dto.setUpdatedAt(test.getUpdatedAt());
+
+            if ("exam".equalsIgnoreCase(test.getFormat())) {
+                dto.setItemCount(test.getTestEnrollments() != null ? test.getTestEnrollments().size() : 0);
+            }
+
+            if (test.getCourse() != null) {
+                dto.setCourseId(test.getCourse().getId());
+                dto.setCourseTitle(test.getCourse().getTitle());
+            }
+
+            if ("exam".equalsIgnoreCase(test.getFormat())) {
+                examInfoRepository.findByTestId(test.getId()).ifPresent(info -> {
+                    dto.setIntro(info.getIntro());
+                    dto.setImageUrl(info.getImageUrl());
+                    dto.setLevel(info.getLevel());
+                    dto.setPrice(info.getPrice());
+                    dto.setCost(info.getCost());
+                    dto.setExamType(info.getExamType());
+                    dto.setStatus(info.getStatus());
+                });
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
     //    }
     public List<AdminTestGetDTO> getAllTestSummariesAdminList() {
         List<Object[]> testSummaries = testRepository.findAllTestSummariesList(); // Lấy dữ liệu phân trang
@@ -287,17 +835,75 @@ public class TestService {
         return adminTestGetDTOList;
     }
 
+    public void deleteExamAdmin(int id) {
+        Test test = testRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Test not found"));
+        test.setDeleted(true);
+        test.setDeletedDate(LocalDateTime.now());
+        testRepository.save(test);
+        if ("exam".equalsIgnoreCase(test.getType())) {
+            examInfoRepository.findByTestId(id).ifPresent(examInfo -> {
+                examInfo.setDeleted(true);
+                examInfo.setDeletedAt(LocalDateTime.now());
+                examInfoRepository.save(examInfo);
+            });
+        }
+
+    }
+
+    public void restoreExamAdmin(int id) {
+        Test test = testRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Test not found"));
+        test.setDeleted(false);
+        testRepository.save(test);
+        if ("exam".equalsIgnoreCase(test.getType())) {
+            examInfoRepository.findByTestId(id).ifPresent(examInfo -> {
+                examInfo.setDeleted(false);
+                examInfoRepository.save(examInfo);
+            });
+        }
+    }
+
     public Test deleteTestAdmin(int testID) {
+        // Tìm tài khoản theo ID
+        Optional<Test> testOptional = testRepository.findById(testID);
+
+        if (testOptional.isPresent()) {
+            Test test = testOptional.get();
+
+            test.setDeleted(true);
+            test.setAssigned(false);
+            test.setDeletedDate(LocalDateTime.now());
+
+            if (testOptional.get().getLesson() != null) {
+                Lesson lesson = lessonRepository.findById(testOptional.get().getLesson().getId()).get();
+                lesson.setIsTestExcluded("EMPTYTEST");
+                test.setLesson(null);
+                lessonRepository.save(lesson);
+            }
+            // Lưu thay đổi
+            return testRepository.save(test);
+        } else {
+            throw new RuntimeException("Test not found with id: " + testID);
+        }
+    }
+
+    public Test updateNotTest(int testID) {
         // Tìm tài khoản theo ID
         Optional<Test> accountOpt = testRepository.findById(testID);
 
         if (accountOpt.isPresent()) {
-            Test account = accountOpt.get();
-            // Đặt isDeleted thành true và cập nhật deletedDate là ngày hiện tại
-            account.setDeleted(true);
-            account.setDeletedDate(LocalDateTime.now());
+            Test test = accountOpt.get();
+            if (accountOpt.get().getLesson() != null) {
+                Lesson lesson = lessonRepository.findById(accountOpt.get().getLesson().getId()).get();
+                lesson.setIsTestExcluded("EMPTYTEST");
+                lessonRepository.save(lesson);
+            }
+            test.setAssigned(false);
+            test.setLesson(null);
+            test.setSummary(false);
             // Lưu thay đổi
-            return testRepository.save(account);
+            return testRepository.save(test);
         } else {
             throw new RuntimeException("Test not found with id: " + testID);
         }
@@ -319,7 +925,430 @@ public class TestService {
         }
     }
 
-    public List<Test> getTestsByCourseAndChapter(Integer courseId, Integer chapterId) {
-        return testRepository.findTestsByCourseAndChapter(courseId, chapterId);
+    public List<AdminTestDTORestoreList> getTestsByCourseAndChapter(Integer courseId, Integer chapterId) {
+
+        List<Object[]> listObject = testRepository.findTestsByCourseAndChapter(courseId, chapterId);
+
+        List<AdminTestDTORestoreList> adminTestDTORestoreLists = new ArrayList<>();
+        for (Object[] result : listObject) {
+            AdminTestDTORestoreList dto = new AdminTestDTORestoreList();
+
+            dto.setId((Integer) result[0]);
+            LocalDateTime createAt = convertTimestampToLocalDateTime(result[1]);
+            dto.setCreatedAt(createAt);
+            LocalDateTime deleteAt = convertTimestampToLocalDateTime(result[2]);
+            dto.setDeletedDate(deleteAt);
+
+            dto.setDescription((String) result[3]);
+            dto.setIsDeleted((Boolean) result[4]);
+            dto.setIsSummary((Boolean) result[5]);
+            dto.setTitle((String) result[6]);
+            dto.setTotalQuestion((Integer) result[7]);
+
+            LocalDateTime updateAt = convertTimestampToLocalDateTime(result[8]);
+            dto.setUpdatedAt(updateAt);
+
+            dto.setChapterId((Integer) result[9]);
+            dto.setCourseId((Integer) result[10]);
+
+            dto.setLessonId((Integer) result[11]);
+            dto.setDuration((Integer) result[12]);
+            dto.setEasyQuestion((Integer) result[13]);
+            dto.setHardQuestion((Integer) result[14]);
+            dto.setMediumQuestion((Integer) result[15]);
+            dto.setIsAssigned((Boolean) result[16]);
+            dto.setType((String) result[17]);
+
+            adminTestDTORestoreLists.add(dto);
+        }
+        return adminTestDTORestoreLists;
     }
+
+    public AdminTestCheckInfoCourse getChapterAndLessonSummary(int courseId) {
+        AdminTestCheckInfoCourse adminTestCheckInfoCourse = new AdminTestCheckInfoCourse();
+        int totalChapters = testRepository.countTotalChapters(courseId);
+        int totalAssignedChapters = testRepository.countAssignedChapters(courseId);
+
+        int totalLessons = testRepository.countTotalLessons(courseId);
+        int totalAssignedLessons = testRepository.countAssignedLessons(courseId);
+        int countAssignedTest = getAssignedTestsCount(courseId);
+        int countUnAssignedTest = getUnassignedTestsCount(courseId);
+        int countTestsByCourse = getTestsCountByCourse(courseId);
+        adminTestCheckInfoCourse.setTotalChapters(totalChapters);
+        adminTestCheckInfoCourse.setTotalLessons(totalLessons);
+        adminTestCheckInfoCourse.setTotalAssignedChapter(totalAssignedChapters);
+        adminTestCheckInfoCourse.setTotalAssignedLessons(totalAssignedLessons);
+        adminTestCheckInfoCourse.setCountAssignedTests(countAssignedTest);
+        adminTestCheckInfoCourse.setCountUnassignedTests(countUnAssignedTest);
+        adminTestCheckInfoCourse.setCountTestByCourse(countTestsByCourse);
+        return adminTestCheckInfoCourse;
+    }
+
+    public int getAssignedTestsCount(int courseId) {
+        return testRepository.countAssignedTests(courseId);
+    }
+
+    public int getUnassignedTestsCount(int courseId) {
+        return testRepository.countUnassignedTests(courseId);
+    }
+
+    public int getTestsCountByCourse(int courseId) {
+        return testRepository.countTestsByCourse(courseId);
+    }
+
+    private LocalDateTime convertTimestampToLocalDateTime(Object timestampObj) {
+        if (timestampObj instanceof Timestamp) {
+            Timestamp timestamp = (Timestamp) timestampObj;
+            return timestamp.toLocalDateTime();
+        }
+        return null;
+    }
+
+    public Page<AdminTestDTORestoreList> getTests(Integer courseId, Integer chapterId, String testTitle, String deletedDate, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Object[]> resultPage = testRepository.findTestsRestore(courseId, chapterId, testTitle, deletedDate, pageable);
+        List<AdminTestDTORestoreList> adminTestDTORestoreLists = new ArrayList<>();
+        for (Object[] result : resultPage) {
+            AdminTestDTORestoreList dto = new AdminTestDTORestoreList();
+            dto.setId((Integer) result[0]);
+            LocalDateTime createAt = convertTimestampToLocalDateTime(result[1]);
+            dto.setCreatedAt(createAt);
+            LocalDateTime deleteAt = convertTimestampToLocalDateTime(result[2]);
+            dto.setDeletedDate(deleteAt);
+
+            dto.setDescription((String) result[3]);
+            dto.setIsDeleted((Boolean) result[4]);
+            dto.setIsSummary((Boolean) result[5]);
+            dto.setTitle((String) result[6]);
+            dto.setTotalQuestion((Integer) result[7]);
+
+            LocalDateTime updateAt = convertTimestampToLocalDateTime(result[8]);
+            dto.setUpdatedAt(updateAt);
+
+            dto.setChapterId((Integer) result[9]);
+            dto.setCourseId((Integer) result[10]);
+
+            dto.setLessonId((Integer) result[11]);
+
+            dto.setEasyQuestion((Integer) result[12]);
+            dto.setHardQuestion((Integer) result[13]);
+            dto.setMediumQuestion((Integer) result[14]);
+
+            dto.setType((String) result[15]);
+            dto.setIsAssigned((Boolean) result[16]);
+            adminTestDTORestoreLists.add(dto);
+        }
+        return new PageImpl<>(adminTestDTORestoreLists, pageable, resultPage.getTotalElements());
+    }
+
+    public Page<TestWithExamInfoDTO> getExamDeleted(Integer courseId, String testTitle, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Test> resultPage = testRepository.findExamDeleted(courseId, testTitle, pageable);
+        return resultPage.map(test -> {
+            TestWithExamInfoDTO dto = new TestWithExamInfoDTO();
+            dto.setTestId(test.getId());
+            dto.setTitle(test.getTitle());
+            dto.setDescription(test.getDescription());
+            dto.setTotalQuestion(test.getTotalQuestion());
+            dto.setEasyQuestion(test.getEasyQuestion());
+            dto.setMediumQuestion(test.getMediumQuestion());
+            dto.setHardQuestion(test.getHardQuestion());
+            dto.setType(test.getType());
+            dto.setFormat(test.getFormat());
+            dto.setDuration(test.getDuration());
+            dto.setPoint(test.getPoint());
+            dto.setCreatedAt(test.getCreatedAt());
+            dto.setUpdatedAt(test.getUpdatedAt());
+            if ("exam".equalsIgnoreCase(test.getFormat())) {
+                dto.setItemCount(test.getTestEnrollments().size());
+            }
+
+            if (test.getCourse() != null) {
+                dto.setCourseId(test.getCourse().getId());
+                dto.setCourseTitle(test.getCourse().getTitle());
+            }
+
+            if ("exam".equalsIgnoreCase(test.getFormat())) {
+
+
+                examInfoRepository.findByTestId(test.getId()).ifPresent(info -> {
+                    dto.setIntro(info.getIntro());
+                    dto.setImageUrl(info.getImageUrl());
+                    dto.setLevel(info.getLevel());
+                    dto.setPrice(info.getPrice());
+                    dto.setCost(info.getCost());
+                    dto.setExamType(info.getExamType());
+                    dto.setStatus(info.getStatus());
+                });
+            }
+            return dto;
+        });
+    }
+
+    public Test updateRestoreTest(AdminTestDTORestoreList adminTestDTORestoreList) {
+        Optional<Test> lessonOptional = testRepository.findById(adminTestDTORestoreList.getId());
+        if (lessonOptional.isEmpty()) {
+            throw new RuntimeException("Test not found with id: " + adminTestDTORestoreList.getId());
+        } else {
+            Test test = lessonOptional.get();
+            test.setDeleted(false);
+            return testRepository.save(test);
+        }
+    }
+
+    public void deleteRestoreTest(AdminTestDTORestoreList adminTestDTORestoreList) {
+        Optional<Test> lessonOptional = testRepository.findById(adminTestDTORestoreList.getId());
+        if (lessonOptional.isEmpty()) {
+            throw new RuntimeException("Test not found with id: " + adminTestDTORestoreList.getId());
+        } else {
+            testRepository.delete(lessonOptional.get());
+        }
+    }
+
+    public ApiResponse<Integer> getTotalTest(Integer chapterID, Integer easyQuestion, Integer mediumQuestion, Integer hardQuestion, List<String> types) {
+        // Lấy danh sách câu hỏi theo loại và mức độ
+        List<QuestionCountDTO> questionCountDTOs = questionService.getQuestionsCountByLevel(chapterID);
+
+        // Lọc câu hỏi theo các loại trong types
+        long totalEasyQuestions = 0;
+        long totalMediumQuestions = 0;
+        long totalHardQuestions = 0;
+
+        Map<String, String> typeMapping = new HashMap<>();
+        typeMapping.put("fill-in-the-blank", "Điền khuyết");
+        typeMapping.put("essay", "Tự luận");
+        typeMapping.put("checkbox", "Checkbox");
+        typeMapping.put("multiple-choice", "Trắc nghiệm");
+
+        for (QuestionCountDTO item : questionCountDTOs) {
+
+            String questionType = typeMapping.get(item.getQuestionType());
+
+            if (questionType != null && types.contains(questionType)) {
+                totalEasyQuestions += item.getEasyQuestions();
+                totalMediumQuestions += item.getMediumQuestions();
+                totalHardQuestions += item.getHardQuestions();
+            }
+        }
+
+        // Xử lý các trường hợp:
+        int possibleTests = Integer.MAX_VALUE;  // Khởi tạo với giá trị tối đa để so sánh
+
+        // Kiểm tra các trường hợp cho câu hỏi dễ
+        if (easyQuestion > 0 && totalEasyQuestions > 0) {
+            possibleTests = Math.min(possibleTests, (int) Math.floor(totalEasyQuestions / (double) easyQuestion));
+        }
+//        else if (easyQuestion == 0 && totalEasyQuestions > 0) {
+//            possibleTests = 0;  // Nếu easyQuestion = 0 và có câu hỏi dễ, không thể tạo bài kiểm tra
+//        }
+
+        // Kiểm tra các trường hợp cho câu hỏi trung bình
+        if (mediumQuestion > 0 && totalMediumQuestions > 0) {
+            possibleTests = Math.min(possibleTests, (int) Math.floor(totalMediumQuestions / (double) mediumQuestion));
+        }
+//        else if (mediumQuestion == 0 && totalMediumQuestions > 0) {
+//            possibleTests = 0;  // Nếu mediumQuestion = 0 và có câu hỏi trung bình, không thể tạo bài kiểm tra
+//        }
+
+        // Kiểm tra các trường hợp cho câu hỏi khó
+        if (hardQuestion > 0 && totalHardQuestions > 0) {
+            possibleTests = Math.min(possibleTests, (int) Math.floor(totalHardQuestions / (double) hardQuestion));
+        }
+//        else if (hardQuestion == 0 && totalHardQuestions > 0) {
+//            possibleTests = 0;  // Nếu hardQuestion = 0 và có câu hỏi khó, không thể tạo bài kiểm tra
+//        }
+
+        // Trả về số bài kiểm tra có thể có
+        ApiResponse<Integer> response = new ApiResponse<>(
+                HttpStatus.OK.value(),
+                "Thành công!",
+                possibleTests == Integer.MAX_VALUE ? 0 : possibleTests
+        );
+        return response;
+
+    }
+
+    public Page<TestWithQuestionCountDTO> getTestsWithQuestionCount(Integer courseId, Pageable pageable) {
+        Page<Object[]> results = testRepository.findTestsWithQuestionCountByCourseId(courseId, pageable);
+
+        // Ánh xạ kết quả từ Object[] thành DTO
+        return results.map(result -> {
+            Integer testId = (Integer) result[0];
+            String title = (String) result[1];
+            String description = (String) result[2];
+            Integer duration = (Integer) result[3];
+            String testType = (String) result[4];
+            Long totalQuestions = (Long) result[5];
+
+            return new TestWithQuestionCountDTO(testId, title, description, duration, testType, totalQuestions);
+        });
+    }
+
+    public Map<String, Integer> getLessonAndChapterIdByTestId(int testId) {
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new RuntimeException("Test not found"));
+
+        Lesson lesson = test.getLesson();
+        Chapter chapter = test.getChapter();
+
+        Map<String, Integer> ids = new HashMap<>();
+        ids.put("lessonId", lesson.getId());
+        ids.put("chapterId", chapter.getId());
+        return ids;
+    }
+
+    public List<TestDTO> getTestsByCourseId(int courseId) {
+        List<Test> tests = testRepository.findByCourseIdAndIsDeletedFalse(courseId);
+//        List<String> types = newTestDTO.getType();
+//        String result = types.stream()
+//                .map(type -> typeMapping.getOrDefault(type, type)) // Ánh xạ tên hoặc giữ nguyên nếu không tìm thấy
+//                .collect(Collectors.joining(", "));
+        return tests.stream()
+                .map(test -> new TestDTO(String.valueOf(test.getId()), test.getTitle(), test.getType(), test.getLesson() != null ? test.getLesson().getId() : null,
+                        test.getChapter().getId(), test.getCourse().getId(), test.getDescription(), test.isSummary(),
+                        test.getTotalQuestion(), test.getEasyQuestion(), test.getMediumQuestion(), test.getHardQuestion(),
+                        test.getCreatedAt().toString(), test.getUpdatedAt() != null ? test.getUpdatedAt().toString() : "",
+                        test.getDeletedDate() != null ? test.getDeletedDate().toString() : "", test.isDeleted(),
+                        test.getDuration(), test.getFormat(), test.isAssigned(), test.getPoint()))
+                .collect(Collectors.toList());
+    }
+
+    public List<TestDTO> getTestsByCourseIdAndChapterId(Integer chapterId, Integer courseId) {
+        List<Test> tests = testRepository.findTestsByChapterAndCourse(chapterId, courseId);
+        return tests.stream()
+                .map(test -> new TestDTO(String.valueOf(test.getId()), test.getTitle(), test.getType(), test.getLesson() != null ? test.getLesson().getId() : null,
+                        test.getChapter().getId(), test.getCourse().getId(), test.getDescription(), test.isSummary(),
+                        test.getTotalQuestion(), test.getEasyQuestion(), test.getMediumQuestion(), test.getHardQuestion(),
+                        test.getCreatedAt().toString(), test.getUpdatedAt() != null ? test.getUpdatedAt().toString() : "",
+                        test.getDeletedDate() != null ? test.getDeletedDate().toString() : "", test.isDeleted(),
+                        test.getDuration(), test.getFormat(), test.isAssigned(), test.getPoint()))
+                .collect(Collectors.toList());
+    }
+
+    public Page<ExamDTOPublic> getTestsByCourseAndTitle(Integer courseId, String keyword, String level, BigDecimal minPrice, BigDecimal maxPrice, Integer accountId, int page, int size) {
+        ExamLevel examLevel = null;
+
+        if (level != null) {
+            examLevel = ExamLevel.valueOf(level);
+        }
+
+        Page<Test> tests = testRepository.findByFlexibleKeywordSearch(courseId, keyword, examLevel, minPrice, maxPrice, PageRequest.of(page, size));
+        return tests.map(test -> {
+            ExamDTOPublic examDTO = new ExamDTOPublic();
+            examDTO.setTestId(test.getId());
+            examDTO.setTitle(test.getTitle());
+            examDTO.setDescription(test.getDescription());
+            examDTO.setCourseId(test.getCourse().getId());
+            examDTO.setCourseTitle(test.getCourse().getTitle());
+            examDTO.setTotalQuestion(test.getTotalQuestion());
+            examDTO.setDuration(test.getDuration());
+            examDTO.setAuthor(test.getCourse().getAuthor());
+            ExamInfo examInfo = examInfoRepository.findByTestId(test.getId()).orElse(null);
+            if (examInfo != null) {
+                examDTO.setImageUrl(examInfo.getImageUrl());
+                examDTO.setLevel(examInfo.getLevel());
+                examDTO.setStatus(examInfo.getStatus());
+                examDTO.setExamType(examInfo.getExamType());
+                examDTO.setCreatedAt(examInfo.getCreatedAt());
+                examDTO.setUpdatedAt(examInfo.getUpdatedAt());
+                examDTO.setPrice(examInfo.getPrice());
+                examDTO.setCost(examInfo.getCost());
+            }
+
+            Double averageRating = testRepository.findAverageRatingByTestId(test.getId());
+            examDTO.setRating(averageRating != null ? averageRating : 0.0);
+
+            int itemCountReview = test.getReviewList() != null ? test.getReviewList().size() : 0;
+            examDTO.setItemCountReview(itemCountReview);
+            int itemCountPrice = test.getTestEnrollments() != null ? test.getTestEnrollments().size() : 0;
+            examDTO.setItemCountPrice(itemCountPrice);
+
+            if (accountId != null) {
+                boolean isPurchased = test.getTestEnrollments().stream()
+                        .anyMatch(te -> te.getAccount().getId() == accountId);
+                examDTO.setPurchased(isPurchased);
+            } else {
+                examDTO.setPurchased(false);
+            }
+
+            Optional<Course_Discount> courseDiscountOpt = courseDiscountRepository.findByTestId(test.getId());
+            if (courseDiscountOpt.isPresent() && courseDiscountOpt.get().getDiscount() != null && courseDiscountOpt.get().getDiscount().getStatus() == DiscountStatus.ACTIVE && examInfo.getExamType() == ExamType.FEE) {
+                int intValue = courseDiscountOpt.get().getDiscount().getDiscountValue().intValue();
+                examDTO.setPercentDiscount(intValue);
+            } else {
+                examDTO.setPercentDiscount(0);
+            }
+            return examDTO;
+        });
+    }
+
+    public ExamDetailDTOPublic getTestDetails(Integer testId, Integer accountId) {
+
+        Test test = testRepository.findById(testId)
+                .orElseThrow(() -> new NoSuchElementException("Test not found for ID: " + testId));
+
+        ExamDetailDTOPublic examDTO = new ExamDetailDTOPublic();
+        examDTO.setTestId(test.getId());
+        examDTO.setTitle(test.getTitle());
+        examDTO.setDescription(test.getDescription());
+        examDTO.setCourseId(test.getCourse().getId());
+        examDTO.setCourseTitle(test.getCourse().getTitle());
+        examDTO.setTotalQuestion(test.getTotalQuestion());
+        examDTO.setDuration(test.getDuration());
+        examDTO.setAuthor(test.getCourse().getAuthor());
+        ExamInfo examInfo = examInfoRepository.findByTestId(test.getId()).orElse(null);
+        if (examInfo != null) {
+            examDTO.setImageUrl(examInfo.getImageUrl());
+            examDTO.setLevel(examInfo.getLevel());
+            examDTO.setStatus(examInfo.getStatus());
+            examDTO.setIntro(examInfo.getIntro());
+            examDTO.setTestContent(examInfo.getTestContents());
+            examDTO.setKnowledgeRequirement(examInfo.getKnowledgeRequirements());
+            examDTO.setExamType(examInfo.getExamType());
+            examDTO.setCreatedAt(examInfo.getCreatedAt());
+            examDTO.setUpdatedAt(examInfo.getUpdatedAt());
+            examDTO.setPrice(examInfo.getPrice());
+            examDTO.setCost(examInfo.getCost());
+        } else {
+
+            examDTO.setImageUrl("");
+            examDTO.setLevel(null);
+            examDTO.setStatus(null);
+            examDTO.setIntro("");
+            examDTO.setKnowledgeRequirement("");
+            examDTO.setTestContent("");
+        }
+
+
+        Double averageRating = testRepository.findAverageRatingByTestId(test.getId());
+        examDTO.setRating(averageRating != null ? averageRating : 0.0);
+
+
+        int itemCountReview = test.getReviewList() != null ? test.getReviewList().size() : 0;
+        examDTO.setItemCountReview(itemCountReview);
+
+        int itemCountPrice = test.getTestEnrollments() != null ? test.getTestEnrollments().size() : 0;
+        examDTO.setItemCountPrice(itemCountPrice);
+
+        if (accountId != null) {
+            boolean isPurchased = test.getTestEnrollments().stream()
+                    .anyMatch(te -> te.getAccount().getId() == accountId);
+            examDTO.setPurchased(isPurchased);
+        } else {
+            examDTO.setPurchased(false);
+        }
+
+        Optional<Course_Discount> courseDiscountOpt = courseDiscountRepository.findByTestId(test.getId());
+        if (courseDiscountOpt.isPresent() && courseDiscountOpt.get().getDiscount() != null && courseDiscountOpt.get().getDiscount().getStatus() == DiscountStatus.ACTIVE && examInfo.getExamType() == ExamType.FEE) {
+            int intValue = courseDiscountOpt.get().getDiscount().getDiscountValue().intValue();
+            examDTO.setPercentDiscount(intValue);
+        } else {
+            examDTO.setPercentDiscount(0);
+        }
+
+
+        return examDTO;
+    }
+
+
 }

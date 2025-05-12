@@ -2,9 +2,6 @@ package com.example.hotrohoctapbackend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Data
@@ -17,6 +14,7 @@ public class RoleUser {
 
     @Column(name = "role_name")
     private String roleName;
+
     public String getRoleName() {
         return roleName;
     }

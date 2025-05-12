@@ -3,6 +3,7 @@ package com.example.hotrohoctapbackend.service;
 import com.example.hotrohoctapbackend.DTO.Admin.SettingDTO;
 import com.example.hotrohoctapbackend.dao.SettingRepository;
 import com.example.hotrohoctapbackend.entity.SettingScheduler;
+import com.example.hotrohoctapbackend.enums.ReminderType;
 import com.example.hotrohoctapbackend.scheduler.NotificationScheduler;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,15 +33,16 @@ public class SettingService {
 
     //get all type
     public List<SettingScheduler> getSettingsByType(String type) {
-        return settingRepository.findByType(type);
+        ReminderType reminderType = ReminderType.valueOf(type);
+        return settingRepository.findByReminderType(reminderType);
     }
 
     //save
     public SettingScheduler saveSetting(SettingDTO setting) {
-
         SettingScheduler settingScheduler = new SettingScheduler();
         settingScheduler.setCheck(setting.isCheck());
-        settingScheduler.setType(setting.getType());
+        ReminderType reminderType = ReminderType.valueOf(setting.getName());
+        settingScheduler.setReminderType(reminderType);
         settingScheduler.setName(setting.getName());
         return settingRepository.save(settingScheduler);
     }
@@ -48,8 +50,6 @@ public class SettingService {
     public void updateSettingName(int id, String name) {
         Optional<SettingScheduler> setting = settingRepository.findById(id);
         if (setting.isPresent()) {
-
-
             SettingScheduler updatedSetting = setting.get();
             updatedSetting.setName(name);
             settingRepository.save(updatedSetting);
@@ -65,10 +65,10 @@ public class SettingService {
     }
 
     public String getScore(String type) {
-        List<SettingScheduler> schedulerList = settingRepository.findByType(type);
-        for (SettingScheduler item : schedulerList)
-        {
-            if(item.isCheck()){
+        ReminderType reminderType = ReminderType.valueOf(type);
+        List<SettingScheduler> schedulerList = settingRepository.findByReminderType(reminderType);
+        for (SettingScheduler item : schedulerList) {
+            if (item.isCheck()) {
                 return item.getName();
             }
         }
@@ -77,8 +77,8 @@ public class SettingService {
 
 
     public void activateSetting(int id, String type) {
-        // Lấy tất cả các mục và đặt `check` = false
-        List<SettingScheduler> allSettings = settingRepository.findByType(type);
+        ReminderType reminderType = ReminderType.valueOf(type);
+        List<SettingScheduler> allSettings = settingRepository.findByReminderType(reminderType);
         for (SettingScheduler setting : allSettings) {
             if (setting.isCheck()) {
                 setting.setCheck(false);

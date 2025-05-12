@@ -79,21 +79,25 @@ public class FirebaseStorageService {
         }
     }
 
+    //Create Document
     public GeneralDocument uploadFile(MultipartFile file, String title, String description, int idCategory) throws IOException {
 
         String contentType = file.getContentType();
+        String type = "PDF";
         if (contentType == null) {
             throw new IllegalArgumentException("File type is unknown");
         }
-
         if (contentType.equals("application/pdf")) {
-            System.out.println("Day la PDF nha");
+            type = "PDF";
         } else if (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
-            System.out.println("Day la DOCX nha");
+            type = "DOCX";
+        } else if (contentType.equals("application/vnd.openxmlformats-officedocument.presentationml.presentation")) {
+            type = "PPTX";
         } else {
             throw new IllegalArgumentException("Unsupported file type");
         }
 
+        long fileSize = file.getSize();
         String imageName = generateFileName(file.getOriginalFilename());
         String folderName = "document/";
         String fullFileName = folderName + imageName;
@@ -119,25 +123,29 @@ public class FirebaseStorageService {
         document.setCategory(category);
         document.setCreatedAt(LocalDateTime.now());
         document.setUpdatedAt(LocalDateTime.now());
-
+        document.setFormat(type);
+        document.setSize(String.valueOf(fileSize));
         return document;
     }
 
-    public String uploadFileURL(MultipartFile file) throws IOException {
+    public String uploadFileDocumentForCourse(MultipartFile file) throws IOException {
 
         String contentType = file.getContentType();
+        String type = "PDF";
         if (contentType == null) {
             throw new IllegalArgumentException("File type is unknown");
         }
-
         if (contentType.equals("application/pdf")) {
-            System.out.println("Day la PDF nha");
+            type = "PDF";
         } else if (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
-            System.out.println("Day la DOCX nha");
+            type = "DOCX";
+        } else if (contentType.equals("application/vnd.openxmlformats-officedocument.presentationml.presentation")) {
+            type = "PPTX";
         } else {
             throw new IllegalArgumentException("Unsupported file type");
         }
 
+        long fileSize = file.getSize();
         String imageName = generateFileName(file.getOriginalFilename());
         String folderName = "document/";
         String fullFileName = folderName + imageName;
@@ -155,6 +163,46 @@ public class FirebaseStorageService {
         return fileUrl;
     }
 
+    //Upload Document
+    public GeneralDocument uploadFileURL(GeneralDocument generalDocument, MultipartFile file) throws IOException {
+        String contentType = file.getContentType();
+        String type = "PDF";
+        if (contentType == null) {
+            throw new IllegalArgumentException("File type is unknown");
+        }
+        if (contentType.equals("application/pdf")) {
+            type = "PDF";
+        } else if (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
+            type = "DOCX";
+        } else if (contentType.equals("application/vnd.openxmlformats-officedocument.presentationml.presentation")) {
+            type = "PPTX";
+        } else {
+            throw new IllegalArgumentException("Unsupported file type");
+        }
+
+        long fileSize = file.getSize();
+        String imageName = generateFileName(file.getOriginalFilename());
+        String folderName = "document/";
+        String fullFileName = folderName + imageName;
+
+        // Set metadata and create blob info
+        Map<String, String> map = new HashMap<>();
+        map.put("firebaseStorageDownloadTokens", imageName);
+        BlobId blobId = BlobId.of(BUCKET_NAME, fullFileName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setMetadata(map)
+                .setContentType(file.getContentType())
+                .build();
+        storage.create(blobInfo, file.getInputStream());
+
+
+        generalDocument.setSize(String.valueOf(fileSize));
+        generalDocument.setFormat(type);
+        String fileUrl = getDownloadUrl(blobInfo);
+        generalDocument.setUrl(fileUrl);
+        return generalDocument;
+    }
+
     public String uploadFileImage(MultipartFile thumbnail) throws IOException {
         String imageName = generateFileName(thumbnail.getOriginalFilename());
         String folderName = "image/imageDocument/";
@@ -170,14 +218,12 @@ public class FirebaseStorageService {
                 .build();
         storage.create(blobInfo, thumbnail.getInputStream());
         String fileUrl = getDownloadUrl(blobInfo);
-
-
         return fileUrl;
     }
 
 
     //VIDEO
-    public Video saveTest(Video videoInput, MultipartFile videoFile, MultipartFile documentFile) throws IOException {
+    public String saveVideo(MultipartFile videoFile) throws IOException {
         String imageName = generateFileName(videoFile.getOriginalFilename());
         String folderName = "video/";
         String fullFileName = folderName + imageName;
@@ -191,12 +237,9 @@ public class FirebaseStorageService {
                 .build();
         storage.create(blobInfo, videoFile.getInputStream());
         String fileUrl = getDownloadUrl(blobInfo);
-
-        videoInput.setUrl(fileUrl);
-        String documentUrl = saveTestDocument(documentFile);
-        videoInput.setDocumentUrl(documentUrl);
-        return videoInput;
+        return fileUrl;
     }
+
 
     public String saveTestVideo(MultipartFile videoFile) throws IOException {
         String imageName = generateFileName(videoFile.getOriginalFilename());
@@ -212,8 +255,6 @@ public class FirebaseStorageService {
                 .build();
         storage.create(blobInfo, videoFile.getInputStream());
         String fileUrl = getDownloadUrl(blobInfo);
-
-
         return fileUrl;
     }
 

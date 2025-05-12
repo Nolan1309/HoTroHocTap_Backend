@@ -9,18 +9,36 @@ import java.time.LocalDateTime;
 @Data
 public class CourseDTO_User_Profile {
     private int id;
-    private String duration;
+    private Integer duration;
     private String image;
     private String title;
     private LocalDateTime enrollment_date;
     private Boolean status;
+    private Boolean isDeleted;
 
-    public CourseDTO_User_Profile(int id, String duration, String image, String title, LocalDateTime  enrollment_date, Boolean status) {
+    public CourseDTO_User_Profile(int id, Integer duration, String image, String title, LocalDateTime enrollment_date, Boolean status, Boolean isDeleted) {
         this.id = id;
         this.duration = duration;
         this.image = image;
         this.title = title;
         this.enrollment_date = enrollment_date;
+        this.status = status;
+        this.isDeleted = isDeleted;
+    }
+
+    public Boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
+    }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
         this.status = status;
     }
 
@@ -32,11 +50,11 @@ public class CourseDTO_User_Profile {
         this.id = id;
     }
 
-    public String getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 
@@ -56,11 +74,11 @@ public class CourseDTO_User_Profile {
         this.title = title;
     }
 
-    public LocalDateTime  getEnrollment_date() {
+    public LocalDateTime getEnrollment_date() {
         return enrollment_date;
     }
 
-    public void setEnrollment_date(LocalDateTime  enrollment_date) {
+    public void setEnrollment_date(LocalDateTime enrollment_date) {
         this.enrollment_date = enrollment_date;
     }
 }

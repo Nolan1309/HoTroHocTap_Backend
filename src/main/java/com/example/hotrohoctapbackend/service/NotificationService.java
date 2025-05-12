@@ -4,8 +4,12 @@ import com.example.hotrohoctapbackend.DTO.Admin.AdminNotificationDTO;
 import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
 import com.example.hotrohoctapbackend.dao.NotificationRepository;
 import com.example.hotrohoctapbackend.dao.User_NotificationRepository;
+import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Notification;
 import com.example.hotrohoctapbackend.entity.User_Notification;
+import com.example.hotrohoctapbackend.enums.DeliveryStatus;
+import com.example.hotrohoctapbackend.util.MessageTemplate;
+import com.example.hotrohoctapbackend.util.TOPIC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,16 +32,25 @@ public class NotificationService {
     private User_NotificationRepository userNotificationRepository;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private NotificationRepository notificationRepository;
 
-    public Notification createNotification(String title, String message, String topic) {
+    public Notification createNotification(String title, String message, TOPIC topic) {
         Notification notification = new Notification();
         notification.setTitle(title);
         notification.setMessage(message);
+
         notification.setTopic(topic);
+
 //        notification.setUserId(userId);
         notification.setCreatedAt(LocalDateTime.now());
         notification.setUpdatedAt(LocalDateTime.now());
         return repository.save(notification);
+    }
+
+    public Notification getNotificationByTopic(TOPIC topic) {
+        String topicValue = topic.name();
+        return repository.findByTopic(topicValue);
     }
 
     public List<UserNotificationDTO_User> getUserNotifications(Long userId) {
@@ -53,7 +66,9 @@ public class NotificationService {
             notification.setUpdatedAt(((Timestamp) row[3]).toLocalDateTime());
             notification.setDeletedDate(((Timestamp) row[4]).toLocalDateTime());
             notification.setDeleted((Boolean) row[5]);
-            notification.setTopic((String) row[6]);
+
+            TOPIC topic = TOPIC.valueOf((String) row[6]);
+            notification.setTopic(topic);
             notification.setMessage((String) row[7]);
             boolean readStatus = (Boolean) row[8];
 
@@ -70,7 +85,7 @@ public class NotificationService {
         userNotification.setRead_status(true);
         userNotificationRepository.save(userNotification);
 
-        List<Object[]> results = repository.findNotificationsByUserIdNativeAndNotificationId(userId,notificationId);
+        List<Object[]> results = repository.findNotificationsByUserIdNativeAndNotificationId(userId, notificationId);
 
         List<UserNotificationDTO_User> notifications = new ArrayList<>();
 
@@ -82,7 +97,8 @@ public class NotificationService {
             notification.setUpdatedAt(((Timestamp) row[3]).toLocalDateTime());
             notification.setDeletedDate(((Timestamp) row[4]).toLocalDateTime());
             notification.setDeleted((Boolean) row[5]);
-            notification.setTopic((String) row[6]);
+            TOPIC topic = TOPIC.valueOf((String) row[6]);
+            notification.setTopic(topic);
             notification.setMessage((String) row[7]);
             boolean readStatus = (Boolean) row[8];
 
@@ -105,21 +121,6 @@ public class NotificationService {
         userNotificationRepository.save(notification);
     }
 
-    public void markAsReadDetail(Integer accountId, Integer notificationId) {
-        User_Notification notification = userNotificationRepository.findByAccountIdAndNotificationId(accountId, notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found for this user"));
-        notification.setRead_status(true);
-        userNotificationRepository.save(notification);
-    }
-
-    public void sendNotificationToUser(Long userId, String message) {
-        String destination = "/user/" + userId + "/notifications";
-        messagingTemplate.convertAndSend(destination, message);
-    }
-
-    @Autowired
-    private NotificationRepository notificationRepository;
-
     public Page<AdminNotificationDTO> getNotifications(Pageable pageable) {
         Page<Object[]> notifications = notificationRepository.findCustomNotificationsWithPagination(pageable);
 
@@ -130,7 +131,10 @@ public class NotificationService {
                         (Boolean) record[1], // isDeleted
                         (String) record[2],  // message
                         (String) record[3],  // title
-                        (String) record[4]   // topic
+                        (String) record[4],   // topic
+                        ((java.sql.Timestamp) record[5]).toLocalDateTime(),
+                        ((java.sql.Timestamp) record[6]).toLocalDateTime(),
+                        ((java.sql.Timestamp) record[7]).toLocalDateTime()
                 )
         ).collect(Collectors.toList());
 
@@ -167,5 +171,68 @@ public class NotificationService {
         } else {
             throw new RuntimeException("Account not found with id: " + notificationID);
         }
+    }
+
+    //     Gửi thông báo hệ thống đến tất cả người dùng
+    public void sendSystemNotification(String message, TOPIC topic, Notification notification, Account account) {
+        UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
+        User_Notification userNotification = new User_Notification();
+        userNotification.setAccount(account);
+        userNotification.setDeliveryStatus(DeliveryStatus.SENT);
+        userNotification.setTitle(notification.getTitle());
+        userNotification.setTopic(topic);
+        userNotification.setScheduleTime(LocalDateTime.now());
+        userNotification.setNotification(notification);
+        userNotification.setMessage(message);
+        userNotification.setCreatedAt(LocalDateTime.now());
+        userNotification.setRead_status(false);
+        notificationRepository.save(notification);
+        messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
+    }
+
+    // Gửi thông báo theo role (ví dụ: Admin)
+    public void sendRoleNotification(List<Account> accounts, String message, TOPIC topic, Notification notification) {
+        for (Account item : accounts) {
+            UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
+            User_Notification userNotification = new User_Notification();
+            userNotification.setAccount(item);
+            userNotification.setDeliveryStatus(DeliveryStatus.SENT);
+            userNotification.setTitle(notification.getTitle());
+            userNotification.setTopic(topic);
+            userNotification.setScheduleTime(LocalDateTime.now());
+            userNotification.setNotification(notification);
+            userNotification.setMessage(message);
+            userNotification.setCreatedAt(LocalDateTime.now());
+            userNotification.setRead_status(false);
+            notificationRepository.save(notification);
+            messagingTemplate.convertAndSendToUser(String.valueOf(item.getId()), "/queue/notifications", notificationDTOUser);
+
+
+            notificationRepository.save(notification);
+
+            messagingTemplate.convertAndSend("/topic/role/" + item.getRole().getRoleName(), message); // Gửi thông báo đến role cụ thể
+        }
+
+    }
+
+    // Gửi thông báo cho người dùng cụ thể
+    public void sendPersonalNotification(String userId, String message) {
+        Notification notification = new Notification();
+        notification.setTitle("Personal Notification");
+        notification.setMessage(message);
+//        notification.setTopic("user");
+        notification.setCreatedAt(LocalDateTime.now());
+        notificationRepository.save(notification);
+
+        messagingTemplate.convertAndSendToUser(userId, "/topic/notifications", message); // Gửi thông báo đến người dùng cụ thể
+    }
+
+    //     Gửi thông báo và lưu thông tin vào bảng user_notifications
+    public void saveUserNotification(Account account, Notification notification) {
+        User_Notification userNotification = new User_Notification();
+        userNotification.setAccount(account);
+        userNotification.setNotification(notification);
+        userNotification.setRead_status(false); // Mặc định là chưa đọc
+        userNotificationRepository.save(userNotification);
     }
 }

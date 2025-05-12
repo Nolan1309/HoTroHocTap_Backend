@@ -93,15 +93,29 @@ public interface PaymentRepository extends JpaRepository<Payment,Integer> {
         """, nativeQuery = true)
     List<Object[]> getDashboardReport(String paymentDate);
 
-    @Query(value = """
-        SELECT 
-            YEAR(payment_date) AS paymentYear,
-            CONCAT('T', MONTH(payment_date)) AS month,
-            SUM(total_payment) AS revenue
-        FROM payments
-        WHERE YEAR(payment_date) = :year
-        GROUP BY paymentYear, MONTH(payment_date)
-        ORDER BY MONTH(payment_date)
+//    @Query(value = """
+//        SELECT
+//            YEAR(payment_date) AS paymentYear,
+//            CONCAT('T', MONTH(payment_date)) AS month,
+//            SUM(total_payment) AS revenue
+//        FROM payments
+//        WHERE YEAR(payment_date) = :year
+//        GROUP BY paymentYear, MONTH(payment_date)
+//        ORDER BY MONTH(payment_date)
+//    """, nativeQuery = true)
+//    List<Object[]> getMonthlySalesData(int year);
+
+        @Query(value = """
+        SELECT\s
+                        YEAR(payment_date) AS paymentYear,
+                        MONTH(payment_date) AS paymentMonth,
+                        CONCAT('T', MONTH(payment_date)) AS month,
+                        SUM(total_payment) AS revenue
+                    FROM payments
+                    WHERE YEAR(payment_date) = :year
+                    GROUP BY YEAR(payment_date), MONTH(payment_date), CONCAT('T', MONTH(payment_date))
+                    ORDER BY YEAR(payment_date), MONTH(payment_date)
+                    
     """, nativeQuery = true)
     List<Object[]> getMonthlySalesData(int year);
 }

@@ -8,7 +8,7 @@ public class AdminAddCourseDTO {
     private BigDecimal cost;
     private String courseOutput;
     private String description;
-    private String duration;
+    private Integer duration;
     private String imageUrl;
     private Boolean isDeleted;
     private String language;
@@ -18,6 +18,23 @@ public class AdminAddCourseDTO {
     private String type;
     private Integer courseCategoryId;
     private Integer accountId;
+    private String level;
+
+    public Boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
+    }
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
 
     public String getAuthor() {
         return author;
@@ -52,11 +69,11 @@ public class AdminAddCourseDTO {
         this.description = description;
     }
 
-    public String getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 

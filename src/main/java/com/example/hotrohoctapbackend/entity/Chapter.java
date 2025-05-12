@@ -1,7 +1,8 @@
 package com.example.hotrohoctapbackend.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,11 +21,25 @@ public class Chapter {
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
+
+    @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Lesson> lessons;
+
+    @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Test> tests;
+
+    @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Progress> progresses;
+
+
     @Column(name = "deletedDate")
     private LocalDateTime deletedDate;
 
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
+
+    @Column(name = "status")
+    private boolean status = false;
 
     @PrePersist
     protected void onCreate() {

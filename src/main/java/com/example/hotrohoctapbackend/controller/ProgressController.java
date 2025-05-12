@@ -2,6 +2,7 @@ package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.User.ExistProgressPassDTO_USER;
 import com.example.hotrohoctapbackend.DTO.User.ProgressDTO_User;
+import com.example.hotrohoctapbackend.DTO.User.UserGetCheckProgress;
 import com.example.hotrohoctapbackend.entity.Progress;
 import com.example.hotrohoctapbackend.service.EnrolledCourseService;
 import com.example.hotrohoctapbackend.service.ProgressService;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/progress")
 public class ProgressController {
@@ -21,6 +22,7 @@ public class ProgressController {
     private ProgressService progressService;
     @Autowired
     private EnrolledCourseService enrolledCourseService;
+
     @GetMapping("/{courseId}/progress/{accountId}")
     public ResponseEntity<List<ProgressDTO_User>> getProgress(@PathVariable Integer courseId, @PathVariable Integer accountId) {
         List<ProgressDTO_User> progressList = progressService.getProgressByCourseAndAccount(courseId, accountId);
@@ -46,6 +48,7 @@ public class ProgressController {
         Double progress = progressService.calculateProgress(accountId, courseId);
         return ResponseEntity.ok(progress);
     }
+
     @GetMapping("/calculateADMIN")
     public ResponseEntity<Double> calculateProgressAdmin(
             @RequestParam Integer accountId,
@@ -56,12 +59,12 @@ public class ProgressController {
 
 
     @PostMapping("/add")
-    public ResponseEntity<Progress> addProgress(
+    public ResponseEntity<UserGetCheckProgress> addProgress(
             @RequestParam int accountId,
             @RequestParam int courseId,
             @RequestParam int chapterId,
             @RequestParam int lessonId) {
-        Progress progress = progressService.createProgress(accountId, courseId, chapterId, lessonId);
+        UserGetCheckProgress progress = progressService.createProgress(accountId, courseId, chapterId, lessonId);
         if (progress != null) {
             String message = enrolledCourseService.updateStatus(accountId, courseId);
             return new ResponseEntity<>(progress, HttpStatus.CREATED);

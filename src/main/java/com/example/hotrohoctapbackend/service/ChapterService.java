@@ -1,6 +1,9 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.Admin.ChapterDTOAdmin;
+import com.example.hotrohoctapbackend.DTO.AdminV2.AdminChapterDTORestoreList;
+import com.example.hotrohoctapbackend.DTO.AdminV2.AdminCourseDTORestoreList;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Chapter.ChapterDTOAdminV3;
 import com.example.hotrohoctapbackend.DTO.ChapterDTO;
 
 import com.example.hotrohoctapbackend.DTO.LessonDTO;
@@ -12,9 +15,12 @@ import com.example.hotrohoctapbackend.dao.TestRepository;
 import com.example.hotrohoctapbackend.entity.*;
 import com.google.common.collect.FluentIterable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:3000")
 @Service
 public class ChapterService {
     @Autowired
@@ -38,7 +43,7 @@ public class ChapterService {
     // Phương thức tìm Chapter bằng courseId và trả về danh sách ChapterDTO
     public List<ChapterDTO> findChaptersByCourseId(Integer courseId) {
         // Tìm chapters bằng courseId
-        List<Chapter> chapters = chapterRepository.findByCourseId(courseId);
+        List<Chapter> chapters = chapterRepository.findChaptersByCourseId(courseId);
         List<ChapterDTO> chapterDTOList = new ArrayList<>();
 
         for (Chapter item : chapters) {
@@ -55,6 +60,9 @@ public class ChapterService {
                 lessonDTO1.setId(lessonDTO.getId());
                 lessonDTO1.setTitle(lessonDTO.getTitle());
                 lessonDTO1.setDeleted(lessonDTO.isDeleted());
+                lessonDTO1.setStatus(lessonDTO.isStatus());
+                lessonDTO1.setTopic(lessonDTO.getTopic());
+                lessonDTO1.setIsTestExcluded(lessonDTO.getIsTestExcluded());
                 lessonDTOS.add(lessonDTO1);
             }
 
@@ -74,6 +82,8 @@ public class ChapterService {
 
             chapterDTO.setId(item.getId());
             chapterDTO.setTitle(item.getTitle());
+            chapterDTO.setStatus(item.isStatus());
+            chapterDTO.setDeleted(item.isDeleted());
             chapterDTO.setLessonList(lessonDTOS);
             chapterDTO.setTestList(testDTOS);
             chapterDTO.setId_course(item.getCourse().getId());
@@ -84,12 +94,21 @@ public class ChapterService {
 
     }
 
-    public List<ChapterDTOAdmin> findAllChapters()
-    {
+    public List<ChapterDTOAdminV3> getChaptersByCourseId(int courseId) {
+        List<Chapter> chapters = chapterRepository.findByCourseIdAndIsDeletedFalse(courseId);
+        return chapters.stream()
+                .map(chapter -> new ChapterDTOAdminV3(String.valueOf(chapter.getId()), chapter.getCourse().getId(), chapter.getTitle(),
+                        chapter.isStatus(),
+                        chapter.getDeletedDate() != null ? chapter.getDeletedDate().toString() : "",
+                        chapter.isDeleted()))
+                .collect(Collectors.toList());
+    }
+
+    public List<ChapterDTOAdmin> findAllChapters() {
         List<Chapter> chapters = chapterRepository.findAll();
 
         List<ChapterDTOAdmin> chapterDTOAdmins = new ArrayList<>();
-        for (Chapter item : chapters){
+        for (Chapter item : chapters) {
             ChapterDTOAdmin chapterDTOAdmin = new ChapterDTOAdmin();
             chapterDTOAdmin.setId(item.getId());
             chapterDTOAdmin.setTitle(item.getTitle());
@@ -100,27 +119,8 @@ public class ChapterService {
         return chapterDTOAdmins;
     }
 
-//    private ChapterDTO convertToDTO(Chapter chapter) {
-//        return new ChapterDTO(
-//                chapter.getId(),
-//                chapter.getTitle(),
-//                chapter.getLessonList().stream().map(lesson -> new LessonDTO(lesson.getId(), lesson.getTitle())).collect(Collectors.toList()), // Convert lessonList
-//                chapter.getTestList().stream().map(test -> new TestDTO(test.getId(), test.getTitle(), test.getDescription(), test.isSummary(), test.getTotalQuestion(), test.getCreatedAt(), test.getUpdatedAt(), test.getLesson().getId(), test.getChapter().getId())).collect(Collectors.toList()),
-//                chapter.getCourse().getId() // Lấy id_course
-//        );
-//    }
 
-    // Phương thức chuyển đổi từ Chapter entity sang ChapterDTO
-//    private ChapterDTO convertToDTO(Chapter chapter) {
-//        return new ChapterDTO(
-//                chapter.getId(),
-//                chapter.getTitle(),
-//                chapter.getLessonList().stream().map(lesson -> new LessonDTO(lesson.getId(), lesson.getTitle())).collect(Collectors.toList()), // Convert lessonList
-//                chapter.getTestList().stream().map(test -> new TestDTO(test.getId(), test.getTitle(), test.getDescription(), test.isSummary(), test.getTotalQuestion(), test.getCreatedAt(), test.getUpdatedAt(), test.getLesson().getId(), test.getChapter().getId())).collect(Collectors.toList()),
-//                chapter.getCourse().getId() // Lấy id_course
-//        );
-//    }
-    public Chapter addChapter(ChapterDTO chapterDTO) {
+    public Boolean addChapter(ChapterDTO chapterDTO) {
         // Tìm course theo id_course trong DTO
         Course course = courseRepository.findById(chapterDTO.getId_course())
                 .orElseThrow(() -> new RuntimeException("Course not found with id: " + chapterDTO.getId_course()));
@@ -128,19 +128,20 @@ public class ChapterService {
         // Tạo mới Chapter từ ChapterDTO
         Chapter chapter = new Chapter();
         chapter.setTitle(chapterDTO.getTitle());
+        chapter.setStatus(chapterDTO.getStatus());
         chapter.setCourse(course);
 
-        // Lưu chapter vào database
-        return chapterRepository.save(chapter);
+        Chapter checkChapter = chapterRepository.saveAndFlush(chapter);
+        if (checkChapter != null) {
+            return true;
+        } else return false;
     }
+
     public Chapter editChapter(Integer chapterId, ChapterDTO chapterDTO) {
-        // Tìm chapter theo ID
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new RuntimeException("Chapter not found with id: " + chapterId));
-
-        // Cập nhật thông tin chapter
-        chapter.setTitle(chapterDTO.getTitle());  // Cập nhật tên chapter
-        // Lưu chapter đã cập nhật vào database
+        chapter.setTitle(chapterDTO.getTitle());
+        chapter.setStatus(chapterDTO.getStatus());
         return chapterRepository.save(chapter);
     }
 
@@ -174,4 +175,155 @@ public class ChapterService {
             throw new RuntimeException("Account not found with id: " + testID);
         }
     }
+
+    public Chapter lockChapterAdmin(int chapterID) {
+        // Tìm tài khoản theo ID
+        Optional<Chapter> accountOpt = chapterRepository.findById(chapterID);
+
+        if (accountOpt.isPresent()) {
+            Chapter chapter = accountOpt.get();
+            chapter.setStatus(false);
+            return chapterRepository.save(chapter);
+        } else {
+            throw new RuntimeException("Test not found with id: " + chapterID);
+        }
+    }
+
+    public Chapter unlockChapterAdmin(int testID) {
+        // Tìm tài khoản theo ID
+        Optional<Chapter> accountOpt = chapterRepository.findById(testID);
+
+        if (accountOpt.isPresent()) {
+            Chapter chapter = accountOpt.get();
+            chapter.setStatus(true);
+            return chapterRepository.save(chapter);
+        } else {
+            throw new RuntimeException("Account not found with id: " + testID);
+        }
+    }
+
+    private LocalDateTime convertTimestampToLocalDateTime(Object timestampObj) {
+        if (timestampObj instanceof Timestamp) {
+            Timestamp timestamp = (Timestamp) timestampObj;
+            return timestamp.toLocalDateTime();
+        }
+        return null;
+    }
+
+    public Page<AdminChapterDTORestoreList> getDeletedChapter(Pageable pageable) {
+        Page<Object[]> resultPage = chapterRepository.findDeletedChapterAll(pageable);
+        List<AdminChapterDTORestoreList> chapterDTORestoreLists = new ArrayList<>();
+        for (Object[] result : resultPage) {
+            AdminChapterDTORestoreList dto = new AdminChapterDTORestoreList();
+            dto.setId((Integer) result[0]);
+            dto.setChapterTitle((String) result[1]);
+            dto.setCourseId((Integer) result[2]);
+            LocalDateTime deleteAt = convertTimestampToLocalDateTime(result[3]);
+            dto.setDeletedDate(deleteAt);
+            dto.setIsDeleted((Boolean) result[4]);
+            chapterDTORestoreLists.add(dto);
+        }
+        return new PageImpl<>(chapterDTORestoreLists, pageable, resultPage.getTotalElements());
+    }
+
+    public Page<AdminChapterDTORestoreList> getDeletedChapterSearch(String chapterTitle, String deletedDate, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Object[]> resultPage = chapterRepository.searchChapterByChapterTitleAndDeleteDate(chapterTitle, deletedDate, pageable);
+        if (chapterTitle != null && !chapterTitle.isEmpty() && deletedDate != null && !deletedDate.isEmpty()) {
+            resultPage = chapterRepository.searchChapterByChapterTitleAndDeleteDate(chapterTitle, deletedDate, pageable);
+        } else if (chapterTitle != null && !chapterTitle.isEmpty()) {
+            resultPage = chapterRepository.searchChapterByTitle(chapterTitle, pageable);
+        } else if (deletedDate != null && !deletedDate.isEmpty()) {
+            resultPage = chapterRepository.searchChapterByDeletedDate(deletedDate, pageable);
+        }
+        List<AdminChapterDTORestoreList> chapterDTORestoreLists = new ArrayList<>();
+        for (Object[] result : resultPage) {
+            AdminChapterDTORestoreList dto = new AdminChapterDTORestoreList();
+            dto.setId((Integer) result[0]);
+            dto.setChapterTitle((String) result[1]);
+            dto.setCourseId((Integer) result[2]);
+            LocalDateTime deleteAt = convertTimestampToLocalDateTime(result[3]);
+            dto.setDeletedDate(deleteAt);
+            dto.setIsDeleted((Boolean) result[4]);
+            chapterDTORestoreLists.add(dto);
+        }
+        return new PageImpl<>(chapterDTORestoreLists, pageable, resultPage.getTotalElements());
+    }
+
+    public Page<AdminChapterDTORestoreList> getDeletedChapterByCourseId(Integer courseId, Pageable pageable) {
+        Page<Object[]> resultPage = chapterRepository.findDeletedChapterByCourseId(courseId, pageable);
+        List<AdminChapterDTORestoreList> chapterDTORestoreLists = new ArrayList<>();
+        for (Object[] result : resultPage) {
+            AdminChapterDTORestoreList dto = new AdminChapterDTORestoreList();
+            dto.setId((Integer) result[0]);
+            dto.setChapterTitle((String) result[1]);
+            dto.setCourseId((Integer) result[2]);
+            LocalDateTime deleteAt = convertTimestampToLocalDateTime(result[3]);
+            dto.setDeletedDate(deleteAt);
+            dto.setIsDeleted((Boolean) result[4]);
+            chapterDTORestoreLists.add(dto);
+        }
+        return new PageImpl<>(chapterDTORestoreLists, pageable, resultPage.getTotalElements());
+    }
+
+    public Page<AdminChapterDTORestoreList> getDeletedChapterSearchByCourseId(Integer courseId, String chapterTittle, String deletedDate, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Object[]> resultPage = chapterRepository.searchChapterByChapterTitleAndDeleteDateByCourseId(courseId, chapterTittle, deletedDate, pageable);
+        if (chapterTittle != null && !chapterTittle.isEmpty() && deletedDate != null && !deletedDate.isEmpty()) {
+            resultPage = chapterRepository.searchChapterByChapterTitleAndDeleteDateByCourseId(courseId, chapterTittle, deletedDate, pageable);
+        } else if (chapterTittle != null && !chapterTittle.isEmpty()) {
+            resultPage = chapterRepository.searchChapterByTitleByCourseId(courseId, chapterTittle, pageable);
+        } else if (deletedDate != null && !deletedDate.isEmpty()) {
+            resultPage = chapterRepository.searchChapterByDeletedDateByCourseId(courseId, deletedDate, pageable);
+        }
+        List<AdminChapterDTORestoreList> chapterDTORestoreLists = new ArrayList<>();
+        for (Object[] result : resultPage) {
+            AdminChapterDTORestoreList dto = new AdminChapterDTORestoreList();
+            dto.setId((Integer) result[0]);
+            dto.setChapterTitle((String) result[1]);
+            dto.setCourseId((Integer) result[2]);
+            LocalDateTime deleteAt = convertTimestampToLocalDateTime(result[3]);
+            dto.setDeletedDate(deleteAt);
+            dto.setIsDeleted((Boolean) result[4]);
+            chapterDTORestoreLists.add(dto);
+        }
+        return new PageImpl<>(chapterDTORestoreLists, pageable, resultPage.getTotalElements());
+    }
+
+    public Chapter updateRestoreChapter(AdminChapterDTORestoreList adminCourseDTORestoreList) {
+        Optional<Chapter> accountOptional = chapterRepository.findById(adminCourseDTORestoreList.getId());
+        if (accountOptional.isEmpty()) {
+            throw new RuntimeException("Chapter not found with id: " + adminCourseDTORestoreList.getId());
+        } else {
+            Chapter chapter = accountOptional.get();
+            chapter.setDeleted(false);
+            return chapterRepository.save(chapter);
+        }
+    }
+
+    public void deleteRestoreChapter(AdminChapterDTORestoreList accountDetailsDTOV2) {
+        Optional<Chapter> accountOptional = chapterRepository.findById(accountDetailsDTOV2.getId());
+        if (accountOptional.isEmpty()) {
+            throw new RuntimeException("Chapter not found with id: " + accountDetailsDTOV2.getId());
+        } else {
+            chapterRepository.delete(accountOptional.get());
+        }
+    }
+
+    public List<AdminChapterDTORestoreList> getNoDeletedChapter(Integer courseId) {
+        List<Object[]> resultPage = chapterRepository.findNoDeletedChaptersList(courseId);
+        List<AdminChapterDTORestoreList> chapterDTORestoreLists = new ArrayList<>();
+        for (Object[] result : resultPage) {
+            AdminChapterDTORestoreList dto = new AdminChapterDTORestoreList();
+            dto.setId((Integer) result[0]);
+            dto.setChapterTitle((String) result[1]);
+            dto.setCourseId((Integer) result[2]);
+            LocalDateTime deleteAt = convertTimestampToLocalDateTime(result[3]);
+            dto.setDeletedDate(deleteAt);
+            dto.setIsDeleted((Boolean) result[4]);
+            chapterDTORestoreLists.add(dto);
+        }
+        return chapterDTORestoreLists;
+    }
+
 }

@@ -5,7 +5,6 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "payments")
@@ -30,5 +29,12 @@ public class Payment {
     @JoinColumn(name = "account_id")
     private Account account;
 
+    @Column(name = "payment_type")
+    @Enumerated(EnumType.STRING)
+    private PaymentType paymentType;
 
+    public enum PaymentType {
+        COURSE,
+        VIP
+    }
 }

@@ -1,9 +1,11 @@
 package com.example.hotrohoctapbackend.entity;
 
+import com.example.hotrohoctapbackend.enums.DiscountType;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "course_discounts")
@@ -13,15 +15,29 @@ public class Course_Discount {
     @Column(name = "id")
     private int id;
     @ManyToOne
-    @JoinColumn(name = "course_id")
+    @JoinColumn(name = "course_id", nullable = true)
     private Course course;
     @ManyToOne
-    @JoinColumn(name = "discount_id")
+    @JoinColumn(name = "discount_id", nullable = true)
     private Discount discount;
-    @Column(name = "isCheck")
-    private boolean isCheck = false;
+    @ManyToOne
+    @JoinColumn(name = "test_id", nullable = true)
+    private Test test;
+
+    @ManyToOne
+    @JoinColumn(name = "course_bundle_id", nullable = true)
+    private CourseBundle courseBundle;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discountType")
+    private DiscountType discountType;
+
+    @Column(name = "status")
+    private boolean status = false;
+
     @Column(name = "deletedDate")
     private LocalDateTime deletedDate;
+
     @Column(name = "isDeleted")
     private boolean isDeleted = false; // Đặt mặc định là false
 

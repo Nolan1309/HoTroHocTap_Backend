@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RequestMapping("/api/payment/vnpay")
 @RequiredArgsConstructor
 public class PaymentControllerVN {
