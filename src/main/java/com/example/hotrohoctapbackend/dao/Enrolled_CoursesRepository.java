@@ -22,7 +22,9 @@ public interface Enrolled_CoursesRepository extends JpaRepository<Enrolled_Cours
 
     List<Enrolled_Courses> findEnrolled_CoursesByCourseId(Integer courseId);
 
-    List<Enrolled_Courses> findByCourseId(int courseId);
+//    List<Enrolled_Courses> findEnrolled_CoursesByCourseId(Integer courseId);
+
+//    Enrolled_Courses findByAccountIdAndCourseId(Integer accountId, Integer courseId);
 
     @Query("SELECT ec FROM Enrolled_Courses ec " +
             "JOIN ec.account a " +
@@ -38,7 +40,7 @@ public interface Enrolled_CoursesRepository extends JpaRepository<Enrolled_Cours
     );
 
     List<Enrolled_Courses> findByAccountId(Integer accountId);
-    
+
 
     @Query(value = "SELECT DISTINCT a.id AS user_id,  a.fullname AS user_name,a.email as email " +
             "FROM enrolled_courses ec " +

@@ -25,11 +25,13 @@ public class CourseDTOUserPublic {
     private String courseCategoryId;
     private Integer lessonCount;
     private Integer studentCount;
+    private Integer itemCountReview;
     private Double rating;
     private BigDecimal cost;
     private BigDecimal price;
     private Integer percentDiscount;
     private String level;
+    private Boolean purchased;
 
     public CourseDTOUserPublic() {
     }

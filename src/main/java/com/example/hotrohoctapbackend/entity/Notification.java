@@ -1,5 +1,6 @@
 package com.example.hotrohoctapbackend.entity;
 
+import com.example.hotrohoctapbackend.util.TOPIC;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,8 +21,9 @@ public class Notification {
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
-    @Column(name = "topic")
-    private String topic;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "topic", nullable = false)
+    private TOPIC topic;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

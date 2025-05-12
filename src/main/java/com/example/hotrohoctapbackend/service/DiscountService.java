@@ -42,6 +42,9 @@ public class DiscountService {
     @Autowired
     private ExamInfoRepository examInfoRepository;
 
+    @Autowired
+    private CourseBundleRepository courseBundleRepository;
+
     public Page<AdminDiscountGetDTO> getDiscounts(int page, int size) {
         PageRequest pageable = PageRequest.of(page, size);
 
@@ -282,6 +285,13 @@ public class DiscountService {
                     UpdatePriceCourseRemove(course);
                     courseRepository.saveAndFlush(course);
                 }
+            } else if (discount.getDiscountType() == DiscountType.COMBO) {
+                for (Course_Discount item : courseDiscountList) {
+                    CourseBundle course = courseBundleRepository.findById(item.getCourseBundle().getId())
+                            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy combo với ID: " + item.getCourseBundle().getId()));
+                    UpdatePriceCourseBundleRemove(course, discount.getDiscountValue());
+                    courseBundleRepository.saveAndFlush(course);
+                }
             } else {
                 for (Course_Discount item : courseDiscountList) {
                     ExamInfo examInfo = examInfoRepository.findByTestId(item.getTest().getId())
@@ -299,6 +309,13 @@ public class DiscountService {
                     UpdatePriceCourse(discount.getDiscountValue(), course);
                     courseRepository.saveAndFlush(course);
                 }
+            } else if (discount.getDiscountType() == DiscountType.COMBO) {
+                for (Course_Discount item : courseDiscountList) {
+                    CourseBundle courseBundle = courseBundleRepository.findById(item.getCourseBundle().getId())
+                            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy Combo với ID: " + item.getCourseBundle().getId()));
+                    UpdatePriceCourseBundle(courseBundle, discount.getDiscountValue());
+                    courseBundleRepository.saveAndFlush(courseBundle);
+                }
             } else {
                 for (Course_Discount item : courseDiscountList) {
                     ExamInfo examInfo = examInfoRepository.findByTestId(item.getTest().getId())
@@ -313,7 +330,7 @@ public class DiscountService {
         return new ApiResponse<>(200, "Toggle status thành công.", discount.getStatus().name());
     }
 
-    //Logic : Áp dụng thì phải ở trạng thái Tắt , Chưa mở Giảm giá .
+    //Logic : Áp dụng thì phải ở trạng thái Tắt , Chưa mở Giảm giá . COURSE / TEST / COMBO
     public ApiResponse<String> applyDiscount(ApplyDiscountRequest request) {
         // Lấy mã giảm giá từ discountId
         Discount discount = discountRepository.findById(request.getDiscountId())
@@ -349,7 +366,6 @@ public class DiscountService {
                 }
             }
         } else if ("TEST".equalsIgnoreCase(request.getVoucherType())) {
-
             for (Integer testId : request.getTargetIds()) {
                 Test test = testRepository.findById(testId)
                         .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài kiểm tra với ID: " + testId));
@@ -377,6 +393,34 @@ public class DiscountService {
                     courseDiscountRepository.delete(courseDiscount);
                 }
             }
+        } else if ("COMBO".equalsIgnoreCase(request.getVoucherType())) {
+            for (Integer courseBundleId : request.getTargetIds()) {
+                CourseBundle courseBundle = courseBundleRepository.findById(courseBundleId)
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy combo với ID: " + courseBundleId));
+
+                Course_Discount existingTestDiscount = courseDiscountRepository.findByCourseBundleAndDiscount(courseBundle, discount);
+                if (existingTestDiscount != null) {
+
+                    existingTestDiscount.setStatus(true);
+                    courseDiscountRepository.saveAndFlush(existingTestDiscount);
+                } else {
+                    // Nếu chưa có, tạo bản ghi mới
+                    Course_Discount courseDiscount = new Course_Discount();
+                    courseDiscount.setCourseBundle(courseBundle);
+                    courseDiscount.setDiscount(discount);
+                    courseDiscount.setDiscountType(DiscountType.COMBO);
+                    courseDiscount.setStatus(true);
+                    courseDiscountRepository.save(courseDiscount);
+                }
+
+            }
+            List<Integer> currentTestIds = request.getTargetIds();
+            List<Course_Discount> existingTestDiscounts = courseDiscountRepository.findByDiscount(discount);
+            for (Course_Discount courseDiscount : existingTestDiscounts) {
+                if (!currentTestIds.contains(courseDiscount.getCourseBundle().getId())) {
+                    courseDiscountRepository.delete(courseDiscount);
+                }
+            }
         } else {
             throw new IllegalArgumentException("Loại giảm giá không hợp lệ.");
         }
@@ -392,6 +436,13 @@ public class DiscountService {
         return true;
     }
 
+    public boolean UpdatePriceCourseBundle(CourseBundle courseBundle, BigDecimal percentDiscount) {
+        double discountPercentageValue = percentDiscount.doubleValue();
+        double discountedPrice = courseBundle.getPrice().doubleValue() * (1 - (discountPercentageValue / 100));
+        courseBundle.setPrice(new BigDecimal(discountedPrice));
+        return true;
+    }
+
     public boolean UpdatePriceTest(BigDecimal percentDiscount, ExamInfo test) {
         BigDecimal percentDecimal = percentDiscount.divide(BigDecimal.valueOf(100));
         BigDecimal finalPrice = test.getCost().multiply(BigDecimal.ONE.subtract(percentDecimal));
@@ -403,6 +454,15 @@ public class DiscountService {
         course.setPrice(course.getCost());
         return true;
     }
+
+    public boolean UpdatePriceCourseBundleRemove(CourseBundle courseBundle, BigDecimal discountPercentage) {
+        double discountedPrice = courseBundle.getPrice().doubleValue();
+        double percentage = discountPercentage.doubleValue();
+        double originalPrice = discountedPrice / (1 - (percentage / 100));
+        courseBundle.setPrice(new BigDecimal(originalPrice));
+        return true;
+    }
+
 
     public boolean UpdatePriceTestRemove(ExamInfo test) {
         test.setPrice(test.getCost());

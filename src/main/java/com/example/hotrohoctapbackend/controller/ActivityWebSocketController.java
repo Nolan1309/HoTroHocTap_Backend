@@ -17,23 +17,20 @@ public class ActivityWebSocketController {
     @MessageMapping("/login")
     @SendTo("/topic/activities")
     public void handleLogin(ActivityData activityData) {
-        activityHistoryService.saveActivity(activityData.getAccountId(), "login", "User logged in");
-
+        activityHistoryService.saveActivity(activityData.getAccountId(), "LOGIN", "User logged in");
     }
 
     // Xử lý khi người dùng click vào video
     @MessageMapping("/video-clicked")
     @SendTo("/topic/activities")
     public void handleVideoClick(ActivityData activityData) {
-        activityHistoryService.saveActivity(activityData.getAccountId(), "video_clicked", "User clicked video ID: " + activityData.getVideoId());
-
-
+        activityHistoryService.saveActivity(activityData.getAccountId(), "VIEW_LESSON", "User clicked video ID: " + activityData.getVideoId());
     }
 
     // Xử lý khi người dùng click vào bài kiểm tra
     @MessageMapping("/test-clicked")
     @SendTo("/topic/activities")
     public void handleTestClick(ActivityData activityData) {
-        activityHistoryService.saveActivity(activityData.getAccountId(), "test_clicked", "User clicked test ID: " + activityData.getTestId());
+        activityHistoryService.saveActivity(activityData.getAccountId(), "START_EXAM", "User clicked test ID: " + activityData.getTestId());
     }
 }

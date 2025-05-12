@@ -6,6 +6,7 @@ import com.example.hotrohoctapbackend.DTO.AdminV2.AdminCourseDTORestoreList;
 import com.example.hotrohoctapbackend.DTO.AdminV2.AdminDocumentDTORestoreList;
 import com.example.hotrohoctapbackend.DTO.AdminV2.AdminLesssonDTORestoreList;
 import com.example.hotrohoctapbackend.DTO.AdminV3.Account.AccountDTOAdmin;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Blog.BlogDTOPublic;
 import com.example.hotrohoctapbackend.DTO.AdminV3.GeneralDocument.GeneralDocumentDTOAdmin;
 import com.example.hotrohoctapbackend.DTO.User.GeneralDocumentDTO_User;
 import com.example.hotrohoctapbackend.entity.Category;
@@ -281,9 +282,13 @@ public class GeneralDocumentsController {
     }
 
     @PutMapping("/{id}/increment-view")
-    public ResponseEntity<GeneralDocument> incrementViewCount(@PathVariable int id) {
-        GeneralDocument updatedDocument = generalDocumentsService.incrementViewCount(id);
-        return ResponseEntity.ok(updatedDocument);
+    public ApiResponse<GeneralDocumentDTOAdmin> incrementViewCount(@PathVariable int id) {
+        try {
+            GeneralDocumentDTOAdmin updatedDocument = generalDocumentsService.incrementViewCount(id);
+            return new ApiResponse<>(200, "Lượt xem của tài liệu đã được tăng!", updatedDocument);
+        } catch (Exception e) {
+            return new ApiResponse<>(500, "Có lỗi xảy ra khi tăng lượt xem", null);
+        }
     }
 
 

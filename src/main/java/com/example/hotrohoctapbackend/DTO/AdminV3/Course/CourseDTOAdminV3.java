@@ -32,6 +32,7 @@ public class CourseDTOAdminV3 {
     private Double rating;
     private String level;
     private String certificate;
+    private Boolean purchased;
 
 
     public CourseDTOAdminV3() {
@@ -58,7 +59,10 @@ public class CourseDTOAdminV3 {
         this.courseCategoryId = courseCategoryId;
     }
 
-    public CourseDTOAdminV3(int id, String title, String description, String imageUrl, String language, String author, String courseOutput, BigDecimal cost, BigDecimal price, int duration, String type, boolean status, String createdAt, String updatedAt, String deletedDate, Boolean deleted, String accountId, String courseCategoryId, String categoryName, Integer studentCount, Double rating, String level, String certificate) {
+    public CourseDTOAdminV3(int id, String title, String description, String imageUrl, String language, String author, String courseOutput,
+                            BigDecimal cost, BigDecimal price, int duration, String type, boolean status, String createdAt, String updatedAt,
+                            String deletedDate, Boolean deleted, String accountId, String courseCategoryId, String categoryName,
+                            Integer studentCount, Double rating, String level, String certificate, Boolean purchased) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -82,5 +86,6 @@ public class CourseDTOAdminV3 {
         this.rating = rating;
         this.level = level;
         this.certificate = certificate;
+        this.purchased = purchased;
     }
 }

@@ -5,9 +5,13 @@ import com.example.hotrohoctapbackend.DTO.Admin.*;
 import com.example.hotrohoctapbackend.DTO.AdminV2.*;
 import com.example.hotrohoctapbackend.DTO.AdminV3.Course.CourseDTOAdminV3;
 import com.example.hotrohoctapbackend.DTO.AdminV3.Course.CourseDTOUserPublic;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Course.CourseForListAdminDTO;
 import com.example.hotrohoctapbackend.DTO.User.*;
 import com.example.hotrohoctapbackend.dao.*;
 import com.example.hotrohoctapbackend.entity.*;
+import com.example.hotrohoctapbackend.enums.DiscountStatus;
+import com.example.hotrohoctapbackend.enums.ExamType;
+import com.example.hotrohoctapbackend.mapper.CourseMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -24,6 +29,13 @@ import java.util.stream.Collectors;
 public class CourseService {
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private Enrolled_CoursesRepository enrolled_coursesRepository;
+
+    @Autowired
+    private Course_DiscountRepository courseDiscountRepository;
+
 
     @Autowired
     private ChapterRepository chapterRepository;
@@ -47,18 +59,28 @@ public class CourseService {
         return courseRepository.findCourseTypeById(id);
     }
 
-    public CourseDTOAdminV3 getCourseById(int id) {
+    public CourseDTOAdminV3 getCourseById(int id, Integer accountId) {
         Course course = courseRepository.findById(id).get();
+
         if (course == null) {
             throw new RuntimeException("Course not found");
         }
+
         Integer rating = 0;
         List<Review> reviewList = course.getReviews();
         for (Review review : reviewList) {
             rating += review.getRating();
         }
+
         Double rate = reviewList.isEmpty() ? 0.0 : (double) rating / reviewList.size();
 
+        Optional<Enrolled_Courses> enrolledCoursesCheck = enrolled_coursesRepository
+                .findByAccountIdAndCourseId(accountId, course.getId());  // Assuming you have a method like this
+
+        boolean isPurchased = false;
+        if (!enrolledCoursesCheck.isEmpty()) {
+            isPurchased = true;
+        }
         return new CourseDTOAdminV3(
                 course.getId(),
                 course.getTitle(),
@@ -82,7 +104,8 @@ public class CourseService {
                 course.getEnrolledCourses().size(),
                 rate,
                 course.getLevel(),
-                "Certificate"
+                "Certificate",
+                isPurchased
         );
     }
 
@@ -381,26 +404,20 @@ public class CourseService {
         existingCourse.setUpdatedAt(LocalDateTime.now());
         existingCourse.setAuthor(author);
 
-        // Cập nhật giá và cost nếu khóa học có loại "FEE"
         if (type.equals("FEE")) {
-            BigDecimal bigDecimalCost = new BigDecimal(cost);
-            BigDecimal bigDecimalPrice = new BigDecimal(price);
-            double phamtram = 100;
-            if (existingCourse.getCost() != existingCourse.getPrice()) {
-                Double value = checkDiscountForCourse(courseId);
-                if (value != 0) {
-                    phamtram = phamtram - value;
-                }
-            }
-            BigDecimal priceValue = bigDecimalCost.multiply(BigDecimal.valueOf(phamtram / 100));
-            existingCourse.setPrice(priceValue);
-            existingCourse.setCost(bigDecimalCost);
+            BigDecimal priceBig = new BigDecimal(price);
+            BigDecimal costBig = new BigDecimal(cost);
+            existingCourse.setPrice(priceBig);
+            existingCourse.setCost(costBig);
         } else {
             existingCourse.setPrice(new BigDecimal(0));
             existingCourse.setCost(new BigDecimal(0));
         }
+        Optional<Course_Discount> courseDiscount = courseDiscountRepository.findByCourseId(existingCourse.getId());
+        if (courseDiscount.isPresent() && courseDiscount.get().getDiscount() != null && courseDiscount.get().getDiscount().getStatus() == DiscountStatus.ACTIVE && type.equals("FEE")) {
+            UpdatePriceCourse(courseDiscount.get().getDiscount().getDiscountValue(), existingCourse);
+        }
 
-        // Cập nhật Category và Account từ ID
         if (courseCategoryId != null) {
             Category courseCategory = categoryRepository.findById(courseCategoryId)
                     .orElseThrow(() -> new RuntimeException("Course Category not found"));
@@ -414,9 +431,15 @@ public class CourseService {
             existingCourse.setAuthor(account.getFullname());
         }
 
-        // Lưu khóa học đã chỉnh sửa vào database
         courseRepository.save(existingCourse);
 
+        return true;
+    }
+
+    public boolean UpdatePriceCourse(BigDecimal percentDiscount, Course course) {
+        BigDecimal percentDecimal = percentDiscount.divide(BigDecimal.valueOf(100));
+        BigDecimal finalPrice = course.getCost().multiply(BigDecimal.ONE.subtract(percentDecimal));
+        course.setPrice(finalPrice);
         return true;
     }
 
@@ -622,34 +645,46 @@ public class CourseService {
 
     public Page<AdminCourseDTOList> convertToDTO(Page<Course> coursePage) {
         List<AdminCourseDTOList> dtoList = coursePage.getContent().stream()
-                .map(course -> new AdminCourseDTOList(
-                        course.getId(),
-                        course.getTitle(),
-                        course.getDescription(),
-                        course.getImage_url(),
-                        course.getCourseOutput(),
-                        course.getLanguage(),
-                        course.getAuthor(),
-                        course.getDuration(),
-                        course.getCost(),
-                        course.getPrice(),
-                        course.getCreatedAt(),
-                        course.getUpdatedAt(),
-                        course.getStatus(),
-                        course.getType(),
-                        course.getDeletedDate(),
-                        course.isDeleted(),
-                        course.getAccount().getId(),
-                        course.getCategory().getName(),
-                        course.getCategory().getId(),
-                        course.getCategory().getParentCategory().getName(),
-                        course.getCategory().getParentCategory().getId(),
-                        course.getCategory().getParentCategory().getParentCategory().getName(),
-                        course.getCategory().getParentCategory().getParentCategory().getId(),
-                        // Tính toán số lượng học viên (có thể thực hiện qua các bảng liên quan)
-                        Long.valueOf(course.getEnrolledCourses().size()),
-                        course.getLevel()
-                ))
+                .map(course -> {
+                    AdminCourseDTOList dto = new AdminCourseDTOList(
+                            course.getId(),
+                            course.getTitle(),
+                            course.getDescription(),
+                            course.getImage_url(),
+                            course.getCourseOutput(),
+                            course.getLanguage(),
+                            course.getAuthor(),
+                            course.getDuration(),
+                            course.getCost(),
+                            course.getPrice(),
+                            course.getCreatedAt(),
+                            course.getUpdatedAt(),
+                            course.getStatus(),
+                            course.getType(),
+                            course.getDeletedDate(),
+                            course.isDeleted(),
+                            course.getAccount().getId(),
+                            course.getCategory().getName(),
+                            course.getCategory().getId(),
+                            course.getCategory().getParentCategory().getName(),
+                            course.getCategory().getParentCategory().getId(),
+                            course.getCategory().getParentCategory().getParentCategory().getName(),
+                            course.getCategory().getParentCategory().getParentCategory().getId(),
+                            Long.valueOf(course.getEnrolledCourses().size()),
+                            course.getLevel()
+                    );
+
+                    // Tính toán discountStatus
+                    Optional<Course_Discount> courseDiscountOpt = courseDiscountRepository.findByCourseId(course.getId());
+                    if (courseDiscountOpt.isPresent() && courseDiscountOpt.get().getDiscount() != null &&
+                            courseDiscountOpt.get().getDiscount().getStatus() == DiscountStatus.ACTIVE) {
+                        dto.setDiscountStatus(true);
+                    } else {
+                        dto.setDiscountStatus(false);
+                    }
+
+                    return dto;
+                })
                 .collect(Collectors.toList());
 
         return new PageImpl<>(dtoList, coursePage.getPageable(), coursePage.getTotalElements());
@@ -699,6 +734,19 @@ public class CourseService {
                     categoryName3, categoryId3, categoryName2, categoryId2, categoryName1, categoryId1
             );
         }).collect(Collectors.toList());
+    }
+
+    //    Dùng để làm danh mục
+    public List<CourseForListAdminDTO> getAllCoursesListSimple() {
+
+        List<Course> data = courseRepository.findCourses();
+        List<CourseForListAdminDTO> courseForListAdminDTOList = new ArrayList<>();
+        for (Course item : data) {
+            CourseForListAdminDTO course = new CourseForListAdminDTO();
+            course = CourseMapper.toDTOForListAdmin(item);
+            courseForListAdminDTOList.add(course);
+        }
+        return courseForListAdminDTOList;
     }
 
     public Page<AdminCourseOfDiscount> getCoursesWithDiscounts(int page, int size) {
@@ -1066,7 +1114,7 @@ public class CourseService {
     }
 
 
-    public Page<CourseDTOUserPublic> getCoursesPublic(String type, String title, Integer categoryId, Pageable pageable) {
+    public Page<CourseDTOUserPublic> getCoursesPublic(String type, String title, List<Integer> categoryIds, Integer accountId, Pageable pageable) {
         Page<Course> courses = null;
 
         switch (type.toLowerCase()) {
@@ -1078,18 +1126,18 @@ public class CourseService {
                 break;
             case "category":
                 courses = courseRepository.findByTitleAndCategory(
-                        title, categoryId, pageable);
+                        categoryIds, title, pageable); // Lọc theo nhiều danh mục
                 break;
             default:
                 courses = courseRepository.findByTitleAndCategory(
-                        title, categoryId, pageable);
+                        categoryIds, title, pageable); // Lọc theo nhiều danh mục
         }
 
-        return courses.map(this::convertToDTO);
+        return courses.map(course -> convertToDTO(course, accountId));
     }
 
     // Chuyển đổi Course thành CourseDTOUserPublic
-    private CourseDTOUserPublic convertToDTO(Course course) {
+    private CourseDTOUserPublic convertToDTO(Course course, Integer accountId) {
         CourseDTOUserPublic dto = new CourseDTOUserPublic();
         dto.setId(course.getId());
         dto.setTitle(course.getTitle());
@@ -1109,10 +1157,39 @@ public class CourseService {
         dto.setCourseCategoryId(course.getCategory().getId() + "");
         dto.setLessonCount(course.getLessons().size());
         dto.setStudentCount(course.getEnrolledCourses().size());
-        dto.setRating(10.0);
+        dto.setItemCountReview(course.getReviews().size());
+
+        Double averageRating = courseRepository.findAverageRatingByCourseId(course.getId());
+
+        double roundedRating = averageRating != null
+                ? BigDecimal.valueOf(averageRating).setScale(1, RoundingMode.UP).doubleValue()
+                : 0.0;
+
+        dto.setRating(roundedRating);
+
+
         dto.setCost(course.getCost());
         dto.setPrice(course.getPrice());
-        dto.setPercentDiscount(10);
+
+        if (accountId != null) {
+            boolean isPurchased = course.getEnrolledCourses().stream()
+                    .anyMatch(te -> te.getAccount().getId() == accountId);
+            dto.setPurchased(isPurchased);
+        } else {
+            dto.setPurchased(false);
+        }
+
+
+        Optional<Course_Discount> courseDiscountOpt = courseDiscountRepository.findByCourseId(course.getId());
+
+        if (courseDiscountOpt.isPresent() && courseDiscountOpt.get().getDiscount() != null && courseDiscountOpt.get().getDiscount().getStatus() == DiscountStatus.ACTIVE && course.getType().equals("FEE")) {
+            int intValue = courseDiscountOpt.get().getDiscount().getDiscountValue().intValue();
+            dto.setPercentDiscount(intValue);
+        } else {
+            dto.setPercentDiscount(0);
+        }
+
+//        dto.setPercentDiscount(10);
         dto.setLevel(course.getLevel());
         return dto;
     }

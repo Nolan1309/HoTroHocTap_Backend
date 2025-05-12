@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.AdminV2.*;
+import com.example.hotrohoctapbackend.DTO.AdminV3.CourseCode.CourseCodeCreate;
 import com.example.hotrohoctapbackend.DTO.User.CourseCodeActivationRequest;
 import com.example.hotrohoctapbackend.DTO.User.StudentBehaviorRequestDTO;
 import com.example.hotrohoctapbackend.exception.ApiResponse;
@@ -59,6 +60,17 @@ public class CourseCodeController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @PostMapping("/enable-not-huit")
+    public ResponseEntity<String> activateCourseCodeNotHuit(@RequestBody CourseCodeCreate request) {
+        try {
+            String message = courseCodeService.activateCourseCodeNotHuit(request.getCode(), request.getAccountId());
+            return ResponseEntity.ok(message);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 
     @PostMapping("/check-enable")
     public ResponseEntity<CourseCodeStatusResponse> checkCourseCode(@RequestBody CourseCodeActivationRequest request) {

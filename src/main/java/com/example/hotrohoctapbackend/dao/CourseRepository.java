@@ -854,8 +854,15 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
 
     @Query("SELECT c FROM Course c WHERE " +
             "(:title IS NULL OR c.title LIKE %:title%) AND " +
-            "(:categoryId IS NULL OR c.category.id = :categoryId) AND " +
+            "(:categoryIds IS NULL OR c.category.id IN :categoryIds) AND " +
             "c.status = true AND " +
             "c.isDeleted = false")
-    Page<Course> findByTitleAndCategory(String title, Integer categoryId, Pageable pageable);
+    Page<Course> findByTitleAndCategory(List<Integer> categoryIds, String title, Pageable pageable);
+
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.course.id = :courseId AND r.reviewType = 'COURSE'")
+    Double findAverageRatingByCourseId(Integer courseId);
+
+    @Query("SELECT c FROM Course c WHERE c.isDeleted = false AND c.status = true ")
+    List<Course> findCourses();
+
 }

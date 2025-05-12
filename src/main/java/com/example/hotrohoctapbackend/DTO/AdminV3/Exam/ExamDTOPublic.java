@@ -16,6 +16,7 @@ public class ExamDTOPublic {
     private Integer totalQuestion;
     private Integer courseId;
     private String courseTitle;
+    private String author;
     private Integer itemCountPrice;
     private Integer itemCountReview;
     private Double rating;

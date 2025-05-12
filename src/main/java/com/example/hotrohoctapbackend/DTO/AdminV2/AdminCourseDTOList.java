@@ -63,6 +63,8 @@ public class AdminCourseDTOList {
     @Getter
     private Long countStudent;
 
+    private Boolean discountStatus;
+
     public AdminCourseDTOList(int id, String title, String description, String imageUrl, String courseOutput, String language,
                               String author, Integer duration, BigDecimal cost, BigDecimal price, LocalDateTime createdAt,
                               LocalDateTime updatedAt, Boolean status, String type, LocalDateTime deletedDate, boolean isDeleted, Integer accountId, String categoryNameLevel3, Integer categoryIdLevel3,
@@ -92,6 +94,15 @@ public class AdminCourseDTOList {
         this.categoryIdLevel1 = categoryIdLevel1;
         this.countStudent = countStudent;
         this.level = level;
+
+    }
+
+    public Boolean getDiscountStatus() {
+        return discountStatus;
+    }
+
+    public void setDiscountStatus(Boolean discountStatus) {
+        this.discountStatus = discountStatus;
     }
 
     public void setLevel(String level) {

@@ -11,23 +11,28 @@ import com.example.hotrohoctapbackend.DTO.AdminV2.AdminAccount_V2;
 import com.example.hotrohoctapbackend.DTO.AdminV2.AdminLesssonDTORestoreList;
 import com.example.hotrohoctapbackend.DTO.AdminV3.Account.AccountDTOAdmin;
 import com.example.hotrohoctapbackend.DTO.AdminV3.AuthorAdmin;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Overview;
 import com.example.hotrohoctapbackend.DTO.ResponsiveDTOJWT;
 import com.example.hotrohoctapbackend.DTO.UpdateAccountDTO;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
 import com.example.hotrohoctapbackend.dao.RoleUserRepository;
 import com.example.hotrohoctapbackend.entity.Account;
+import com.example.hotrohoctapbackend.entity.Activity_History;
 import com.example.hotrohoctapbackend.entity.RoleUser;
 import com.example.hotrohoctapbackend.exception.AccountNotFoundException;
+import com.example.hotrohoctapbackend.service.services.ActivityHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -44,22 +49,30 @@ public class AccountService {
 
     @Autowired
     private RoleUserRepository roleUserRepository;
+    @Autowired
+    private ActivityHistoryService activityHistoryService;
 
     public AccountDTO findByAccount(int id) {
         Optional<Account> account = accountRepository.findById(id);
-
-        AccountDTO dto = new AccountDTO();
-        dto.setEmail(account.get().getEmail());
-        dto.setFullname(account.get().getFullname());
-        dto.setPhone(account.get().getPhone());
-        return dto;
+        if (account.isPresent()) {
+            AccountDTO dto = new AccountDTO();
+            dto.setEmail(account.get().getEmail());
+            dto.setFullname(account.get().getFullname());
+            dto.setPhone(account.get().getPhone());
+            dto.setBirthday(account.get().getBirthday().toString());
+            dto.setImage(account.get().getImage());
+            dto.setRoleId(account.get().getRole().getId());
+            dto.setCreatedAt(account.get().getCreatedAt());
+            dto.setUpdatedAt(account.get().getUpdatedAt());
+            return dto;
+        } else {
+            return null;
+        }
     }
 
     public List<AdminAccount_V2> getAccountsByRoles() {
-        // Lấy danh sách kết quả dạng Object[]
-        List<Object[]> results = accountRepository.findAccountsByRoles();
 
-        // Chuyển đổi từng Object[] sang AdminAccount_V2 DTO
+        List<Object[]> results = accountRepository.findAccountsByRoles();
         return results.stream().map(row -> new AdminAccount_V2(
                 (int) row[0],                        // id
                 convertTimestampToLocalDateTime(row[1]),              // birthday
@@ -94,46 +107,35 @@ public class AccountService {
     }
 
     public AccountDTO_Proflie updateAccountUser(int accountId, UpdateAccountDTO updateAccountDTO) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
 
-        Optional<Account> optionalAccount = accountRepository.findById(accountId);
-        if (optionalAccount.isPresent()) {
-            Account account = optionalAccount.get();
-
-            // Cập nhật thông tin tài khoản từ DTO
-            account.setFullname(updateAccountDTO.getFullname());
-            account.setEmail(updateAccountDTO.getEmail());
-            account.setPhone(updateAccountDTO.getPhone());
-            account.setGender(updateAccountDTO.getGender());
-            account.setBirthday(updateAccountDTO.getBirthday());
-            if (updateAccountDTO.getImage() != null) {
-                account.setImage(updateAccountDTO.getImage());
-            }
-            // Cập nhật các trường khác nếu cần
-
-            // Lưu lại thông tin tài khoản vào database
-            Account account1 = accountRepository.save(account);
-
-            if (account1 != null) {
-                // Tạo đối tượng AccountDTO_Profile để trả về
-                AccountDTO_Proflie proflie = new AccountDTO_Proflie();
-                proflie.setFullname(account1.getFullname());
-                proflie.setEmail(account1.getEmail());
-                proflie.setPhone(account1.getPhone());
-                proflie.setGender(account1.getGender());
-                proflie.setBirthday(account1.getBirthday());
-                proflie.setImage(account1.getImage());
-                proflie.setId(account1.getId());
-                proflie.setCreatedAt(account1.getCreatedAt());
-                proflie.setUpdatedAt(account1.getUpdatedAt());
-
-                return proflie;
-            } else {
-                throw new RuntimeException("Failed to save updated account");
-            }
-        } else {
-            throw new RuntimeException("Account not found with id: " + accountId);
+        account.setFullname(updateAccountDTO.getFullname());
+        account.setEmail(updateAccountDTO.getEmail());
+        account.setPhone(updateAccountDTO.getPhone());
+        account.setGender(updateAccountDTO.getGender());
+        account.setBirthday(updateAccountDTO.getBirthday());
+        if (updateAccountDTO.getImage() != null) {
+            account.setImage(updateAccountDTO.getImage());
         }
+
+        Account updatedAccount = accountRepository.save(account);
+
+        AccountDTO_Proflie profile = new AccountDTO_Proflie();
+        profile.setId(updatedAccount.getId());
+        profile.setFullname(updatedAccount.getFullname());
+        profile.setEmail(updatedAccount.getEmail());
+        profile.setPhone(updatedAccount.getPhone());
+        profile.setGender(updatedAccount.getGender());
+        profile.setBirthday(updatedAccount.getBirthday());
+        profile.setImage(updatedAccount.getImage());
+        profile.setCreatedAt(updatedAccount.getCreatedAt());
+        profile.setUpdatedAt(updatedAccount.getUpdatedAt());
+        profile.setRoleId(updatedAccount.getRole().getId());
+
+        return profile;
     }
+
 
     public AccountDTO_Proflie findByAccountProfile(int id) {
         Optional<Account> account = accountRepository.findById(id);
@@ -209,6 +211,10 @@ public class AccountService {
         return accountRepository.existsByPhone(phone);
     }
 
+    public boolean checkPhoneExists(String phone, int accountId) {
+        return accountRepository.existsByPhoneAndIdNot(phone, accountId);
+    }
+
     public Account createAccount(Account account, String password) {
         account.setPassword(passwordEncoder.encode(password));
         return accountRepository.save(account);
@@ -234,7 +240,7 @@ public class AccountService {
         account.setCreatedAt(LocalDateTime.now());
         account.setUpdatedAt(LocalDateTime.now());
         account.setBirthday(birthday);
-
+        account.setTotalPoint("0");
         RoleUser roleUser = new RoleUser();
         roleUser.setId(2);
         account.setRole(roleUser);
@@ -585,5 +591,33 @@ public class AccountService {
                 account.getCreatedAt(),
                 account.getUpdatedAt()
         );
+    }
+
+    public Overview getOverviewByAccountId(Integer accountId) {
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
+
+        Integer dayStreak = activityHistoryService.calculateLoginStreak(accountId);
+        Overview overview = new Overview();
+        overview.setAccountId(accountId);
+        overview.setAccountName(account.getFullname());
+        overview.setEmail(account.getEmail());
+        overview.setTotalPoints(Integer.parseInt(account.getTotalPoint()));
+        overview.setCountCourse(account.getEnrolledCourses().size());
+        overview.setCountDocument(account.getGeneralDocumentAcounts().size());
+        overview.setDayStreak(dayStreak);
+
+        // Kiểm tra nếu danh sách wallets không rỗng
+        if (account.getWallets() != null && !account.getWallets().isEmpty()) {
+            overview.setBalanceWallet(account.getWallets().get(0).getBalance());
+            overview.setWalletId(account.getWallets().get(0).getId());
+        } else {
+            // Nếu không có ví, bạn có thể chọn trả về giá trị mặc định hoặc thông báo lỗi
+            overview.setBalanceWallet(new BigDecimal(0));  // Giá trị mặc định, nếu không có ví
+            overview.setWalletId(null);       // ID null nếu không có ví
+        }
+
+        return overview;
     }
 }

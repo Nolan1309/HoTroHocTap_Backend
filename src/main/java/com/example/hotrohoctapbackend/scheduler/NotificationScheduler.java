@@ -8,6 +8,7 @@ import com.example.hotrohoctapbackend.DTO.User.StudentCourseProgressDTO;
 import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
 import com.example.hotrohoctapbackend.dao.*;
 import com.example.hotrohoctapbackend.entity.*;
+import com.example.hotrohoctapbackend.enums.ReminderType;
 import com.example.hotrohoctapbackend.service.*;
 import com.example.hotrohoctapbackend.service.services.EmailService;
 import com.example.hotrohoctapbackend.service.services.PythonScriptService;
@@ -64,7 +65,7 @@ public class NotificationScheduler {
     private PythonScriptService pythonScriptService;
 
     private String getCronExpression() {
-        List<SettingScheduler> schedulerList = settingSchedulerRepository.findByType("scheduler");
+        List<SettingScheduler> schedulerList = settingSchedulerRepository.findByReminderType(ReminderType.SCHEDULER);
         for (SettingScheduler item : schedulerList) {
             if (item.isCheck()) {
                 return item.getName();

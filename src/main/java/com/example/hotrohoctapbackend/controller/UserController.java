@@ -290,46 +290,51 @@ public class UserController {
     @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody VerifyRequest request) {
-        boolean isVerified = verificationRequestService.verifyOTP(request.getEmail(), request.getOtp());
+        if (request.getType().equals("REGISTER")) {
+            boolean isVerified = verificationRequestService.verifyOTP(request.getEmail(), request.getOtp());
 
-        if (isVerified) {
-            Optional<VerificationRequest> requestOptional = verificationRequestService.getVerificationRequestByEmail(request.getEmail());
-            if (requestOptional.isPresent()) {
-                Account account = accountService.saveTaiKhoan(requestOptional.get().getFullname(), requestOptional.get().getPassword(), requestOptional.get().getPhone(),
-                        requestOptional.get().getBirthday(), requestOptional.get().getEmail());
+            if (isVerified) {
+                Optional<VerificationRequest> requestOptional = verificationRequestService.getVerificationRequestByEmail(request.getEmail());
+                if (requestOptional.isPresent()) {
+                    Account account = accountService.saveTaiKhoan(requestOptional.get().getFullname(), requestOptional.get().getPassword(), requestOptional.get().getPhone(),
+                            requestOptional.get().getBirthday(), requestOptional.get().getEmail());
 
-                verificationRequestService.deleteVerificationRequestByEmail((request.getEmail()));
+                    verificationRequestService.deleteVerificationRequestByEmail((request.getEmail()));
 
-                Notification notification = notificationService.getNotificationByTopic(TOPIC.REGISTER);
-                if (notification == null) {
-                    notification = notificationService.createNotification("ĐĂNG KÝ TÀI KHOẢN", "ĐĂNG KÝ TÀI KHOẢN", TOPIC.REGISTER);
+                    Notification notification = notificationService.getNotificationByTopic(TOPIC.REGISTER);
+                    if (notification == null) {
+                        notification = notificationService.createNotification("ĐĂNG KÝ TÀI KHOẢN", "ĐĂNG KÝ TÀI KHOẢN", TOPIC.REGISTER);
+                    }
+                    UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
+
+                    User_Notification userNotification = new User_Notification();
+                    userNotification.setAccount(account);
+                    userNotification.setNotification(notification);
+                    userNotification.setCreatedAt(LocalDateTime.now());
+                    userNotification.setRead_status(false);
+
+                    String registerMessage = MessageTemplate.getMessage(MessageTemplate.Message.REGISTER, account.getFullname());
+                    userNotification.setMessage(registerMessage);
+                    userNotificationRepository.save(userNotification);
+
+                    emailService.sendNotificationEmailDangKy(account.getEmail(), notification.getTitle(), registerMessage);
+
+                    messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
+                    ApiResponse<String> response = new ApiResponse<>(200, "Xác thực thành công!", "Success");
+                    return ResponseEntity.ok(response);
+                } else {
+                    // Nếu không tìm thấy yêu cầu xác thực
+                    ApiResponse<String> response = new ApiResponse<>(400, "Không tìm thấy yêu cầu xác thực.", "Failure");
+                    return ResponseEntity.badRequest().body(response);
                 }
-                UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
-
-                User_Notification userNotification = new User_Notification();
-                userNotification.setAccount(account);
-                userNotification.setNotification(notification);
-                userNotification.setCreatedAt(LocalDateTime.now());
-                userNotification.setRead_status(false);
-
-                String registerMessage = MessageTemplate.getMessage(MessageTemplate.Message.REGISTER, account.getFullname());
-                userNotification.setMessage(registerMessage);
-                userNotificationRepository.save(userNotification);
-
-                emailService.sendNotificationEmailDangKy(account.getEmail(), notification.getTitle(), registerMessage);
-
-                messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
-                ApiResponse<String> response = new ApiResponse<>(200, "Xác thực thành công!", "Success");
-                return ResponseEntity.ok(response);
             } else {
-                // Nếu không tìm thấy yêu cầu xác thực
-                ApiResponse<String> response = new ApiResponse<>(400, "Không tìm thấy yêu cầu xác thực.", "Failure");
+                // Nếu OTP không chính xác
+                ApiResponse<String> response = new ApiResponse<>(400, "OTP không chính xác hoặc đã hết hạn.", "Failure");
                 return ResponseEntity.badRequest().body(response);
             }
         } else {
-            // Nếu OTP không chính xác
-            ApiResponse<String> response = new ApiResponse<>(400, "OTP không chính xác hoặc đã hết hạn.", "Failure");
-            return ResponseEntity.badRequest().body(response);
+            ApiResponse<String> response = new ApiResponse<>(200, "Xác thực thành công!", "Success");
+            return ResponseEntity.ok(response);
         }
     }
 

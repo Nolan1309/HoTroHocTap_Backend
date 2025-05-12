@@ -46,6 +46,17 @@ public class CategoryController {
         }
     }
 
+    @GetMapping("/api/categories/level3/document")
+    public ApiResponse<List<CategoryDTOPublic>> getCategoriesByLevel3AndTypeDocument() {
+        try {
+            List<CategoryDTOPublic> categoryDTOs = categoryService.getCategoriesByLevelAndType(3, "DOCUMENT");
+            return new ApiResponse<>(200, "Success", categoryDTOs);
+        } catch (Exception e) {
+            return new ApiResponse<>(500, "Internal Server Error", null);
+        }
+    }
+
+
     @GetMapping("/api/categories/level3/blog")
     public ApiResponse<List<CategoryDTOPublic>> getCategoriesByLevel3AndTypeBlog() {
         try {

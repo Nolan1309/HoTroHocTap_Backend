@@ -120,6 +120,18 @@ public class BlogController {
         return new ApiResponse<>(200, "Success", blogs);
     }
 
+    @PutMapping("/{id}/views")
+    public ApiResponse<BlogDTOPublic> increaseViewCount(@PathVariable int id) {
+        try {
+
+            BlogDTOPublic updatedBlog = blogService.increaseViewCount(id);
+            return new ApiResponse<>(200, "Lượt xem của bài viết đã được tăng!", updatedBlog);
+        } catch (Exception e) {
+            return new ApiResponse<>(500, "Có lỗi xảy ra khi tăng lượt xem", null);
+        }
+    }
+
+
     @GetMapping
     public Page<PostItem> searchBlogs(
             @RequestParam(required = false) String title,

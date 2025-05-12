@@ -1,9 +1,6 @@
 package com.example.hotrohoctapbackend.dao;
 
-import com.example.hotrohoctapbackend.entity.Course;
-import com.example.hotrohoctapbackend.entity.Course_Discount;
-import com.example.hotrohoctapbackend.entity.Discount;
-import com.example.hotrohoctapbackend.entity.Test;
+import com.example.hotrohoctapbackend.entity.*;
 import com.example.hotrohoctapbackend.enums.DiscountType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -43,6 +40,8 @@ public interface Course_DiscountRepository extends JpaRepository<Course_Discount
     // Phương thức tìm bản ghi trong bảng course_discounts dựa trên Test và Discount
     Course_Discount findByTestAndDiscount(Test test, Discount discount);
 
+    Course_Discount findByCourseBundleAndDiscount(CourseBundle courseBundle, Discount discount);
+
     List<Course_Discount> findByDiscount(Discount discount);
 
     List<Course_Discount> findByDiscountId(Integer discountId);
@@ -50,4 +49,12 @@ public interface Course_DiscountRepository extends JpaRepository<Course_Discount
     @Query("SELECT cd FROM Course_Discount cd " +
             "WHERE cd.test.id = :testId AND cd.isDeleted = false")
     Optional<Course_Discount> findByTestId(@Param("testId") Integer testId);
+
+    @Query("SELECT cd FROM Course_Discount cd " +
+            "WHERE cd.course.id = :courseId AND cd.isDeleted = false")
+    Optional<Course_Discount> findByCourseId(@Param("courseId") Integer courseId);
+
+    @Query("SELECT cd FROM Course_Discount cd " +
+            "WHERE cd.courseBundle.id = :courseBundleId AND cd.isDeleted = false")
+    Optional<Course_Discount> findByCourseBundleId(@Param("courseBundleId") Integer courseBundleId);
 }

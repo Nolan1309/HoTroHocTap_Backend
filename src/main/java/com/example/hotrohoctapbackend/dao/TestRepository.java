@@ -2,6 +2,7 @@ package com.example.hotrohoctapbackend.dao;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminTestGetDTO;
 import com.example.hotrohoctapbackend.entity.Test;
+import com.example.hotrohoctapbackend.enums.ExamLevel;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RepositoryRestResource(path = "tests")
@@ -258,18 +260,27 @@ public interface TestRepository extends JpaRepository<Test, Integer> {
     @Query("SELECT t FROM Test t " +
             "LEFT JOIN TestEnrollment te ON te.test.id = t.id " +
             "LEFT JOIN ExamInfo ei ON ei.test.id = t.id " +
+            "LEFT JOIN t.course c " +
             "WHERE t.format = 'exam' " +
             "AND t.isDeleted = false " +
             "AND ei.status = 'ACTIVE' " +
             "AND (:courseId IS NULL OR t.course.id = :courseId) " +
-            "AND (:title IS NULL OR t.title LIKE %:title%) " +
+            "AND (:keyword IS NULL OR t.title LIKE %:keyword% OR c.author LIKE %:keyword%) " +
+            "AND (:level IS NULL OR ei.level = :level) " +
+            "AND (:minPrice IS NULL OR ei.price >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR ei.price <= :maxPrice) " +
             "GROUP BY t.id " +
             "ORDER BY COUNT(te.id) DESC")
-    Page<Test> findByCourseAndTitleContaining(@Param("courseId") Integer courseId,
-                                              @Param("title") String title,
-                                              Pageable pageable);
+    Page<Test> findByFlexibleKeywordSearch(@Param("courseId") Integer courseId,
+                                           @Param("keyword") String keyword,
+                                           @Param("level") ExamLevel level,
+                                           @Param("minPrice") BigDecimal minPrice,
+                                           @Param("maxPrice") BigDecimal maxPrice,
+                                           Pageable pageable);
 
 
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.test.id = :testId AND r.reviewType = 'TEST'")
     Double findAverageRatingByTestId(Integer testId);
+
+
 }

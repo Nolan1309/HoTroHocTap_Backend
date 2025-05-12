@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true") 
+@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/settings")
 public class SettingSchedulerController {
@@ -44,10 +44,11 @@ public class SettingSchedulerController {
     }
 
     @PutMapping("/{id}/activate/{type}")
-    public ResponseEntity<Void> activateSetting(@PathVariable int id,@PathVariable String type) {
+    public ResponseEntity<Void> activateSetting(@PathVariable int id, @PathVariable String type) {
         service.activateSetting(id, type);
         return ResponseEntity.noContent().build();
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateSettingName(@PathVariable int id, @RequestBody Map<String, String> updateData) {
         String name = updateData.get("name");

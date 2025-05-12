@@ -29,6 +29,8 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     List<Account> findByIsDeletedTrue();
 
+    boolean existsByPhoneAndIdNot(String phone, int accountId);
+
     @Query(value = "SELECT id, birthday, created_at, deleted_date, email, fullname, gender, google_id, " +
             "is_deleted, is_google_account, phone, updated_at, role_id " +
             "FROM account " +

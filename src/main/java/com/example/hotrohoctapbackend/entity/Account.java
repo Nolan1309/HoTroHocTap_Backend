@@ -99,7 +99,7 @@ public class Account implements UserDetails {
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Question> questions;
-    
+
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Subscriptions_Account> subscriptionsAccounts;
 
@@ -111,6 +111,9 @@ public class Account implements UserDetails {
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Payment> payments;
+
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Wallet> wallets;
 
     @PrePersist
     protected void onCreate() {

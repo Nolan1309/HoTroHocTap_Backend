@@ -4,11 +4,14 @@ import com.example.hotrohoctapbackend.dao.AccountRepository;
 import com.example.hotrohoctapbackend.dao.ActivityHistoryRepository;
 import com.example.hotrohoctapbackend.entity.Account;
 import com.example.hotrohoctapbackend.entity.Activity_History;
+import com.example.hotrohoctapbackend.enums.ActivityType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -20,8 +23,9 @@ public class ActivityHistoryService {
     private AccountRepository accountRepository;
 
     public void saveActivity(int accountId, String activityType, String description) {
+        ActivityType activityType1 = ActivityType.valueOf(activityType);
         List<Activity_History> activityHistoryList = activityHistoryRepository
-                .findByAccountIdAndActivityType(accountId, activityType);
+                .findByAccountIdAndActivityType(accountId, activityType1);
 
         // Kiểm tra nếu danh sách không trống
         if (activityHistoryList.isEmpty()) {
@@ -31,7 +35,8 @@ public class ActivityHistoryService {
                     .orElseThrow(() -> new IllegalArgumentException("Account không tồn tại"));
 
             activityHistory.setAccount(account);
-            activityHistory.setActivityType(activityType);
+            ActivityType type = ActivityType.valueOf(activityType);
+            activityHistory.setActivityType(type);
             activityHistory.setDescription(description);
             activityHistory.setTimestamp(LocalDateTime.now());
 
@@ -58,12 +63,47 @@ public class ActivityHistoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Account không tồn tại"));
 
         activityHistory.setAccount(account);
-        activityHistory.setActivityType(activityType);
+        ActivityType type = ActivityType.valueOf(activityType);
+        activityHistory.setActivityType(type);
         activityHistory.setDescription(description);
         activityHistory.setTimestamp(LocalDateTime.now());
 
         activityHistoryRepository.save(activityHistory);
     }
 
+//    public List<Activity_History> getLoginHistory(int accountId) {
+//        return activityHistoryRepository.findByAccountIdAndActivityType(accountId, ActivityType.LOGIN);
+//    }
+
+    public List<Activity_History> getLoginHistoryInPeriod(int accountId, LocalDateTime startDate) {
+        return activityHistoryRepository.findByAccountIdAndActivityTypeAndTimestampBefore(accountId, ActivityType.LOGIN, startDate);
+    }
+
+    public int calculateLoginStreak(int accountId) {
+        LocalDateTime now = LocalDateTime.now();  // Thời gian hiện tại (ngày đăng nhập đầu tiên)
+        List<Activity_History> loginHistory = getLoginHistoryInPeriod(accountId, now);
+
+        // Sắp xếp lịch sử đăng nhập theo thứ tự giảm dần (ngày gần nhất trước)
+        Collections.sort(loginHistory, (a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+
+        int streak = 0;
+        LocalDateTime lastLogin = now; // Khởi tạo ngày đăng nhập cuối cùng là ngày hiện tại
+
+        // Duyệt qua lịch sử đăng nhập và tính chuỗi
+        for (Activity_History activity : loginHistory) {
+            // Nếu đây là lần đầu hoặc ngày đăng nhập là ngày tiếp theo liên tiếp
+            if (lastLogin.toLocalDate().equals(activity.getTimestamp().toLocalDate().plusDays(1))) {
+                streak++;
+                lastLogin = activity.getTimestamp();  // Cập nhật lần đăng nhập cuối cùng
+            } else if (lastLogin.toLocalDate().equals(activity.getTimestamp().toLocalDate())) {
+                streak++;  // Nếu cùng ngày thì cũng tính thêm 1 streak
+                
+            } else {
+                break; // Dừng lại nếu có gián đoạn (ngày không liên tiếp)
+            }
+        }
+
+        return streak; // Trả về chuỗi đăng nhập liên tiếp
+    }
 
 }

@@ -4,6 +4,7 @@ import com.example.hotrohoctapbackend.DTO.Admin.*;
 import com.example.hotrohoctapbackend.DTO.AdminV2.*;
 import com.example.hotrohoctapbackend.DTO.AdminV3.Course.CourseDTOAdminV3;
 import com.example.hotrohoctapbackend.DTO.AdminV3.Course.CourseDTOUserPublic;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Course.CourseForListAdminDTO;
 import com.example.hotrohoctapbackend.DTO.CourseDTO;
 import com.example.hotrohoctapbackend.DTO.User.ChapterDTOUserView;
 import com.example.hotrohoctapbackend.DTO.User.CourseDTO_User_Profile;
@@ -62,18 +63,20 @@ public class CourseController {
     public ApiResponse<Page<CourseDTOUserPublic>> getCourses(
             @RequestParam(required = false, defaultValue = "") String type,
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) List<Integer> categoryIds,
+            @RequestParam(required = false) Integer accountId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         PageRequest pageable = PageRequest.of(page, size);
-        Page<CourseDTOUserPublic> courses = courseService.getCoursesPublic(type, title, categoryId, pageable);
+        Page<CourseDTOUserPublic> courses = courseService.getCoursesPublic(type, title, categoryIds, accountId, pageable);
         return new ApiResponse<>(200, "Success", courses);
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<CourseDTOAdminV3> getCourseById(@PathVariable int id) {
-        CourseDTOAdminV3 courseDTO = courseService.getCourseById(id);
+    public ApiResponse<CourseDTOAdminV3> getCourseById(@PathVariable int id,
+                                                       @RequestParam(required = false) Integer accountId) {
+        CourseDTOAdminV3 courseDTO = courseService.getCourseById(id, accountId);
         return new ApiResponse<>(200, "Success", courseDTO);
     }
 
@@ -334,6 +337,12 @@ public class CourseController {
     @GetMapping("/get-all-result-list")
     public List<AdminCourseResultDTO_V2> getAllCoursesList() {
         return courseService.getAllCoursesList();
+    }
+
+    @GetMapping("/get-all-result-list-course")
+    public ApiResponse<List<CourseForListAdminDTO>> getAllCoursesListForCategory() {
+        ApiResponse<List<CourseForListAdminDTO>> response = new ApiResponse<>(HttpStatus.OK.value(), "Lấy danh sách khóa học thành công", courseService.getAllCoursesListSimple());
+        return response;
     }
 
     @GetMapping("/courses/discounts")

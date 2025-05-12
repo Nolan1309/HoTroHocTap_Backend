@@ -124,12 +124,13 @@ public class Endpoint {
             "/api/banner-voucher/list",
             "/api/categories/level3/course",
             "/api/categories/level3/blog",
+            "/api/categories/level3/document",
             "/api/courses/public/filter",
             "/api/blogs/public",
             "/api/general_documents/public",
             "/api/tests/exam/public",
-            "/api/tests/exam/public/**"
-
+            "/api/tests/exam/public/**",
+            "/api/courses/get-all-result-list-course",
     };
     public static final String[] PUBLIC_POST_ENDPOINS = {
             "/account/dang-ky",
@@ -161,6 +162,7 @@ public class Endpoint {
 
     };
     public static final String[] PUBLIC_PUT_ENDPOINS = {
+            "/api/blogs/*/views",
             "/user_notifications",
             "/user_notifications/**",
 
@@ -181,6 +183,10 @@ public class Endpoint {
     };
 
     public static final String[] ADMIN_GET_ENDPOINT = {
+            "/api/rankings",
+            "/api/course-bundle/list-all",
+            "/api/course-bundle",
+            "/api/subscriptions",
             "/api/discounts/new/code",
             "/api/discounts/filter-all",
             "/api/reviews/admin",
@@ -260,6 +266,7 @@ public class Endpoint {
             "/api/account/list-teacher",
             "/api/account/list-teacher-only",
             "/api/courses/get-all-result-list",
+
             "/api/questions/all-filter",
             "/api/questions/exam-all-filter",
             "/api/questions/all-filter-bank",
@@ -305,7 +312,15 @@ public class Endpoint {
 
     };
     public static final String[] ADMIN_POST_ENDPOINS = {
-
+            " /api/rewards",
+            "/api/rankings/update-weekly",
+            "/api/rankings/update-weekly-ranking",
+            "/api/rankings/update-daily-ranking",
+            "/api/rankings/add-daily-ranking",
+            "/api/rankings/add-monthly-ranking",
+            "/api/rankings/update-monthly-ranking",
+            "/api/course-bundle/create",
+            "/api/subscriptions/create",
             "/api/categories",
             "/api/account",
             "/activitylogs",
@@ -421,6 +436,8 @@ public class Endpoint {
             "/api/comments/reply/*"
     };
     public static final String[] ADMIN_DELETE_ENDPOINS = {
+            "/api/course-bundle/**",
+            "/api/subscriptions/**",
             "/api/reviews/admin/**",
             "/accounts",
             "/accounts/**",
@@ -511,6 +528,11 @@ public class Endpoint {
             "/api/comments/bulk"
     };
     public static final String[] ADMIN_PUT_ENDPOINS = {
+            " /api/rewards/**",
+            "/api/course-bundle/*/status",
+            "/api/course-bundle/**",
+            "/api/subscriptions/*/status",
+            "/api/subscriptions/**",
             "/api/discounts/apply",
             "/api/discounts/toggle-status/**",
             "/api/reviews/admin/**",
@@ -521,7 +543,6 @@ public class Endpoint {
             "/api/videos/update/**",
             "/api/lessons/update/**",
             "/api/account/*/status",
-            "/api/account/**",
             "/api/categories/**",
             "/accounts",
             "/accounts/**",
@@ -662,7 +683,8 @@ public class Endpoint {
 
 
     public static final String[] USER_GET_ENDPOINT = {
-            "/api/account/**",
+            "/api/account/overview/**",
+            "/api/account/user/*",
             "/api/account/profile/**",
             "/api/payment/vnpay/vn-pay",
             "/api/payments/**",
@@ -720,18 +742,17 @@ public class Endpoint {
 //            "/api/enrolled-course/update-status"
             "/api/user-answers/exam/**",
             "/api/course-codes/enable",
+            "/api/course-codes/enable-not-huit",
             "/api/course-codes/check-enable",
             "/api/user-answers/submit-progress-no-test"
     };
 
     public static final String[] USER_PUT_ENDPOINT = {
-            "/paymentmethod",
-            "/api/account/update/**",
-            "/api/account/change-password/**",
+            "/api/account/update/*",
+            "/api/account/change-password/*",
             "/api/comments/delete/**",
             "/api/notifications/mark-all-as-read/**",
             "/api/notifications/mark-as-read/**"
-
     };
 
     public static final String[] USER_DELETE_ENDPOINT = {

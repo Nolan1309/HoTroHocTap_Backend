@@ -4,6 +4,7 @@ import com.google.type.Decimal;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -21,7 +22,7 @@ public class Wallet {
     private Account account;
 
     @Column(name = "balance_wallet")
-    private Decimal balance;
+    private BigDecimal balance;
 
     @Column(name = "currency_wallet")
     private String currency; // Loại tiền tệ

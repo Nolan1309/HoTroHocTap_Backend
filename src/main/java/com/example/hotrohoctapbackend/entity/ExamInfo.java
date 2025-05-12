@@ -25,6 +25,12 @@ public class ExamInfo {
     @Column(name = "intro", columnDefinition = "TEXT")
     private String intro;
 
+    @Column(name = "test_contents", columnDefinition = "TEXT")
+    private String testContents;
+
+    @Column(name = "knowledge_requirements", columnDefinition = "TEXT")
+    private String knowledgeRequirements;
+
     @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 

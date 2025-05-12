@@ -34,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -123,12 +124,15 @@ public class TestController {
     @GetMapping("/exam/public")
     public ApiResponse<Page<ExamDTOPublic>> getTests(
             @RequestParam(required = false) Integer courseId,
-            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) String level,
             @RequestParam(required = false) Integer accountId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<ExamDTOPublic> exams = testService.getTestsByCourseAndTitle(courseId, title, accountId, page, size);
+        Page<ExamDTOPublic> exams = testService.getTestsByCourseAndTitle(courseId, keyword, level, minPrice, maxPrice, accountId, page, size);
         return new ApiResponse<>(200, "Successfully fetched tests", exams);
     }
 
@@ -228,7 +232,6 @@ public class TestController {
     @PostMapping(value = "/add-exam")
     public ResponseEntity<ApiResponse<TestWithExamInfoDTO>> addTest(
             @RequestParam String title,
-            @RequestParam(required = false) String description,
             @RequestParam Integer totalQuestion,
             @RequestParam(required = false) Integer easyQuestion,
             @RequestParam(required = false) Integer mediumQuestion,
@@ -239,6 +242,8 @@ public class TestController {
             @RequestParam Integer courseId,
             // ExamInfo
             @RequestParam(required = false) String intro,
+            @RequestParam(required = false) String testContent,
+            @RequestParam(required = false) String knowledgeRequirement,
             @RequestParam(required = false) String level,
             @RequestParam(required = false) String price,
             @RequestParam(required = false) String cost,
@@ -250,7 +255,6 @@ public class TestController {
         try {
             TestWithExamInfoDTO dto = new TestWithExamInfoDTO();
             dto.setTitle(title);
-            dto.setDescription(description);
             dto.setTotalQuestion(totalQuestion);
             dto.setEasyQuestion(easyQuestion);
             dto.setMediumQuestion(mediumQuestion);
@@ -260,7 +264,9 @@ public class TestController {
             dto.setPoint(point);
             dto.setCourseId(courseId);
             dto.setIntro(intro);
-
+            dto.setDescription(intro);
+            dto.setTestContents(testContent);
+            dto.setKnowledgeRequirements(knowledgeRequirement);
             if (level != null) {
                 ExamLevel examLevel = ExamLevel.valueOf(level.toUpperCase());
                 dto.setLevel(examLevel);
@@ -299,7 +305,7 @@ public class TestController {
     public ResponseEntity<ApiResponse<TestWithExamInfoDTO>> updateTest(
             @PathVariable Integer testId,
             @RequestParam String title,
-            @RequestParam(required = false) String description,
+
             @RequestParam Integer totalQuestion,
             @RequestParam(required = false) Integer easyQuestion,
             @RequestParam(required = false) Integer mediumQuestion,
@@ -311,6 +317,8 @@ public class TestController {
 
             // ExamInfo
             @RequestParam(required = false) String intro,
+            @RequestParam(required = false) String testContent,
+            @RequestParam(required = false) String knowledgeRequirement,
             @RequestParam(required = false) String level,
             @RequestParam(required = false) String price,
             @RequestParam(required = false) String cost,
@@ -323,7 +331,7 @@ public class TestController {
             TestWithExamInfoDTO dto = new TestWithExamInfoDTO();
             dto.setTestId(testId);
             dto.setTitle(title);
-            dto.setDescription(description);
+            dto.setDescription(intro);
             dto.setTotalQuestion(totalQuestion);
             dto.setEasyQuestion(easyQuestion);
             dto.setMediumQuestion(mediumQuestion);
@@ -333,7 +341,8 @@ public class TestController {
             dto.setPoint(point);
             dto.setCourseId(courseId);
             dto.setIntro(intro);
-
+            dto.setTestContents(testContent);
+            dto.setKnowledgeRequirements(knowledgeRequirement);
             if (level != null) dto.setLevel(ExamLevel.valueOf(level.toUpperCase()));
             if (status != null) dto.setStatus(ExamStatus.valueOf(status.toUpperCase()));
             if (examType != null) dto.setExamType(ExamType.valueOf(examType.toUpperCase()));

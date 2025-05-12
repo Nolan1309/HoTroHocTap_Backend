@@ -24,6 +24,10 @@ public class Course_Discount {
     @JoinColumn(name = "test_id", nullable = true)
     private Test test;
 
+    @ManyToOne
+    @JoinColumn(name = "course_bundle_id", nullable = true)
+    private CourseBundle courseBundle;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "discountType")
     private DiscountType discountType;

@@ -29,9 +29,12 @@ public class TestWithExamInfoDTO {
     private Date createdAt;
     private Date updatedAt;
     private Integer itemCount;
+    private Boolean discountStatus;
 
     // Từ ExamInfo
     private String intro;
+    private String testContents;
+    private String knowledgeRequirements;
     private String imageUrl;
     private ExamLevel level;
     private BigDecimal price;

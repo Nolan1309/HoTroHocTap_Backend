@@ -8,11 +8,13 @@ import com.example.hotrohoctapbackend.DTO.AdminV2.*;
 import com.example.hotrohoctapbackend.DTO.AdminV3.Account.AccountDTOAdmin;
 import com.example.hotrohoctapbackend.DTO.AdminV3.Account.AccountDTOAdminCreate;
 import com.example.hotrohoctapbackend.DTO.AdminV3.AuthorAdmin;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Overview;
 import com.example.hotrohoctapbackend.DTO.Password.ForgotPasswordRequest;
 import com.example.hotrohoctapbackend.DTO.Password.ResetPasswordRequest;
 import com.example.hotrohoctapbackend.DTO.PasswordChangeRequest;
 import com.example.hotrohoctapbackend.DTO.UpdateAccountDTO;
 import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
+import com.example.hotrohoctapbackend.config.ImageKitService;
 import com.example.hotrohoctapbackend.dao.AccountRepository;
 import com.example.hotrohoctapbackend.dao.PasswordResetTokenRepository;
 import com.example.hotrohoctapbackend.dao.RoleUserRepository;
@@ -25,11 +27,15 @@ import com.example.hotrohoctapbackend.exception.ApiResponse;
 import com.example.hotrohoctapbackend.service.AccountService;
 import com.example.hotrohoctapbackend.service.NotificationService;
 import com.example.hotrohoctapbackend.service.services.EmailService;
+import com.example.hotrohoctapbackend.util.MessageTemplate;
 import com.example.hotrohoctapbackend.util.TOPIC;
+import io.imagekit.sdk.exceptions.*;
+import io.imagekit.sdk.models.results.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -37,10 +43,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import org.springframework.validation.annotation.Validated;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 
 @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
@@ -65,9 +78,16 @@ public class AccountController {
     @Autowired
     private RoleUserRepository roleUserRepository;
 
-    @GetMapping("/{id}")
-    public AccountDTO findAccountById(@PathVariable Integer id) {
-        return accountService.findByAccount(id);
+    @Autowired
+    private ImageKitService imageKitService;
+
+    @GetMapping("/user/{id}")
+    public ApiResponse<AccountDTO> findAccountById(@PathVariable Integer id) {
+        AccountDTO accountDTO = accountService.findByAccount(id);
+        if (accountDTO == null) {
+            return new ApiResponse<>(404, "Account not found", null);
+        }
+        return new ApiResponse<>(200, "Account found", accountDTO);
     }
 
     @GetMapping("/profile/{id}")
@@ -75,13 +95,14 @@ public class AccountController {
         return accountService.findByAccountProfile(id);
     }
 
-    @GetMapping("admin/profile/{id}")
+    @GetMapping("/admin/profile/{id}")
     public AccountDTO_Proflie findAccountProfileByIdAdmin(@PathVariable Integer id) {
         return accountService.findByAccountProfile(id);
     }
 
     @PutMapping("/admin/update/{id}")
     public ResponseEntity<AccountDTO_Proflie> updateAccountAdmin(@PathVariable int id, @RequestParam("fullname") String fullname, @RequestParam("email") String email, @RequestParam("phone") String phone, @RequestParam("gender") String gender, @RequestParam("birthday") String birthday, // Có thể cần format nếu sử dụng LocalDate
+
                                                                  @RequestPart(value = "image", required = false) MultipartFile imageFile) {
 
         // Xử lý ảnh (nếu có)
@@ -122,40 +143,117 @@ public class AccountController {
         return ResponseEntity.ok(blogPage);
     }
 
+    // API để cập nhật tài khoản
     @PutMapping("/update/{id}")
-    public ResponseEntity<AccountDTO_Proflie> updateAccount(@PathVariable int id, @RequestParam("fullname") String fullname, @RequestParam("email") String email, @RequestParam("phone") String phone, @RequestParam("gender") String gender, @RequestParam("birthday") String birthday, // Có thể cần format nếu sử dụng LocalDate
-                                                            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+    public ApiResponse<AccountDTO_Proflie> updateAccount(@PathVariable int id,
+                                                         @RequestParam(value = "fullname", required = false) String fullname,
+                                                         @RequestParam(value = "email", required = false) String email,
+                                                         @RequestParam(value = "phone", required = false) String phone,
+                                                         @RequestParam(value = "gender", required = false) String gender,
+                                                         @RequestParam(value = "birthday", required = false) String birthday,
+                                                         @RequestPart(value = "image", required = false) MultipartFile imageFile) throws ForbiddenException, TooManyRequestsException, InternalServerException, UnauthorizedException, BadRequestException, UnknownException, IOException {
 
-        // Xử lý ảnh (nếu có)
-        String base64Image = null;
-        if (imageFile != null && !imageFile.isEmpty()) {
-            try {
-                String data = Base64.getEncoder().encodeToString(imageFile.getBytes());
-                base64Image = "data:image/jpeg;base64," + data;
+        try {
 
-            } catch (Exception e) {
-                return ResponseEntity.badRequest().build(); // Trả về lỗi nếu có vấn đề khi xử lý ảnh
+            ApiResponse<AccountDTO_Proflie> validationResponse = validateAccountInput(fullname, email, phone, gender, birthday);
+            if (validationResponse != null) {
+                return validationResponse;
             }
+
+            boolean phoneExists = accountService.checkPhoneExists(phone, id);
+            if (phoneExists) {
+                return new ApiResponse<>(400, "Phone number already exists", null);
+            }
+
+
+            String imageUrl = null;
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String fileExtension = getFileExtension(imageFile.getOriginalFilename());
+                if (!isValidImageExtension(fileExtension)) {
+                    return new ApiResponse<>(400, "No support extension", null);  // Trả về lỗi nếu định dạng ảnh không hợp lệ
+                }
+                Result result = imageKitService.uploadFromBytes(imageFile);
+                imageUrl = result.getUrl();
+            }
+
+            // Cập nhật thông tin người dùng
+            UpdateAccountDTO updateAccountDTO = new UpdateAccountDTO();
+            updateAccountDTO.setFullname(fullname);
+            updateAccountDTO.setEmail(email);
+            updateAccountDTO.setPhone(phone);
+            updateAccountDTO.setGender(gender);
+
+            // Chuyển đổi ngày sinh từ chuỗi thành LocalDateTime
+            try {
+                updateAccountDTO.setBirthday(LocalDateTime.parse(birthday));
+            } catch (Exception e) {
+                return new ApiResponse<>(400, e.getMessage(), null);
+            }
+
+            if (imageUrl != null) {
+                updateAccountDTO.setImage(imageUrl);
+            }
+
+            // Kiểm tra nếu tài khoản không tồn tại và cập nhật thông tin người dùng
+            AccountDTO_Proflie updatedAccount = accountService.updateAccountUser(id, updateAccountDTO);
+            if (updatedAccount == null) {
+                throw new ResourceNotFoundException("Account not found with ID: " + id);  // Ném lỗi nếu không tìm thấy tài khoản
+            }
+
+            // Trả về kết quả thành công
+            return new ApiResponse<>(200, "Account updated successfully", updatedAccount);
+
+        } catch (ForbiddenException | TooManyRequestsException | InternalServerException | UnauthorizedException |
+                 BadRequestException | UnknownException e) {
+            return new ApiResponse<>(400, e.getMessage(), null);
+        } catch (IOException e) {
+            return new ApiResponse<>(500, e.getMessage(), null);
         }
+    }
 
-        // Cập nhật thông tin người dùng
-        UpdateAccountDTO updateAccountDTO = new UpdateAccountDTO();
-        updateAccountDTO.setFullname(fullname);
-        updateAccountDTO.setEmail(email);
-        updateAccountDTO.setPhone(phone);
-        updateAccountDTO.setGender(gender);
-        updateAccountDTO.setBirthday(LocalDateTime.parse(birthday)); // Chuyển birthday về LocalDate
-        updateAccountDTO.setImage(base64Image);
+    private ApiResponse<AccountDTO_Proflie> validateAccountInput(String fullname, String email, String phone, String gender, String birthday) {
+        if (fullname == null || fullname.trim().isEmpty()) {
+            return new ApiResponse<>(400, "Full name cannot be empty", null);
+        }
+        if (email == null || email.trim().isEmpty()) {
+            return new ApiResponse<>(400, "Email cannot be empty", null);
+        }
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            return new ApiResponse<>(400, "Invalid email format", null);
+        }
+        if (phone == null || phone.trim().isEmpty()) {
+            return new ApiResponse<>(400, "Phone number cannot be empty", null);
+        }
+        if (!phone.matches("^\\+?[0-9]{10,15}$")) {
+            return new ApiResponse<>(400, "Invalid phone number format", null);
+        }
+        if (gender == null || gender.trim().isEmpty()) {
+            return new ApiResponse<>(400, "Gender cannot be empty", null);
+        }
+        if (birthday == null || birthday.trim().isEmpty()) {
+            return new ApiResponse<>(400, "Birthday cannot be empty", null);
+        }
+        try {
+            LocalDateTime.parse(birthday);
+        } catch (Exception e) {
+            return new ApiResponse<>(400, "Invalid birthday format", null);
+        }
+        return null;
+    }
 
-        AccountDTO_Proflie updatedAccount = accountService.updateAccountUser(id, updateAccountDTO);
-        return ResponseEntity.ok(updatedAccount);
+    private boolean isValidImageExtension(String fileExtension) {
+        return fileExtension.equalsIgnoreCase("jpg") || fileExtension.equalsIgnoreCase("jpeg") || fileExtension.equalsIgnoreCase("png");
+    }
+
+    private String getFileExtension(String filename) {
+        return filename.substring(filename.lastIndexOf('.') + 1);
     }
 
     @Autowired
     private PasswordEncoder passwordEncoder;  // Mã hóa mật khẩu
 
     @PutMapping("/change-password/{id}")
-    public ResponseEntity<String> changePassword(@PathVariable int id, @RequestBody PasswordChangeRequest passwordChangeRequest) {
+    public ApiResponse<String> changePassword(@PathVariable int id, @RequestBody PasswordChangeRequest passwordChangeRequest) {
 
         Account account = accountService.findAccountByID(id);  // Lấy tài khoản theo ID
 
@@ -164,36 +262,40 @@ public class AccountController {
             account.setPassword(encodedNewPassword);
             accountService.updatePassword(account);
 
-            String title = "Thông báo đổi mật khẩu";
-            String getMessage = "Tài khoản " + account.getFullname() + " đổi mật khẩu thành công";
+            Notification notification = notificationService.getNotificationByTopic(TOPIC.PASSWORD);
+            if (notification == null) {
+                notification = notificationService.createNotification("ĐỔI MẬT KHẨU", "ĐỔI MẬT KHẨU", TOPIC.PASSWORD);
+            }
 
-            Notification notification = notificationService.createNotification(title, getMessage, TOPIC.PASSWORD);
+
             UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
+
             User_Notification userNotification = new User_Notification();
             userNotification.setAccount(account);
             userNotification.setNotification(notification);
             userNotification.setRead_status(false);
+            String registerMessage = MessageTemplate.getMessage(MessageTemplate.Message.REGISTER, account.getFullname());
+            userNotification.setMessage(registerMessage);
             userNotificationRepository.save(userNotification);
 
 
             messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
-
             try {
-                emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
+                emailService.sendNotificationEmail(account.getEmail(), notification.getTitle(), registerMessage);
             } catch (Exception e) {
                 System.err.println("Error sending email: " + e.getMessage());
             }
-            return ResponseEntity.ok("Đổi mật khẩu thành công.");
+            return new ApiResponse<>(200, "Đổi mật khẩu thành công!", "Success");
         }
 
         // Kiểm tra mật khẩu hiện tại có đúng không
         if (!passwordEncoder.matches(passwordChangeRequest.getCurrentPassword(), account.getPassword())) {
-            return ResponseEntity.badRequest().body("Mật khẩu hiện tại không đúng.");
+            return new ApiResponse<>(400, "Sai mật khẩu!", "Error");
         }
 
         // Kiểm tra xem mật khẩu mới và xác nhận mật khẩu có khớp không
         if (!passwordChangeRequest.getNewPassword().equals(passwordChangeRequest.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+            return new ApiResponse<>(400, "Mật khẩu mới và xác nhận mật khẩu không khớp.!", "Error");
         }
 
         // Cập nhật mật khẩu mới
@@ -201,31 +303,29 @@ public class AccountController {
         account.setPassword(encodedNewPassword);
         accountService.updatePassword(account);  // Cập nhật thông tin tài khoản
 
-        String title = "Thông báo đổi mật khẩu";
-        String getMessage = "Tài khoản " + account.getFullname() + " đổi mật khẩu thành công";
+        Notification notification = notificationService.getNotificationByTopic(TOPIC.PASSWORD);
+        if (notification == null) {
+            notification = notificationService.createNotification("ĐỔI MẬT KHẨU", "ĐỔI MẬT KHẨU", TOPIC.PASSWORD);
+        }
 
-        Notification notification = notificationService.createNotification(title, getMessage, TOPIC.PASSWORD);
+
         UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
+
         User_Notification userNotification = new User_Notification();
         userNotification.setAccount(account);
         userNotification.setNotification(notification);
         userNotification.setRead_status(false);
+        String registerMessage = MessageTemplate.getMessage(MessageTemplate.Message.REGISTER, account.getFullname());
+        userNotification.setMessage(registerMessage);
         userNotificationRepository.save(userNotification);
 
-
-//        emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
-
-
+        messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
         try {
-            emailService.sendNotificationEmail(account.getEmail(), title, getMessage);
+            emailService.sendNotificationEmail(account.getEmail(), notification.getTitle(), registerMessage);
         } catch (Exception e) {
             System.err.println("Error sending email: " + e.getMessage());
         }
-//        messagingTemplate.convertAndSend("/topic/" + DoiMatKhau, notification);
-        messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
-
-
-        return ResponseEntity.ok("Đổi mật khẩu thành công.");
+        return new ApiResponse<>(200, "Đổi mật khẩu thành công!", "Success");
     }
 
     @PutMapping("/change-password-admin/{id}")
@@ -630,5 +730,16 @@ public class AccountController {
         }
     }
 
+    @GetMapping("/overview/{accountId}")
+    public ApiResponse<Overview> getAccountOverview(@PathVariable Integer accountId) {
+        try {
+            Overview overview = accountService.getOverviewByAccountId(accountId);
+            return new ApiResponse<>(200, "Account overview fetched successfully", overview);
+        } catch (ResourceNotFoundException e) {
+            return new ApiResponse<>(404, e.getMessage(), null);
+        } catch (Exception e) {
+            return new ApiResponse<>(400, "An error occurred while fetching the account overview", null);
+        }
+    }
 
 }

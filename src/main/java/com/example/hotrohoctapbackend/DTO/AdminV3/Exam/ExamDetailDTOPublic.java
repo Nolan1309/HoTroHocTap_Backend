@@ -15,6 +15,7 @@ public class ExamDetailDTOPublic {
     private Integer courseId;
     private String courseTitle;
 
+    private String author;
     private Integer itemCountReview;
     private Double rating;
 
@@ -23,6 +24,8 @@ public class ExamDetailDTOPublic {
     private ExamType examType;
     private String description;
     private String intro;
+    private String testContent;
+    private String knowledgeRequirement;
     private String imageUrl;
     private Integer duration;
 

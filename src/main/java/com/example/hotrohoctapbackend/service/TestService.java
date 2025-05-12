@@ -213,11 +213,16 @@ public class TestService {
             ExamInfo info = new ExamInfo();
             info.setTest(savedTest);
             info.setIntro(dto.getIntro());
+            info.setTestContents(dto.getTestContents());
+            info.setKnowledgeRequirements(dto.getKnowledgeRequirements());
             info.setLevel(dto.getLevel());
             info.setPrice(dto.getPrice());
             info.setCost(dto.getCost());
             info.setExamType(dto.getExamType());
             info.setStatus(dto.getStatus());
+
+            info.setTestContents(dto.getTestContents());
+            info.setKnowledgeRequirements(dto.getKnowledgeRequirements());
 
             // TODO: xử lý lưu file nếu cần
             if (files != null && files.length > 0) {
@@ -263,25 +268,27 @@ public class TestService {
                     .orElseThrow(() -> new RuntimeException("ExamInfo not found"));
 
             info.setIntro(dto.getIntro());
+            info.setTestContents(dto.getTestContents());
+            info.setKnowledgeRequirements(dto.getKnowledgeRequirements());
             info.setLevel(dto.getLevel());
-            info.setPrice(dto.getPrice());
-            info.setCost(dto.getCost());
+            info.setTestContents(dto.getTestContents());
+            info.setKnowledgeRequirements(dto.getKnowledgeRequirements());
+            if (dto.getExamType() == ExamType.FREE) {
+                info.setCost(new BigDecimal("0.0"));
+                info.setPrice(new BigDecimal("0.0"));
+            } else {
+                info.setCost(dto.getCost());
+                info.setPrice(dto.getPrice());
+            }
             info.setExamType(dto.getExamType());
+            Optional<Course_Discount> testDiscount = courseDiscountRepository.findByTestId(test.getId());
+            if (testDiscount.isPresent() && testDiscount.get().getDiscount() != null && testDiscount.get().getDiscount().getStatus() == DiscountStatus.ACTIVE && info.getExamType() == ExamType.FEE) {
+                UpdatePriceTest(testDiscount.get().getDiscount().getDiscountValue(), info);
+            }
+
+
             info.setStatus(dto.getStatus());
             info.setUpdatedAt(LocalDateTime.now());
-
-//            List<ExamDiscount> activeDiscounts = examDiscountRepository.findActiveByExamInfoId(info.getId(), LocalDateTime.now());
-//
-//            if (!activeDiscounts.isEmpty()) {
-//                Discount d = activeDiscounts.get(0).getDiscount(); // Ưu tiên 1 cái
-//                BigDecimal discountAmount = info.getCost().multiply(BigDecimal.valueOf(d.getPercent())).divide(BigDecimal.valueOf(100));
-//                BigDecimal finalPrice = info.getCost().subtract(discountAmount);
-//
-//                info.setPrice(finalPrice);
-//            } else {
-//                // Không có discount → cho phép nhập giá tay (nếu muốn)
-//                info.setPrice(dto.getPrice());
-//            }
 
 
             if (files != null && files.length > 0) {
@@ -305,6 +312,9 @@ public class TestService {
 
     public ApiResponse<?> toggleExamStatus(Integer testId) {
         try {
+
+//            List<Course_Discount> courseDiscountList = courseDiscountRepository.findByDiscountId(discountId);
+
             ExamInfo examInfo = examInfoRepository.findByTestId(testId)
                     .orElseThrow(() -> new RuntimeException("ExamInfo not found"));
 
@@ -324,6 +334,12 @@ public class TestService {
         }
     }
 
+    public boolean UpdatePriceTest(BigDecimal percentDiscount, ExamInfo test) {
+        BigDecimal percentDecimal = percentDiscount.divide(BigDecimal.valueOf(100));
+        BigDecimal finalPrice = test.getCost().multiply(BigDecimal.ONE.subtract(percentDecimal));
+        test.setPrice(finalPrice);
+        return true;
+    }
 
     public void AddMultiTest(List<AdminTestAddDTO_V2> newTestDTOList) {
 
@@ -741,9 +757,14 @@ public class TestService {
                 dto.setCourseTitle(test.getCourse().getTitle());
             }
 
+            Optional<Course_Discount> courseDiscountOpt = courseDiscountRepository.findByTestId(test.getId());
+            if (courseDiscountOpt.isPresent() && courseDiscountOpt.get().getDiscount() != null && courseDiscountOpt.get().getDiscount().getStatus() == DiscountStatus.ACTIVE) {
+                dto.setDiscountStatus(true);
+            } else {
+                dto.setDiscountStatus(false);
+            }
+
             if ("exam".equalsIgnoreCase(test.getFormat())) {
-
-
                 examInfoRepository.findByTestId(test.getId()).ifPresent(info -> {
                     dto.setIntro(info.getIntro());
                     dto.setImageUrl(info.getImageUrl());
@@ -1084,7 +1105,6 @@ public class TestService {
         }
     }
 
-
     public ApiResponse<Integer> getTotalTest(Integer chapterID, Integer easyQuestion, Integer mediumQuestion, Integer hardQuestion, List<String> types) {
         // Lấy danh sách câu hỏi theo loại và mức độ
         List<QuestionCountDTO> questionCountDTOs = questionService.getQuestionsCountByLevel(chapterID);
@@ -1205,9 +1225,14 @@ public class TestService {
                 .collect(Collectors.toList());
     }
 
-    public Page<ExamDTOPublic> getTestsByCourseAndTitle(Integer courseId, String title, Integer accountId, int page, int size) {
-        Page<Test> tests = testRepository.findByCourseAndTitleContaining(courseId, title, PageRequest.of(page, size));
+    public Page<ExamDTOPublic> getTestsByCourseAndTitle(Integer courseId, String keyword, String level, BigDecimal minPrice, BigDecimal maxPrice, Integer accountId, int page, int size) {
+        ExamLevel examLevel = null;
 
+        if (level != null) {
+            examLevel = ExamLevel.valueOf(level);
+        }
+
+        Page<Test> tests = testRepository.findByFlexibleKeywordSearch(courseId, keyword, examLevel, minPrice, maxPrice, PageRequest.of(page, size));
         return tests.map(test -> {
             ExamDTOPublic examDTO = new ExamDTOPublic();
             examDTO.setTestId(test.getId());
@@ -1217,6 +1242,7 @@ public class TestService {
             examDTO.setCourseTitle(test.getCourse().getTitle());
             examDTO.setTotalQuestion(test.getTotalQuestion());
             examDTO.setDuration(test.getDuration());
+            examDTO.setAuthor(test.getCourse().getAuthor());
             ExamInfo examInfo = examInfoRepository.findByTestId(test.getId()).orElse(null);
             if (examInfo != null) {
                 examDTO.setImageUrl(examInfo.getImageUrl());
@@ -1231,7 +1257,6 @@ public class TestService {
 
             Double averageRating = testRepository.findAverageRatingByTestId(test.getId());
             examDTO.setRating(averageRating != null ? averageRating : 0.0);
-
 
             int itemCountReview = test.getReviewList() != null ? test.getReviewList().size() : 0;
             examDTO.setItemCountReview(itemCountReview);
@@ -1253,8 +1278,6 @@ public class TestService {
             } else {
                 examDTO.setPercentDiscount(0);
             }
-
-
             return examDTO;
         });
     }
@@ -1272,13 +1295,15 @@ public class TestService {
         examDTO.setCourseTitle(test.getCourse().getTitle());
         examDTO.setTotalQuestion(test.getTotalQuestion());
         examDTO.setDuration(test.getDuration());
-
+        examDTO.setAuthor(test.getCourse().getAuthor());
         ExamInfo examInfo = examInfoRepository.findByTestId(test.getId()).orElse(null);
         if (examInfo != null) {
             examDTO.setImageUrl(examInfo.getImageUrl());
             examDTO.setLevel(examInfo.getLevel());
             examDTO.setStatus(examInfo.getStatus());
             examDTO.setIntro(examInfo.getIntro());
+            examDTO.setTestContent(examInfo.getTestContents());
+            examDTO.setKnowledgeRequirement(examInfo.getKnowledgeRequirements());
             examDTO.setExamType(examInfo.getExamType());
             examDTO.setCreatedAt(examInfo.getCreatedAt());
             examDTO.setUpdatedAt(examInfo.getUpdatedAt());
@@ -1290,6 +1315,8 @@ public class TestService {
             examDTO.setLevel(null);
             examDTO.setStatus(null);
             examDTO.setIntro("");
+            examDTO.setKnowledgeRequirement("");
+            examDTO.setTestContent("");
         }
 
 

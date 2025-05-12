@@ -378,11 +378,11 @@ public class GeneralDocumentsService {
         }
     }
 
-    public GeneralDocument incrementViewCount(int documentId) {
+    public GeneralDocumentDTOAdmin incrementViewCount(int documentId) {
         GeneralDocument document = generalDocumentRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Document not found with id: " + documentId));
         document.setView(document.getView() + 1);
-        return generalDocumentRepository.save(document);
+        return convertToDTO(generalDocumentRepository.save(document));
     }
 
     private LocalDateTime convertTimestampToLocalDateTime(Object timestampObj) {

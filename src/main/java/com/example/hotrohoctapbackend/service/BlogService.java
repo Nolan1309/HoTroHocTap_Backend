@@ -56,6 +56,14 @@ public class BlogService {
         return blogs.map(this::convertToDtoPublic);
     }
 
+    public BlogDTOPublic increaseViewCount(int blogId) {
+        Blog blog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new RuntimeException("Bài viết không tồn tại"));
+
+        blog.setViews(blog.getViews() + 1);
+        return convertToDtoPublic(blogRepository.save(blog));
+    }
+
     public Page<PostItem> searchBlogs(String title, Integer categoryId, Boolean status, LocalDateTime fromDate, LocalDateTime toDate, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Blog> blogPage = blogRepository.searchBlogs(title, categoryId, status, fromDate, toDate, pageable);

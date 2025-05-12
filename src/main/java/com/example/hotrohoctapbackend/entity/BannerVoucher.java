@@ -24,7 +24,7 @@ public class BannerVoucher {
 
     @Column(name = "link")
     private String link;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "position")
     private BannerPosition position; // Position của banner
@@ -59,7 +59,7 @@ public class BannerVoucher {
     private LocalDateTime updatedAt;
 
     public enum Platform {
-        ALL, DESKTOP, MOBILE
+        WEB, MOBILE
     }
 
     // Enum cho Banner Type (Regular, Voucher)

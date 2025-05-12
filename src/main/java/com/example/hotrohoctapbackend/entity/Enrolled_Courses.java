@@ -22,6 +22,10 @@ public class Enrolled_Courses {
     @JoinColumn(name = "course_id")
     private Course course;
 
+    @ManyToOne
+    @JoinColumn(name = "bundle_id", nullable = true)
+    private CourseBundle bundle;
+
     @Column(name = "enrollment_date")
     private LocalDateTime enrollmentDate;
 

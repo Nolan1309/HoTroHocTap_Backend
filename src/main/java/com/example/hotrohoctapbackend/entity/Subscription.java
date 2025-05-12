@@ -1,10 +1,14 @@
 package com.example.hotrohoctapbackend.entity;
 
+import com.example.hotrohoctapbackend.enums.SubscriptionFeature;
+import com.example.hotrohoctapbackend.enums.SubscriptionStatus;
 import com.google.type.Decimal;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "subscription")
@@ -16,13 +20,17 @@ public class Subscription {
     private Integer id;
 
     @Column(name = "price")
-    private Decimal price;
+    private BigDecimal price;
 
     @Column(name = "name")
     private String name;
 
     @Column(name = "duration_days")
     private Integer duration_days;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private SubscriptionStatus status;
 
     @Column(name = "description")
     private String description;
@@ -39,10 +47,21 @@ public class Subscription {
     @Column(name = "isDeleted")
     private boolean isDeleted = false;
 
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    @Column(name = "features")
+    private List<SubscriptionFeature> features;
+
+    @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Subscriptions_Account> subscriptionsAccountList;
+    
     @PrePersist
     protected void onCreate() {
-        if (deletedDate == null) {
-            deletedDate = LocalDateTime.now(); // Đặt giá trị mặc định là ngày hiện tại khi tạo mới
-        }
+        created_at = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updated_at = LocalDateTime.now();
     }
 }

@@ -1,5 +1,5 @@
 package com.example.hotrohoctapbackend.enums;
 
 public enum DiscountType {
-    COURSE, TEST
+    COURSE, TEST, COMBO
 }

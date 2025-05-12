@@ -183,6 +183,50 @@ public class CourseCodeService {
         return "Khóa học đã được kích hoạt và bạn đã đăng ký thành công!";
     }
 
+    public String activateCourseCodeNotHuit(String code, Integer accountId) {
+
+        // Step 1: Find the course code by the provided code
+        CourseCode courseCode = courseCodeRepository.findCourseCodeByCode(code)
+                .orElseThrow(() -> new RuntimeException("Mã khóa học không tồn tại"));
+
+        // Step 2: Check if the course code is already used
+        if (courseCode.getStatus()) {
+            throw new RuntimeException("Mã khóa học đã được kích hoạt");
+        }
+
+        // Step 3: Check if the course code has expired
+        if (courseCode.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Mã khóa học đã hết hạn");
+        }
+        Optional<Enrolled_Courses> enrolledCoursesCheck = enrolledCoursesRepository
+                .findByAccountIdAndCourseId(accountId, courseCode.getCourse().getId());  // Assuming you have a method like this
+
+        if (enrolledCoursesCheck.isPresent()) {
+            throw new RuntimeException("Tài khoản đã đăng ký khóa học này.");
+        }
+
+        // Step 5: Find the account
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Tài khoản không tồn tại"));
+
+        // Step 6: Find the course from the course code
+        Course course = courseCode.getCourse();
+
+        // Step 7: Create a new EnrolledCourses entry to register the user
+        Enrolled_Courses enrolledCourses = new Enrolled_Courses();
+        enrolledCourses.setAccount(account);
+        enrolledCourses.setCourse(course);
+        enrolledCourses.setEnrollmentDate(LocalDateTime.now());
+        enrolledCourses.setStatus("Actived");
+
+        enrolledCoursesRepository.save(enrolledCourses);
+        courseCode.setStatus(true);  // Mark as activated
+        courseCode.setUsedAt(LocalDateTime.now());  // Set the date when the code was used
+        courseCode.setAccount(account);  // Assign the account to the code
+        courseCodeRepository.save(courseCode);
+        return "Khóa học đã được kích hoạt và bạn đã đăng ký thành công!";
+    }
+
     public CourseCodeStatusResponse checkCourseCode(String code) {
         // Step 1: Find the course code by the provided code
         CourseCode courseCode = courseCodeRepository.findCourseCodeByCode(code)
