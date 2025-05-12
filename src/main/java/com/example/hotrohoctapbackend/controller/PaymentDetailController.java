@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true") 
+//@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/payment-details")
 public class PaymentDetailController {
@@ -40,11 +40,11 @@ public class PaymentDetailController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity< List<PaymentDetailDTO>> getPaymentById(@PathVariable("id") Integer id) {
+    public ResponseEntity<List<PaymentDetailDTO>> getPaymentById(@PathVariable("id") Integer id) {
         List<PaymentDetail> payment = paymentDetailService.findByPaymentID(id);
 
         List<PaymentDetailDTO> listdto = new ArrayList<>();
-        for(PaymentDetail item: payment){
+        for (PaymentDetail item : payment) {
             PaymentDetailDTO dto = new PaymentDetailDTO();
             dto.setId(item.getId());
             dto.setPaymentId(item.getPayment().getId());
@@ -56,7 +56,7 @@ public class PaymentDetailController {
 
         if (listdto.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-           // Trả về Payment và mã 200 OK
+            // Trả về Payment và mã 200 OK
         } else {
             return new ResponseEntity<>(listdto, HttpStatus.OK);
         }

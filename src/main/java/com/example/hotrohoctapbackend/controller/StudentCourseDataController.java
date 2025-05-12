@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+//@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/student-course-data")
 public class StudentCourseDataController {

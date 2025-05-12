@@ -14,9 +14,6 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 public class MethodRestConfig implements RepositoryRestConfigurer {
 
 
-    @Value("${allowed.origins}")
-    private String allowedOrigins;
-
     @Autowired
     private EntityManager entityManager;
 
@@ -29,12 +26,12 @@ public class MethodRestConfig implements RepositoryRestConfigurer {
                 HttpMethod.PATCH
         };
 
-        cors.addMapping("/**")
-                .allowedOrigins("http://localhost:3000",
-                        "http://localhost:3001") // Thay đổi với URL nguồn của bạn
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
-                .allowedHeaders("*")
-                .allowCredentials(true);
+//        cors.addMapping("/**")
+//                .allowedOrigins("http://localhost:3000",
+//                        "http://localhost:3001") // Thay đổi với URL nguồn của bạn
+//                .allowedMethods("GET", "POST", "PUT", "DELETE")
+//                .allowedHeaders("*")
+//                .allowCredentials(true);
 
         //Hien thi toan bo ID trong json
         config.exposeIdsFor(entityManager.getMetamodel().getEntities().stream().map(Type::getJavaType).toArray(Class[]::new));

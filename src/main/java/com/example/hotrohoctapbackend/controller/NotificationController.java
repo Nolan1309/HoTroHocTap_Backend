@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.controller;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminNotificationDTO;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Notification.NotificationDTOResponsive;
 import com.example.hotrohoctapbackend.DTO.User.AccountSendNotification_User;
 import com.example.hotrohoctapbackend.DTO.User.NotificationRequestUser;
 import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
@@ -22,10 +23,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+//@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
@@ -39,23 +41,47 @@ public class NotificationController {
     @Autowired
     private AccountRepository accountRepository;
 
+    //    @PostMapping("/send")
+//    public ResponseEntity<Notification> sendNotification(@RequestBody NotificationRequestUser request) {
+//        TOPIC topicEnum = TOPIC.valueOf(request.getTopic());
+//        Notification notification = notificationService.createNotification(
+//                request.getTitle(),
+//                request.getMessage(),
+//                topicEnum
+//
+//        );
+//        return ResponseEntity.ok(notification);
+//    }
     @PostMapping("/send")
-    public ResponseEntity<Notification> sendNotification(@RequestBody NotificationRequestUser request) {
-        TOPIC topicEnum = TOPIC.valueOf(request.getTopic());
-        Notification notification = notificationService.createNotification(
-                request.getTitle(),
-                request.getMessage(),
-                topicEnum
-
-        );
-        return ResponseEntity.ok(notification);
+    public void sendNotification() {
+        TOPIC topicEnum = TOPIC.GENERAL;
+        Notification notification = notificationService.getNotificationByTopic(topicEnum);
+        if (notification == null) {
+            notification = notificationService.createNotification(TOPIC.getCategory(topicEnum), TOPIC.getCategory(topicEnum), TOPIC.GENERAL);
+        }
+        Account account = accountRepository.findById(6).get();
+        Account account1 = accountRepository.findById(7).get();
+        Account account2 = accountRepository.findById(8).get();
+        Account account3 = accountRepository.findById(9).get();
+        List<Account> accounts = new ArrayList<>();
+        accounts.add(account3);
+        accounts.add(account2);
+        accounts.add(account1);
+        accounts.add(account);
+        String message = "Xin chào bạn";
+        for (Account item : accounts) {
+            notificationService.sendSystemNotification(message, topicEnum, notification, item);
+        }
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<UserNotificationDTO_User>> getUserNotifications(
-            @PathVariable Long userId) {
-        List<UserNotificationDTO_User> notifications = notificationService.getUserNotifications(userId);
-        return ResponseEntity.ok(notifications);
+    public Page<NotificationDTOResponsive> getUserNotifications(
+            @PathVariable Integer userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        return notificationService.getUserNotifications(userId, pageable);
     }
 
     @GetMapping("/user/{userId}/detail/{notificationId}")

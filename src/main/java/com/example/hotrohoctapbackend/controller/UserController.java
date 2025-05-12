@@ -44,7 +44,7 @@ import java.util.Optional;
 
 
 @RestController
-@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+//@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RequestMapping("/account")
 public class UserController {
 
@@ -76,7 +76,7 @@ public class UserController {
     @Autowired
     private User_NotificationRepository userNotificationRepository;
 
-    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+    //    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @PostMapping("/dang-ky")
     public ResponseEntity<Map<String, String>> dandkyTaiKhoan(@RequestBody AccountDTO user) {
 
@@ -114,7 +114,7 @@ public class UserController {
         return response;
     }
 
-    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+    //    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @PostMapping("/dang-nhap")
     public ResponseEntity<?> dangNhap(@RequestBody LoginRequest loginRequest) {
 
@@ -167,7 +167,7 @@ public class UserController {
 
 //    @CrossOrigin(origins = "http://localhost:3000", )
 
-    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+    //    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @GetMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(@RequestParam("refreshToken") String requestRefreshToken) {
         return refreshTokenService.findByToken(requestRefreshToken)
@@ -181,7 +181,7 @@ public class UserController {
     }
 
 
-    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+    //    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @GetMapping("/oauth2/success")
     public void googleLogin(Authentication authentication, HttpServletResponse response) throws IOException {
         try {
@@ -250,7 +250,7 @@ public class UserController {
         }
     }
 
-    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+    //    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @PostMapping("/register-generate")
     public ResponseEntity<ApiResponse<?>> register(@RequestBody AccountDTO request) {
 
@@ -274,7 +274,7 @@ public class UserController {
                 .body(new ApiResponse<>(200, "Mã OTP đã được gửi tới email của bạn!", null));
     }
 
-    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+    //    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @PostMapping("/register-generate-sms")
     public ResponseEntity<String> registerSMS(@RequestBody AccountDTO request) {
         String otp = verificationRequestService.createVerificationRequestSMS(
@@ -287,7 +287,7 @@ public class UserController {
         return ResponseEntity.ok(otp);
     }
 
-    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+    //    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody VerifyRequest request) {
         if (request.getType().equals("REGISTER")) {
@@ -338,7 +338,7 @@ public class UserController {
         }
     }
 
-    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+    //    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @PostMapping("/email-public")
     public ResponseEntity<ApiResponse<?>> getEmailAndCheck(@RequestBody PublicEmail email) {
         try {

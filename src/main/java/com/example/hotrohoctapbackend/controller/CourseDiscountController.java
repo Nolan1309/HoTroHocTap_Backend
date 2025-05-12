@@ -10,12 +10,13 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true") 
+//@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/course-discounts")
 public class CourseDiscountController {
     @Autowired
     private CourseDiscountService courseDiscountService;
+
     @PostMapping("/add-discount/{discountId}")
     public ResponseEntity<String> addDiscountToCourse(
             @PathVariable("discountId") Integer discountId, // Lấy discountId từ URL path
@@ -33,6 +34,7 @@ public class CourseDiscountController {
                     .body("Đã xảy ra lỗi trong quá trình thêm khuyến mãi: " + e.getMessage());
         }
     }
+
     @PutMapping("/reset-price")
     public ResponseEntity<String> resetPriceToCost(@RequestParam List<Integer> courseIds) {
         try {

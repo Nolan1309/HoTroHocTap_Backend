@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true") 
+//@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
@@ -56,6 +56,7 @@ public class PaymentController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Trả về mã 404 Not Found
         }
     }
+
     @GetMapping("/summary")
     public ResponseEntity<Page<PaymentSummaryDTO_User>> getPaymentSummariesUser(
             @RequestParam Long accountId,
@@ -71,6 +72,7 @@ public class PaymentController {
         List<PaymentDetailDTO_User> paymentDetails = paymentService.getPaymentDetailsById_User(paymentId);
         return ResponseEntity.ok(paymentDetails);
     }
+
     @GetMapping("/all")
     public Page<AdminPaymentDTO> getPaymentsAdmin(
             @RequestParam(defaultValue = "0") int page,
@@ -78,11 +80,13 @@ public class PaymentController {
         Pageable pageable = PageRequest.of(page, size);
         return paymentService.getPaymentAdmin(pageable);
     }
+
     @GetMapping("/course-detail/{paymentId}")
     public ResponseEntity<List<CourseDetailDTO_User>> getCourseDetails(@PathVariable Integer paymentId) {
         List<CourseDetailDTO_User> courseDetails = paymentDetailService.getCourseDetailsByPaymentId(paymentId);
         return ResponseEntity.ok(courseDetails);
     }
+
     @GetMapping("/course-detail-admin/{paymentId}")
     public ResponseEntity<List<CourseDetailDTO_User>> getCourseDetailsAdmin(@PathVariable Integer paymentId) {
         List<CourseDetailDTO_User> courseDetails = paymentDetailService.getCourseDetailsByPaymentId(paymentId);
@@ -93,6 +97,7 @@ public class PaymentController {
     public DashboardReportDto getDashboardReport() {
         return paymentService.getDashboardReport();
     }
+
     @GetMapping("/monthly-sales")
     public List<Object[]> getMonthlySalesData(@RequestParam int year) {
         return paymentService.getMonthlySalesData(year);

@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
+//@CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/courses")
 public class CourseController {
@@ -62,14 +62,14 @@ public class CourseController {
     @GetMapping("/public/filter")
     public ApiResponse<Page<CourseDTOUserPublic>> getCourses(
             @RequestParam(required = false, defaultValue = "") String type,
-            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) List<Integer> categoryIds,
             @RequestParam(required = false) Integer accountId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         PageRequest pageable = PageRequest.of(page, size);
-        Page<CourseDTOUserPublic> courses = courseService.getCoursesPublic(type, title, categoryIds, accountId, pageable);
+        Page<CourseDTOUserPublic> courses = courseService.getCoursesPublic(type, keyword, categoryIds, accountId, pageable);
         return new ApiResponse<>(200, "Success", courses);
     }
 

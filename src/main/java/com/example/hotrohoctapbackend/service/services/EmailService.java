@@ -13,19 +13,17 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("${allowed.origins}")
-    private String allowedOrigins;
 
     public void sendResetPasswordEmail(String toEmail, String token) {
-        String subject = "Reset your password";
-        String resetUrl = allowedOrigins + "/reset-password?token=" + token;
-        String body = "Click the following link to reset your password: " + resetUrl;
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-        message.setSubject(subject);
-        message.setText(body);
-        mailSender.send(message);
+//        String subject = "Reset your password";
+//        String resetUrl = allowedOrigins + "/reset-password?token=" + token;
+//        String body = "Click the following link to reset your password: " + resetUrl;
+//
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setTo(toEmail);
+//        message.setSubject(subject);
+//        message.setText(body);
+//        mailSender.send(message);
     }
 
     public void sendNotificationEmail(String toEmail, String title, String messageNo) {

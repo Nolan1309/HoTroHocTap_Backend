@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.dao;
 
 import com.example.hotrohoctapbackend.entity.Notification;
+import com.example.hotrohoctapbackend.util.TOPIC;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +14,7 @@ import java.util.List;
 @RepositoryRestResource(path = "notifications")
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
 
-    Notification findByTopic(String topic);
+    Notification findByTopic(TOPIC topic);
 
     @Query(value = "SELECT noti.id, noti.created_at, noti.title, noti.updated_at, noti.deleted_date, noti.is_deleted, noti.topic, noti.message, us.read_status as checked " +
             "FROM notifications noti " +
@@ -23,6 +24,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
             "AND us.account_id = :userId " +
             "ORDER BY noti.created_at DESC", nativeQuery = true)
     List<Object[]> findNotificationsByUserIdNative(@Param("userId") Long userId);
+
 
     @Query(value = "SELECT noti.id, noti.created_at, noti.title, noti.updated_at, noti.deleted_date, noti.is_deleted, noti.topic, noti.message, us.read_status as checked " +
             "FROM notifications noti " +

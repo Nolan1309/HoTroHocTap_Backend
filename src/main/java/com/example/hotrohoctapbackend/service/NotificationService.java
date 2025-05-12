@@ -1,6 +1,7 @@
 package com.example.hotrohoctapbackend.service;
 
 import com.example.hotrohoctapbackend.DTO.Admin.AdminNotificationDTO;
+import com.example.hotrohoctapbackend.DTO.AdminV3.Notification.NotificationDTOResponsive;
 import com.example.hotrohoctapbackend.DTO.User.UserNotificationDTO_User;
 import com.example.hotrohoctapbackend.dao.NotificationRepository;
 import com.example.hotrohoctapbackend.dao.User_NotificationRepository;
@@ -39,44 +40,38 @@ public class NotificationService {
         Notification notification = new Notification();
         notification.setTitle(title);
         notification.setMessage(message);
-
         notification.setTopic(topic);
-
-//        notification.setUserId(userId);
         notification.setCreatedAt(LocalDateTime.now());
         notification.setUpdatedAt(LocalDateTime.now());
         return repository.save(notification);
     }
 
     public Notification getNotificationByTopic(TOPIC topic) {
-        String topicValue = topic.name();
-        return repository.findByTopic(topicValue);
+        Notification notification = repository.findByTopic(topic);
+        return notification != null ? notification : null;
     }
 
-    public List<UserNotificationDTO_User> getUserNotifications(Long userId) {
-        List<Object[]> results = repository.findNotificationsByUserIdNative(userId);
 
-        List<UserNotificationDTO_User> notifications = new ArrayList<>();
+    public Page<NotificationDTOResponsive> getUserNotifications(Integer userId, Pageable pageable) {
+        // Lấy dữ liệu phân trang từ repository
+        Page<User_Notification> page = userNotificationRepository.findNotificationByAccountId(userId, pageable);
 
-        for (Object[] row : results) {
-            Notification notification = new Notification();
-            notification.setId((Integer) row[0]);
-            notification.setCreatedAt(((Timestamp) row[1]).toLocalDateTime());
-            notification.setTitle((String) row[2]);
-            notification.setUpdatedAt(((Timestamp) row[3]).toLocalDateTime());
-            notification.setDeletedDate(((Timestamp) row[4]).toLocalDateTime());
-            notification.setDeleted((Boolean) row[5]);
+        // Chuyển đổi danh sách User_Notification thành NotificationDTOResponsive
+        List<NotificationDTOResponsive> notifications = page.getContent().stream()
+                .map(userNotification -> new NotificationDTOResponsive(
+                        userNotification.getId(),
+                        userNotification.getTitle(),
+                        userNotification.getMessage(),
+                        userNotification.getTopic(),
+                        userNotification.getCreatedAt(),
+                        userNotification.isRead_status()
+                ))
+                .collect(Collectors.toList());
 
-            TOPIC topic = TOPIC.valueOf((String) row[6]);
-            notification.setTopic(topic);
-            notification.setMessage((String) row[7]);
-            boolean readStatus = (Boolean) row[8];
-
-            notifications.add(new UserNotificationDTO_User(notification, readStatus));
-        }
-
-        return notifications;
+        // Trả về Page<NotificationDTOResponsive>
+        return new PageImpl<>(notifications, pageable, page.getTotalElements());
     }
+
 
     public List<UserNotificationDTO_User> getUserNotificationsDetail(Long userId, Long notificationId) {
 
@@ -173,10 +168,11 @@ public class NotificationService {
         }
     }
 
-    //     Gửi thông báo hệ thống đến tất cả người dùng
+    //Gửi all theo danh sách input , chuẩn bị TOPIC đẻ xác định được thông báo nào , hàm này là hàm xài chung thông báo gửi đến REALTIME
     public void sendSystemNotification(String message, TOPIC topic, Notification notification, Account account) {
         UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
         User_Notification userNotification = new User_Notification();
+
         userNotification.setAccount(account);
         userNotification.setDeliveryStatus(DeliveryStatus.SENT);
         userNotification.setTitle(notification.getTitle());
@@ -186,53 +182,98 @@ public class NotificationService {
         userNotification.setMessage(message);
         userNotification.setCreatedAt(LocalDateTime.now());
         userNotification.setRead_status(false);
-        notificationRepository.save(notification);
+
+        userNotificationRepository.save(userNotification);
+
         messagingTemplate.convertAndSendToUser(String.valueOf(account.getId()), "/queue/notifications", notificationDTOUser);
     }
 
-    // Gửi thông báo theo role (ví dụ: Admin)
-    public void sendRoleNotification(List<Account> accounts, String message, TOPIC topic, Notification notification) {
-        for (Account item : accounts) {
-            UserNotificationDTO_User notificationDTOUser = new UserNotificationDTO_User(notification, false);
-            User_Notification userNotification = new User_Notification();
-            userNotification.setAccount(item);
-            userNotification.setDeliveryStatus(DeliveryStatus.SENT);
-            userNotification.setTitle(notification.getTitle());
-            userNotification.setTopic(topic);
-            userNotification.setScheduleTime(LocalDateTime.now());
-            userNotification.setNotification(notification);
-            userNotification.setMessage(message);
-            userNotification.setCreatedAt(LocalDateTime.now());
-            userNotification.setRead_status(false);
-            notificationRepository.save(notification);
-            messagingTemplate.convertAndSendToUser(String.valueOf(item.getId()), "/queue/notifications", notificationDTOUser);
-
-
-            notificationRepository.save(notification);
-
-            messagingTemplate.convertAndSend("/topic/role/" + item.getRole().getRoleName(), message); // Gửi thông báo đến role cụ thể
+    //Thông báo đăng ký khóa học
+    public void ErrolCourseNotification(Account account) {
+        TOPIC topicEnum = TOPIC.ENROLL_COURSE;
+        Notification notification = getNotificationByTopic(topicEnum);
+        if (notification == null) {
+            notification = createNotification(TOPIC.getCategory(topicEnum), TOPIC.getCategory(topicEnum), topicEnum);
         }
-
+        String message = MessageTemplate.getMessage(MessageTemplate.Message.ENROLL_COURSE, account.getFullname());
+        sendSystemNotification(message, topicEnum, notification, account);
     }
 
-    // Gửi thông báo cho người dùng cụ thể
-    public void sendPersonalNotification(String userId, String message) {
-        Notification notification = new Notification();
-        notification.setTitle("Personal Notification");
-        notification.setMessage(message);
-//        notification.setTopic("user");
-        notification.setCreatedAt(LocalDateTime.now());
-        notificationRepository.save(notification);
-
-        messagingTemplate.convertAndSendToUser(userId, "/topic/notifications", message); // Gửi thông báo đến người dùng cụ thể
+    //Thông báo thanh toán khóa học
+    public void PaymentNotification(Account account) {
+        TOPIC topicEnum = TOPIC.PAYMENT;
+        Notification notification = getNotificationByTopic(topicEnum);
+        if (notification == null) {
+            notification = createNotification(TOPIC.getCategory(topicEnum), TOPIC.getCategory(topicEnum), topicEnum);
+        }
+        String message = MessageTemplate.getMessage(MessageTemplate.Message.PAYMENT, account.getFullname());
+        sendSystemNotification(message, topicEnum, notification, account);
     }
 
-    //     Gửi thông báo và lưu thông tin vào bảng user_notifications
-    public void saveUserNotification(Account account, Notification notification) {
-        User_Notification userNotification = new User_Notification();
-        userNotification.setAccount(account);
-        userNotification.setNotification(notification);
-        userNotification.setRead_status(false); // Mặc định là chưa đọc
-        userNotificationRepository.save(userNotification);
+    //Thông báo đổi mật khẩu khóa học
+    public void PasswordNotification(Account account) {
+        TOPIC topicEnum = TOPIC.PASSWORD;
+        Notification notification = getNotificationByTopic(topicEnum);
+        if (notification == null) {
+            notification = createNotification(TOPIC.getCategory(topicEnum), TOPIC.getCategory(topicEnum), topicEnum);
+        }
+        String message = MessageTemplate.getMessage(MessageTemplate.Message.PASSWORD, account.getFullname());
+        sendSystemNotification(message, topicEnum, notification, account);
     }
+
+    //Thông báo đăng ký tài khoản
+    public void REGISTERNotification(Account account) {
+        TOPIC topicEnum = TOPIC.REGISTER;
+        Notification notification = getNotificationByTopic(topicEnum);
+        if (notification == null) {
+            notification = createNotification(TOPIC.getCategory(topicEnum), TOPIC.getCategory(topicEnum), topicEnum);
+        }
+        String message = MessageTemplate.getMessage(MessageTemplate.Message.REGISTER, account.getFullname());
+        sendSystemNotification(message, topicEnum, notification, account);
+    }
+
+    //Thông báo đăng ký tài khoản
+    public void VoucherNotification(Account account) {
+        TOPIC topicEnum = TOPIC.VOUCHER;
+        Notification notification = getNotificationByTopic(topicEnum);
+        if (notification == null) {
+            notification = createNotification(TOPIC.getCategory(topicEnum), TOPIC.getCategory(topicEnum), topicEnum);
+        }
+        String message = MessageTemplate.getMessage(MessageTemplate.Message.VOUCHER, account.getFullname());
+        sendSystemNotification(message, topicEnum, notification, account);
+    }
+
+    //Thông báo chung
+    public void GeneralNotification(Account account) {
+        TOPIC topicEnum = TOPIC.GENERAL;
+        Notification notification = getNotificationByTopic(topicEnum);
+        if (notification == null) {
+            notification = createNotification(TOPIC.getCategory(topicEnum), TOPIC.getCategory(topicEnum), topicEnum);
+        }
+        String message = MessageTemplate.getMessage(MessageTemplate.Message.GENERAL, account.getFullname());
+        sendSystemNotification(message, topicEnum, notification, account);
+    }
+
+    //Thông báo chung
+    public void ChatNotification(Account account) {
+        TOPIC topicEnum = TOPIC.CHAT;
+        Notification notification = getNotificationByTopic(topicEnum);
+        if (notification == null) {
+            notification = createNotification(TOPIC.getCategory(topicEnum), TOPIC.getCategory(topicEnum), topicEnum);
+        }
+        String message = MessageTemplate.getMessage(MessageTemplate.Message.CHAT, account.getFullname());
+        sendSystemNotification(message, topicEnum, notification, account);
+    }
+
+    //Thông báo lịch học
+    public void LearningCourse(Account account) {
+        TOPIC topicEnum = TOPIC.LEARNING;
+        Notification notification = getNotificationByTopic(topicEnum);
+        if (notification == null) {
+            notification = createNotification(TOPIC.getCategory(topicEnum), TOPIC.getCategory(topicEnum), topicEnum);
+        }
+        String message = MessageTemplate.getMessage(MessageTemplate.Message.LEARNING, account.getFullname());
+        sendSystemNotification(message, topicEnum, notification, account);
+    }
+
 }

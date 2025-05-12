@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
@@ -63,6 +64,7 @@ public class NotificationScheduler {
     private PredictionResultRepository predictionResultRepository;
     @Autowired
     private PythonScriptService pythonScriptService;
+    private ScheduledFuture<?> scheduledTask;
 
     private String getCronExpression() {
         List<SettingScheduler> schedulerList = settingSchedulerRepository.findByReminderType(ReminderType.SCHEDULER);
@@ -73,6 +75,7 @@ public class NotificationScheduler {
         }
         return "0 0 7 * * ?";
     }
+
 
 //    @Scheduled(cron = "0 0/30 * * * ?") // Lên lịch mỗi 30 phút
 //    public void checkAndUpdateProgress() throws JsonProcessingException {
@@ -158,8 +161,6 @@ public class NotificationScheduler {
     }
 
 
-    private ScheduledFuture<?> scheduledTask;
-
     @PostConstruct
     public void scheduleDynamicCronJob() {
         if (scheduledTask != null) {
@@ -168,6 +169,24 @@ public class NotificationScheduler {
         String cron = getCronExpression();
         System.out.println("Scheduling task with cron expression: " + cron);
         scheduledTask = taskScheduler.schedule(this::sendDailyNotifications, new CronTrigger(cron));
+    }
+
+    @Scheduled(cron = "0 * * * * ?")
+    public void checkAndSendReminder() {
+        List<SettingScheduler> settings = settingSchedulerRepository.findByReminderType(ReminderType.SCHEDULER); // Lấy tất cả cài đặt giờ học của người dùng
+        for (SettingScheduler setting : settings) {
+            if (setting.isCheck()) {
+                String reminderTime = setting.getReminderTime(); // Lấy giờ học cài đặt
+                if (isTimeToSendReminder(reminderTime)) {
+                    notificationService.LearningCourse(setting.getAccount());
+                }
+            }
+        }
+    }
+
+    private boolean isTimeToSendReminder(String reminderTime) {
+        String currentTime = java.time.LocalTime.now().toString().substring(0, 5);
+        return currentTime.equals(reminderTime);
     }
 
     public void scheduleDeleteExpiredDiscounts() {
@@ -199,11 +218,6 @@ public class NotificationScheduler {
         scheduleDeleteExpiredChapters();
         scheduleDeleteExpiredLessons();
     }
-//    @PostConstruct
-//    public void scheduleDynamicCronJob() {
-//        String cron = getCronExpression();
-//        taskScheduler.schedule(this::sendDailyNotifications, new CronTrigger(cron));
-//    }
 
     /**
      * Gửi thông báo tự động mỗi ngày vào lúc 8:00 sáng
@@ -239,7 +253,50 @@ public class NotificationScheduler {
         messagingTemplate.convertAndSend("/topic/" + TOPIC.LEARNING, user);
     }
 
-
+    //    public void sendDailyNotifications() {
+//        List<AccountSendNotification_User> userIds = enrolledCourseService.getActiveEnrolledUsers();
+//
+//        for (AccountSendNotification_User userId : userIds) {
+//            Account account = accountRepository.findById(userId.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+//
+//            // Lấy giờ học của người dùng từ bảng SettingScheduler
+//            SettingScheduler setting = settingSchedulerRepository.findByAccountId(account.getId());
+//            if (setting != null && setting.isCheck()) {
+//                String reminderTime = setting.getReminderTime(); // Lấy thời gian học cài đặt
+//
+//                // Kiểm tra nếu thời gian hiện tại trùng với giờ học của người dùng
+//                if (isTimeToSendReminder(reminderTime)) {
+//                    String title = "Nhắc nhở học bài";
+//                    String message = "Bạn chưa hoàn thành khóa học! Đừng quên tham gia nhé.";
+//
+//                    // Tạo thông báo và gửi qua WebSocket
+//                    Notification notification = notificationService.createNotification(
+//                            title,
+//                            message,
+//                            TOPIC.LEARNING
+//                    );
+//
+//                    // Lưu thông báo cho người dùng vào cơ sở dữ liệu
+//                    User_Notification userNotification = new User_Notification();
+//                    userNotification.setAccount(account);
+//                    userNotification.setNotification(notification);
+//                    userNotification.setRead_status(false);
+//                    userNotificationRepository.save(userNotification);
+//
+//                    // Gửi email nhắc nhở học
+//                    try {
+//                        emailService.sendNotificationEmail(userId.getEmail(), title, message);
+//                    } catch (Exception e) {
+//                        System.err.println("Error sending email: " + e.getMessage());
+//                    }
+//
+//                    // Gửi thông báo qua WebSocket
+//                    messagingTemplate.convertAndSend("/topic/" + TOPIC.LEARNING, new UserNotificationDTO_User(notification, false));
+//                }
+//
+//            }
+//        }
+//    }
     public void deleteExpiredDiscounts() {
         List<Discount> deletedDiscounts = discountRepository.findByIsDeletedTrue();
         LocalDateTime now = LocalDateTime.now();

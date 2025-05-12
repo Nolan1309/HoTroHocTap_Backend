@@ -9,7 +9,8 @@ public class MessageTemplate {
         PAYMENT("Thanh toán thành công cho đơn hàng %s. Cảm ơn bạn đã mua hàng."),
         CHAT("Có tin nhắn mới từ %s. Hãy kiểm tra ngay!"),
         SYSTEM("Thông báo hệ thống: %s."),
-        GENERAL("Thông báo: %s.");
+        GENERAL("Thông báo: %s."),
+        VOUCHER("Giảm giá ưu đãi: %s.");
 
         private final String template;
 

@@ -836,28 +836,28 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     // Khóa học phổ biến, lọc theo tên (title có thể là NULL)
     @Query("SELECT c FROM Course c " +
             "LEFT JOIN c.enrolledCourses e " +
-            "WHERE (:title IS NULL OR c.title LIKE %:title%) AND " +
-            "c.status = true AND " +
+            "WHERE (:keyword IS NULL OR c.title LIKE %:keyword% OR c.author LIKE %:keyword%) " +
+            "AND c.status = true AND " +
             "c.isDeleted = false " +
             "GROUP BY c.id " +
             "ORDER BY COUNT(e) DESC")
-    Page<Course> findPopularCourses(String title, Pageable pageable);
+    Page<Course> findPopularCourses(String keyword, Pageable pageable);
 
     // Khóa học giảm giá, lọc theo tên khóa học, price < cost (title có thể là NULL)
-    @Query("SELECT c FROM Course c WHERE (:title IS NULL OR c.title LIKE %:title%) " +
+    @Query("SELECT c FROM Course c WHERE (:keyword IS NULL OR c.title LIKE %:keyword% OR c.author LIKE %:keyword%) " +
             "AND c.status = true " +
             "AND c.price < c.cost " +
             "AND c.isDeleted = false " +
             "ORDER BY (c.cost - c.price) DESC")
-    Page<Course> findDiscountCourses(String title, Pageable pageable);
+    Page<Course> findDiscountCourses(String keyword, Pageable pageable);
 
 
     @Query("SELECT c FROM Course c WHERE " +
-            "(:title IS NULL OR c.title LIKE %:title%) AND " +
+            "(:keyword IS NULL OR c.title LIKE %:keyword% OR c.author LIKE %:keyword%) AND " +
             "(:categoryIds IS NULL OR c.category.id IN :categoryIds) AND " +
             "c.status = true AND " +
             "c.isDeleted = false")
-    Page<Course> findByTitleAndCategory(List<Integer> categoryIds, String title, Pageable pageable);
+    Page<Course> findByTitleAndCategory(List<Integer> categoryIds, String keyword, Pageable pageable);
 
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.course.id = :courseId AND r.reviewType = 'COURSE'")
     Double findAverageRatingByCourseId(Integer courseId);

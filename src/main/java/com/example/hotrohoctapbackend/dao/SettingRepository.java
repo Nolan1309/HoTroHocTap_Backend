@@ -12,4 +12,6 @@ import java.util.List;
 public interface SettingRepository extends JpaRepository<SettingScheduler, Integer> {
 
     List<SettingScheduler> findByReminderType(ReminderType type);
+
+    SettingScheduler findByAccountId(Integer accountId);
 }

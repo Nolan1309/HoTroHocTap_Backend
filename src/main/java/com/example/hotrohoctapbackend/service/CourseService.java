@@ -1114,23 +1114,25 @@ public class CourseService {
     }
 
 
-    public Page<CourseDTOUserPublic> getCoursesPublic(String type, String title, List<Integer> categoryIds, Integer accountId, Pageable pageable) {
+    public Page<CourseDTOUserPublic> getCoursesPublic(String type, String keyword,
+                                                      List<Integer> categoryIds, Integer accountId,
+                                                      Pageable pageable) {
         Page<Course> courses = null;
 
         switch (type.toLowerCase()) {
             case "popular":
-                courses = courseRepository.findPopularCourses(title, pageable); // Lọc phổ biến với ít nhất 100 học viên
+                courses = courseRepository.findPopularCourses(keyword, pageable); // Lọc phổ biến với ít nhất 100 học viên
                 break;
             case "discount":
-                courses = courseRepository.findDiscountCourses(title, pageable); // Giảm giá (price < cost)
+                courses = courseRepository.findDiscountCourses(keyword, pageable); // Giảm giá (price < cost)
                 break;
             case "category":
                 courses = courseRepository.findByTitleAndCategory(
-                        categoryIds, title, pageable); // Lọc theo nhiều danh mục
+                        categoryIds, keyword, pageable); // Lọc theo nhiều danh mục
                 break;
             default:
                 courses = courseRepository.findByTitleAndCategory(
-                        categoryIds, title, pageable); // Lọc theo nhiều danh mục
+                        categoryIds, keyword, pageable); // Lọc theo nhiều danh mục
         }
 
         return courses.map(course -> convertToDTO(course, accountId));

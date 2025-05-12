@@ -3,9 +3,7 @@ package com.example.hotrohoctapbackend.security;
 import org.springframework.beans.factory.annotation.Value;
 
 public class Endpoint {
-    //    public static final String front_end_host = "http://localhost:3000";
-    @Value("*")
-    private String allowedOrigins;
+
     public static final String[] PUBLIC_GET_ENDPOINS = {
             "/banners",
             "/banners/**",
