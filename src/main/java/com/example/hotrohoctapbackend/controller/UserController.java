@@ -290,7 +290,7 @@ public class UserController {
     //    @CrossOrigin(origins = "${allowed.origins}", allowCredentials = "true")
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody VerifyRequest request) {
-        if (request.getType().equals("REGISTER")) {
+        if ("REGISTER".equals(request.getType())) {
             boolean isVerified = verificationRequestService.verifyOTP(request.getEmail(), request.getOtp());
 
             if (isVerified) {
@@ -310,6 +310,7 @@ public class UserController {
                     User_Notification userNotification = new User_Notification();
                     userNotification.setAccount(account);
                     userNotification.setNotification(notification);
+                    userNotification.setTopic(TOPIC.REGISTER);
                     userNotification.setCreatedAt(LocalDateTime.now());
                     userNotification.setRead_status(false);
 
